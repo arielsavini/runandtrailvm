@@ -326,6 +326,47 @@ textarea{resize:vertical;min-height:70px;}
 }
 .leaflet-container{background:var(--surface3)!important;}
 
+/* ── MIS INSCRIPCIONES ── */
+.insc-wrap{padding:24px 32px 56px;}
+.insc-toolbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px;}
+.btn-new-insc{display:flex;align-items:center;gap:8px;padding:10px 20px;background:var(--accent);color:#0c0c0a;border:none;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif;}
+.btn-new-insc:hover{background:#d4eb2e;transform:translateY(-1px);}
+.insc-summary{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:24px;}
+.insc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;}
+.insc-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;transition:transform .18s,border-color .18s,box-shadow .18s;}
+.insc-card:hover{transform:translateY(-3px);border-color:rgba(232,255,71,.3);box-shadow:0 10px 36px rgba(0,0,0,.4);}
+.insc-card-head{padding:14px 16px 10px;display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
+.insc-card-name{font-weight:700;font-size:15px;line-height:1.3;flex:1;}
+.insc-card-type{flex-shrink:0;}
+.insc-card-meta{padding:0 16px 10px;display:flex;flex-direction:column;gap:5px;}
+.insc-meta-row{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);}
+.insc-meta-row strong{color:var(--text);}
+.insc-card-pills{padding:0 16px 12px;display:flex;gap:6px;flex-wrap:wrap;}
+.insc-pill{padding:3px 10px;border-radius:100px;font-size:10px;font-weight:700;font-family:'Space Mono',monospace;background:var(--surface3);border:1px solid var(--border);color:var(--text);}
+.insc-pill-acc{background:rgba(232,255,71,.1);border-color:rgba(232,255,71,.3);color:var(--accent);}
+.insc-card-foot{padding:10px 16px 14px;display:flex;gap:7px;border-top:1px solid var(--border);}
+.insc-btn-pri{flex:1;background:var(--accent);color:#0c0c0a;border:none;border-radius:6px;padding:8px;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;}
+.insc-btn-pri:hover{background:#d4eb2e;}
+.insc-btn-del{background:rgba(255,68,68,.08);border:1px solid rgba(255,68,68,.2);color:#ff6b6b;border-radius:6px;padding:8px 12px;font-size:12px;cursor:pointer;transition:all .15s;}
+.insc-btn-del:hover{background:rgba(255,68,68,.2);}
+.insc-lock{text-align:center;padding:80px 24px;color:var(--muted);}
+.insc-lock .ili{font-size:52px;margin-bottom:16px;}
+.insc-lock h3{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--text);margin-bottom:8px;}
+.insc-empty{text-align:center;padding:64px 24px;color:var(--muted);}
+.insc-empty .ei{font-size:52px;margin-bottom:16px;}
+.insc-empty h3{font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--text);margin-bottom:8px;}
+.insc-detail-row{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);}
+.insc-detail-row:last-child{border-bottom:none;}
+.insc-detail-icon{font-size:20px;flex-shrink:0;width:28px;text-align:center;}
+.insc-detail-info .lbl{font-size:10px;font-family:'Space Mono',monospace;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:2px;}
+.insc-detail-info .val{font-size:14px;color:var(--text);}
+.insc-pdf-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;font-size:12px;color:var(--muted);transition:all .15s;cursor:pointer;text-decoration:none;}
+.insc-pdf-btn:hover{border-color:var(--accent);color:var(--accent);}
+@media(max-width:640px){
+  .insc-wrap{padding:16px 16px 56px;}
+  .insc-grid{grid-template-columns:1fr;}
+}
+
 </style>
 </head>
 <body>
@@ -355,6 +396,10 @@ textarea{resize:vertical;min-height:70px;}
 <!-- MAIN TABS -->
 <nav class="main-tabs">
   <button class="tab-btn active" id="tab-calendar" onclick="switchTab('calendar')">🗓 CALENDARIO</button>
+  <button class="tab-btn" id="tab-inscripciones" onclick="switchTab('inscripciones')">
+    🎫 MIS INSCRIPCIONES
+    <span class="tbadge" id="inscBadge" style="display:none">0</span>
+  </button>
   <button class="tab-btn" id="tab-training" onclick="switchTab('training')">
     🏃 MIS ENTRENAMIENTOS
     <span class="tbadge" id="trainBadge" style="display:none">0</span>
@@ -429,6 +474,42 @@ textarea{resize:vertical;min-height:70px;}
 </section>
 
 </div><!-- /panel-calendar -->
+
+<!-- TAB: MIS INSCRIPCIONES -->
+<div class="tab-panel" id="panel-inscripciones">
+<div class="insc-wrap">
+
+  <!-- LOCK -->
+  <div id="inscLock" class="insc-lock" style="display:none">
+    <div class="ili">🎫</div>
+    <h3>INICIÁ SESIÓN</h3>
+    <p style="font-size:14px;max-width:320px;margin:0 auto 24px;line-height:1.6">Guardá tus inscripciones, dorsales y comprobantes de pago.</p>
+    <button class="btn btn-accent" onclick="openLogin()">Ingresar con Google</button>
+  </div>
+
+  <!-- CONTENT -->
+  <div id="inscContent" style="display:none">
+    <div class="insc-toolbar">
+      <div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--text)">MIS INSCRIPCIONES</div>
+        <div style="font-size:11px;color:var(--muted);font-family:'Space Mono',monospace;margin-top:2px">Dorsales, comprobantes y deslindes</div>
+      </div>
+      <button class="btn-new-insc" onclick="openAddInsc()">＋ NUEVA INSCRIPCIÓN</button>
+    </div>
+
+    <!-- SUMMARY -->
+    <div class="insc-summary">
+      <div class="tscard"><div class="tsl">Inscripciones</div><div class="tsv" id="inscSumTotal">0</div></div>
+      <div class="tscard"><div class="tsl">Con comprobante</div><div class="tsv" id="inscSumPago">0</div></div>
+      <div class="tscard"><div class="tsl">Con deslinde</div><div class="tsv" id="inscSumDeslinde">0</div></div>
+    </div>
+
+    <!-- GRID -->
+    <div class="insc-grid" id="inscGrid"></div>
+  </div>
+
+</div>
+</div><!-- /panel-inscripciones -->
 
 <!-- TAB: MIS ENTRENAMIENTOS -->
 <div class="tab-panel" id="panel-training">
@@ -700,6 +781,73 @@ textarea{resize:vertical;min-height:70px;}
     <div class="mf">
       <button class="btn btn-ghost" onclick="cm('partOv')">Cancelar</button>
       <button class="btn btn-accent" onclick="savePart()">GUARDAR MIS TIEMPOS</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: NUEVA INSCRIPCIÓN -->
+<div class="overlay" id="addInscOv" onclick="coo(event,'addInscOv')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="mh">
+      <div><div class="mt" id="inscModalTitle">NUEVA INSCRIPCIÓN</div><div class="ms">Guardá tu dorsal y comprobantes</div></div>
+      <button class="xbtn" onclick="cm('addInscOv')">×</button>
+    </div>
+    <div class="mb">
+      <div class="fr full">
+        <div class="fg2">
+          <label>Carrera *</label>
+          <select id="inscRaceSel" onchange="inscRaceChanged()">
+            <option value="">Seleccioná una carrera...</option>
+          </select>
+        </div>
+      </div>
+      <div class="fr">
+        <div class="fg2"><label>🎫 Número de inscripción / Dorsal</label><input id="inscDorsal" type="text" placeholder="ej. 1042"></div>
+        <div class="fg2"><label>📏 Distancia inscripta</label><select id="inscDist"><option value="">—</option></select></div>
+      </div>
+      <div class="fr">
+        <div class="fg2"><label>🏷 Categoría</label><input id="inscCat" type="text" placeholder="ej. Master A, Absoluto, Sub-23..."></div>
+        <div class="fg2"><label>📅 Fecha límite de retiro de kit</label><input id="inscKitDate" type="date"></div>
+      </div>
+      <div class="fr full">
+        <div class="fg2">
+          <label>📄 Comprobante de pago (PDF o imagen)</label>
+          <div class="photo-up" onclick="document.getElementById('inscPagoInput').click()" id="inscPagoBox">
+            <input type="file" id="inscPagoInput" accept=".pdf,image/*" style="display:none" onchange="prevInscFile(event,'pago')">
+            <div id="inscPagoPrev"><div class="ui">📄</div><p>Click para subir PDF o imagen</p></div>
+          </div>
+        </div>
+      </div>
+      <div class="fr full">
+        <div class="fg2">
+          <label>📋 Deslinde / Término de responsabilidad</label>
+          <div class="photo-up" onclick="document.getElementById('inscDeslindeInput').click()" id="inscDeslindeBox">
+            <input type="file" id="inscDeslindeInput" accept=".pdf,image/*" style="display:none" onchange="prevInscFile(event,'deslinde')">
+            <div id="inscDeslindePrev"><div class="ui">📋</div><p>Click para subir PDF o imagen</p></div>
+          </div>
+        </div>
+      </div>
+      <div class="fr full">
+        <div class="fg2"><label>📝 Notas personales</label><textarea id="inscNotas" placeholder="Observaciones, recordatorios, link de seguimiento..."></textarea></div>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-ghost" onclick="cm('addInscOv')">Cancelar</button>
+      <button class="btn btn-accent" id="inscSaveBtn" onclick="saveInsc()">GUARDAR INSCRIPCIÓN</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: DETALLE INSCRIPCIÓN -->
+<div class="overlay" id="inscDetailOv" onclick="coo(event,'inscDetailOv')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="mh">
+      <div><div class="mt" id="inscDetTitle">—</div><div class="ms" id="inscDetSub">—</div></div>
+      <button class="xbtn" onclick="cm('inscDetailOv')">×</button>
+    </div>
+    <div class="mb" id="inscDetBody"></div>
+    <div class="mf">
+      <button class="btn btn-ghost" onclick="cm('inscDetailOv')">Cerrar</button>
     </div>
   </div>
 </div>
@@ -1469,7 +1617,8 @@ function switchTab(tab) {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.getElementById('tab-' + tab).classList.add('active');
   document.getElementById('panel-' + tab).classList.add('active');
-  if (tab === 'training') renderTrainingTab();
+  if (tab === 'training')       renderTrainingTab();
+  if (tab === 'inscripciones')  renderInscripcionesTab();
 }
 
 /* ══════════════════════════════════════════
@@ -1503,6 +1652,7 @@ function renderTrainingTab() {
   // Cargar workouts del usuario desde Firestore si está configurado
   if (FB_READY) {
     loadWorkoutsFromFirestore();
+    loadInscripcionesFromFirestore();
   } else {
     // Demo workouts locales
     workouts = loadLocalWorkouts();
@@ -2107,6 +2257,236 @@ function fdLong(s) {
   return `${parseInt(d)} ${mNames[parseInt(m)-1]} ${y}`;
 }
 
+/* ══════════════════════════════════════════
+   MIS INSCRIPCIONES
+══════════════════════════════════════════ */
+let inscripciones  = [];
+let inscEditId     = null;
+let inscPagoFile   = null;
+let inscDeslindeFile = null;
+
+function renderInscripcionesTab() {
+  const lock    = document.getElementById('inscLock');
+  const content = document.getElementById('inscContent');
+  if (!currentUser) {
+    lock.style.display = 'block'; content.style.display = 'none'; return;
+  }
+  lock.style.display = 'none'; content.style.display = 'block';
+  renderInscripciones();
+}
+
+function renderInscripciones() {
+  const grid = document.getElementById('inscGrid');
+  // summary
+  document.getElementById('inscSumTotal').textContent    = inscripciones.length;
+  document.getElementById('inscSumPago').textContent     = inscripciones.filter(i => i.pagoURL).length;
+  document.getElementById('inscSumDeslinde').textContent = inscripciones.filter(i => i.deslindeURL).length;
+  // badge
+  const badge = document.getElementById('inscBadge');
+  badge.textContent = inscripciones.length;
+  badge.style.display = inscripciones.length ? 'inline' : 'none';
+
+  if (!inscripciones.length) {
+    grid.innerHTML = `<div class="insc-empty" style="grid-column:1/-1">
+      <div class="ei">🎫</div>
+      <h3>SIN INSCRIPCIONES AÚN</h3>
+      <p style="font-size:14px;max-width:320px;margin:0 auto;line-height:1.6">Agregá tu primera inscripción con el botón de arriba.</p>
+    </div>`; return;
+  }
+  grid.innerHTML = inscripciones.map(ins => buildInscCard(ins)).join('');
+}
+
+function buildInscCard(ins) {
+  const race = races.find(r => r.id === ins.raceId);
+  const [y, mo, d] = (ins.raceDate || '----').split('-');
+  const typeEmoji = TI[ins.raceType] || '🏃';
+  return `<div class="insc-card">
+    <div class="insc-card-head">
+      <div class="insc-card-name">${ins.raceName || 'Carrera'}</div>
+      <span class="bdg bdg-${ins.raceType||'road'}">${typeEmoji}</span>
+    </div>
+    <div class="insc-card-meta">
+      <div class="insc-meta-row">📅 <strong>${d && d!='--' ? d+'/'+mo+'/'+y : '—'}</strong>${ins.raceProvince ? ' · '+ins.raceProvince : ''}</div>
+      ${ins.dorsal    ? `<div class="insc-meta-row">🎫 Dorsal: <strong>${ins.dorsal}</strong></div>` : ''}
+      ${ins.distancia ? `<div class="insc-meta-row">📏 Distancia: <strong>${ins.distancia}</strong></div>` : ''}
+      ${ins.categoria ? `<div class="insc-meta-row">🏷 Categoría: <strong>${ins.categoria}</strong></div>` : ''}
+    </div>
+    <div class="insc-card-pills">
+      ${ins.pagoURL     ? '<span class="insc-pill insc-pill-acc">✓ Comprobante</span>' : '<span class="insc-pill">Sin comprobante</span>'}
+      ${ins.deslindeURL ? '<span class="insc-pill insc-pill-acc">✓ Deslinde</span>'    : '<span class="insc-pill">Sin deslinde</span>'}
+    </div>
+    <div class="insc-card-foot">
+      <button class="insc-btn-pri" onclick="openInscDetail('${ins.id}')">Ver detalles</button>
+      <button class="insc-btn-del" onclick="deleteInsc('${ins.id}')">🗑</button>
+    </div>
+  </div>`;
+}
+
+function openAddInsc() {
+  if (!currentUser) { openLogin(); return; }
+  inscEditId = null; inscPagoFile = null; inscDeslindeFile = null;
+  document.getElementById('inscModalTitle').textContent = 'NUEVA INSCRIPCIÓN';
+  document.getElementById('inscSaveBtn').textContent    = 'GUARDAR INSCRIPCIÓN';
+  ['inscDorsal','inscCat','inscNotas'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('inscKitDate').value = '';
+  document.getElementById('inscPagoPrev').innerHTML     = '<div class="ui">📄</div><p>Click para subir PDF o imagen</p>';
+  document.getElementById('inscDeslindePrev').innerHTML = '<div class="ui">📋</div><p>Click para subir PDF o imagen</p>';
+  // Cargar carreras
+  const sel = document.getElementById('inscRaceSel');
+  sel.innerHTML = '<option value="">Seleccioná una carrera...</option>' +
+    races.sort((a,b)=>a.date>b.date?1:-1).map(r => `<option value="${r.id}">${r.name} — ${fd(r.date)}</option>`).join('');
+  document.getElementById('inscDist').innerHTML = '<option value="">—</option>';
+  oo('addInscOv');
+}
+
+function inscRaceChanged() {
+  const raceId = document.getElementById('inscRaceSel').value;
+  const race   = races.find(r => r.id === raceId);
+  const sel    = document.getElementById('inscDist');
+  sel.innerHTML = '<option value="">—</option>' +
+    (race?.distances || []).map(d => `<option>${d}</option>`).join('');
+}
+
+function prevInscFile(e, tipo) {
+  const f = e.target.files[0]; if (!f) return;
+  if (tipo === 'pago') {
+    inscPagoFile = f;
+    document.getElementById('inscPagoPrev').innerHTML = `<div style="display:flex;align-items:center;gap:8px;padding:4px"><span style="font-size:20px">${f.type.includes('pdf') ? '📄' : '🖼'}</span><span style="font-size:12px;color:var(--text)">${f.name}</span></div>`;
+  } else {
+    inscDeslindeFile = f;
+    document.getElementById('inscDeslindePrev').innerHTML = `<div style="display:flex;align-items:center;gap:8px;padding:4px"><span style="font-size:20px">${f.type.includes('pdf') ? '📄' : '🖼'}</span><span style="font-size:12px;color:var(--text)">${f.name}</span></div>`;
+  }
+}
+
+async function uploadInscFile(file, path) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = async ev => {
+      try {
+        const storRef = ref(storage, path);
+        await uploadString(storRef, ev.target.result, 'data_url');
+        const url = await getDownloadURL(storRef);
+        resolve({ url, path });
+      } catch(e) { reject(e); }
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function saveInsc() {
+  const raceId = document.getElementById('inscRaceSel').value;
+  if (!raceId) { toast('⚠️', 'Seleccioná una carrera'); return; }
+  const race = races.find(r => r.id === raceId);
+  const btn  = document.getElementById('inscSaveBtn');
+  btn.innerHTML = '<span class="spin"></span> Guardando...'; btn.disabled = true;
+
+  try {
+    const id = inscEditId || 'ins_' + Date.now();
+    let pagoURL = null, pagoPath = null, deslindeURL = null, deslindePath = null;
+
+    if (FB_READY && inscPagoFile) {
+      toast('📤', 'Subiendo comprobante...', 'ok');
+      const res = await uploadInscFile(inscPagoFile, `inscripciones/${currentUser.id}/${id}_pago`);
+      pagoURL = res.url; pagoPath = res.path;
+    }
+    if (FB_READY && inscDeslindeFile) {
+      toast('📤', 'Subiendo deslinde...', 'ok');
+      const res = await uploadInscFile(inscDeslindeFile, `inscripciones/${currentUser.id}/${id}_deslinde`);
+      deslindeURL = res.url; deslindePath = res.path;
+    }
+
+    const ins = {
+      id,
+      userId:       currentUser.id,
+      raceId,
+      raceName:     race.name,
+      raceDate:     race.date,
+      raceProvince: race.provincia || '',
+      raceType:     race.type || 'road',
+      dorsal:       document.getElementById('inscDorsal').value.trim(),
+      distancia:    document.getElementById('inscDist').value,
+      categoria:    document.getElementById('inscCat').value.trim(),
+      kitDate:      document.getElementById('inscKitDate').value,
+      notas:        document.getElementById('inscNotas').value.trim(),
+      pagoURL:      pagoURL || (inscEditId ? (inscripciones.find(i=>i.id===inscEditId)?.pagoURL||null) : null),
+      pagoPath:     pagoPath || null,
+      deslindeURL:  deslindeURL || (inscEditId ? (inscripciones.find(i=>i.id===inscEditId)?.deslindeURL||null) : null),
+      deslindePath: deslindePath || null,
+      createdAt:    new Date().toISOString()
+    };
+
+    if (FB_READY) {
+      const { doc: d2, setDoc: sd } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      await sd(d2(db, 'inscripciones', id), ins);
+    } else {
+      const idx = inscripciones.findIndex(i => i.id === id);
+      if (idx >= 0) inscripciones[idx] = ins; else inscripciones.push(ins);
+      renderInscripciones();
+    }
+
+    cm('addInscOv');
+    toast('🎫', '¡Inscripción guardada!', 'ok');
+  } catch(e) {
+    console.error(e);
+    toast('❌', 'Error al guardar la inscripción');
+  }
+  btn.innerHTML = inscEditId ? 'ACTUALIZAR' : 'GUARDAR INSCRIPCIÓN'; btn.disabled = false;
+}
+
+function openInscDetail(id) {
+  const ins = inscripciones.find(i => i.id === id); if (!ins) return;
+  document.getElementById('inscDetTitle').textContent = ins.raceName || '—';
+  document.getElementById('inscDetSub').textContent   = `${fd(ins.raceDate)}${ins.raceProvince ? ' · '+ins.raceProvince : ''}`;
+  const rows = [
+    ins.dorsal    ? { icon:'🎫', lbl:'Dorsal / N° inscripción', val: ins.dorsal } : null,
+    ins.distancia ? { icon:'📏', lbl:'Distancia inscripta',     val: ins.distancia } : null,
+    ins.categoria ? { icon:'🏷', lbl:'Categoría',               val: ins.categoria } : null,
+    ins.kitDate   ? { icon:'📅', lbl:'Retiro de kit',           val: fd(ins.kitDate) } : null,
+    ins.notas     ? { icon:'📝', lbl:'Notas',                   val: ins.notas } : null,
+  ].filter(Boolean);
+
+  document.getElementById('inscDetBody').innerHTML = `
+    ${rows.map(row => `
+      <div class="insc-detail-row">
+        <div class="insc-detail-icon">${row.icon}</div>
+        <div class="insc-detail-info"><div class="lbl">${row.lbl}</div><div class="val">${row.val}</div></div>
+      </div>`).join('')}
+    <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
+      ${ins.pagoURL
+        ? `<a class="insc-pdf-btn" href="${ins.pagoURL}" target="_blank">📄 Ver comprobante de pago</a>`
+        : `<span class="insc-pdf-btn" style="opacity:.5;cursor:default">📄 Sin comprobante</span>`}
+      ${ins.deslindeURL
+        ? `<a class="insc-pdf-btn" href="${ins.deslindeURL}" target="_blank">📋 Ver deslinde firmado</a>`
+        : `<span class="insc-pdf-btn" style="opacity:.5;cursor:default">📋 Sin deslinde</span>`}
+    </div>`;
+  oo('inscDetailOv');
+}
+
+async function deleteInsc(id) {
+  if (!confirm('¿Eliminar esta inscripción?')) return;
+  if (FB_READY) {
+    try {
+      const { doc: d2, deleteDoc: dd } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      await dd(d2(db, 'inscripciones', id));
+    } catch(e) { inscripciones = inscripciones.filter(i => i.id !== id); renderInscripciones(); }
+  } else {
+    inscripciones = inscripciones.filter(i => i.id !== id); renderInscripciones();
+  }
+  toast('🗑', 'Inscripción eliminada');
+}
+
+async function loadInscripcionesFromFirestore() {
+  try {
+    const { collection: col, query: q2, where, orderBy: ob, onSnapshot: ons } =
+      await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    const q = q2(col(db, 'inscripciones'), where('userId','==', currentUser.id), ob('createdAt','desc'));
+    ons(q, snap => {
+      inscripciones = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderInscripciones();
+    });
+  } catch(e) { console.error('Error cargando inscripciones:', e); }
+}
+
 // Exponer funciones al HTML (necesario con type="module")
 Object.assign(window, {
   openLogin, logout, loginWithGoogle,
@@ -2118,7 +2498,8 @@ Object.assign(window, {
   selMood, bigImg, coo, cm, oo,
   switchTab, handleGpxUpload,
   connectStrava, disconnectStrava, syncStrava,
-  openWkDetail, openLinkRace, linkWkToRace, deleteWorkout
+  openWkDetail, openLinkRace, linkWkToRace, deleteWorkout,
+  openAddInsc, inscRaceChanged, prevInscFile, saveInsc, openInscDetail, deleteInsc
 });
 
 init();
