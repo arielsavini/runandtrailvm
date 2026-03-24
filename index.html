@@ -355,6 +355,10 @@ textarea{resize:vertical;min-height:70px;}
 <!-- MAIN TABS -->
 <nav class="main-tabs">
   <button class="tab-btn active" id="tab-calendar" onclick="switchTab('calendar')">🗓 CALENDARIO</button>
+  <button class="tab-btn" id="tab-inscriptions" onclick="switchTab('inscriptions')">
+    📋 MIS INSCRIPCIONES
+    <span class="tbadge" id="inscBadge" style="display:none">0</span>
+  </button>
   <button class="tab-btn" id="tab-training" onclick="switchTab('training')">
     🏃 MIS ENTRENAMIENTOS
     <span class="tbadge" id="trainBadge" style="display:none">0</span>
@@ -498,6 +502,41 @@ textarea{resize:vertical;min-height:70px;}
   </div><!-- /trainContent -->
 </div>
 </div><!-- /panel-training -->
+
+<!-- TAB: MIS INSCRIPCIONES -->
+<div class="tab-panel" id="panel-inscriptions">
+<div class="train-wrap">
+
+  <!-- LOCK (no logueado) -->
+  <div id="inscLock" class="train-lock" style="display:none">
+    <div class="tli">🔐</div>
+    <h3>INICIÁ SESIÓN</h3>
+    <p>Tus inscripciones son privadas. Ingresá con tu cuenta de Google para gestionar tus registros.</p>
+    <button class="btn btn-accent" onclick="openLogin()">Ingresar con Google</button>
+  </div>
+
+  <!-- CONTENT (logueado) -->
+  <div id="inscContent" style="display:none">
+
+    <!-- TOOLBAR -->
+    <div class="train-toolbar">
+      <div class="train-toolbar-left">
+        <button class="btn btn-accent" onclick="openAddInscription()">➕ NUEVA INSCRIPCIÓN</button>
+      </div>
+    </div>
+
+    <!-- INSCRIPTIONS GRID -->
+    <div class="train-grid" id="inscGrid">
+      <div class="train-empty">
+        <div class="ei">📋</div>
+        <h3>SIN INSCRIPCIONES AÚN</h3>
+        <p>Registrate a una carrera y carga tu información de inscripción (pago, deslinde, etc.).</p>
+      </div>
+    </div>
+
+  </div><!-- /inscContent -->
+</div>
+</div><!-- /panel-inscriptions -->
 
 <!-- WORKOUT DETAIL MODAL -->
 <div class="overlay" id="wkDetailOv" onclick="coo(event,'wkDetailOv')">
@@ -659,6 +698,75 @@ textarea{resize:vertical;min-height:70px;}
   </div>
 </div>
 
+<!-- ADD/EDIT INSCRIPTION -->
+<div class="overlay" id="addInscOv" onclick="coo(event,'addInscOv')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="mh">
+      <div><div class="mt" id="aiTitle">NUEVA INSCRIPCIÓN</div><div class="ms">Agrega información de tu inscripción</div></div>
+      <button class="xbtn" onclick="cm('addInscOv')">×</button>
+    </div>
+    <div class="mb">
+      <div class="fr full" style="margin-bottom:18px">
+        <div class="fg2"><label>Selecciona una carrera *</label>
+          <select id="aiRace" onchange="updateAIRaceInfo()" style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:7px;font-size:13px;outline:none">
+            <option value="">-- Elegir una carrera --</option>
+          </select>
+        </div>
+      </div>
+      <div id="aiRaceInfo" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:18px;display:none">
+        <div style="font-size:13px;color:var(--text);margin-bottom:6px" id="aiRaceName"></div>
+        <div style="font-size:11px;color:var(--muted)" id="aiRaceDetails"></div>
+      </div>
+      <div class="fr full">
+        <div class="fg2">
+          <label>Número de inscripción / Dorsal</label>
+          <input id="aiNumber" type="text" placeholder="ej. 42">
+        </div>
+      </div>
+      <div class="fr">
+        <div class="fg2">
+          <label>Distancia inscripta</label>
+          <select id="aiDistance" style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:7px;font-size:13px;outline:none">
+            <option value="">-- Seleccionar --</option>
+          </select>
+        </div>
+        <div class="fg2">
+          <label>Categoría</label>
+          <input id="aiCategory" type="text" placeholder="ej. Master, Absoluto...">
+        </div>
+      </div>
+      <div class="fr full" style="margin-bottom:8px">
+        <div class="fg2">
+          <label>PDF del Pago / Comprobante</label>
+          <div class="photo-up" onclick="document.getElementById('aiPaymentInput').click()" style="border-style:dashed;min-height:100px;display:flex;flex-direction:column;align-items:center;justify-content:center">
+            <input type="file" id="aiPaymentInput" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="prevAIPayment(event)">
+            <div id="aiPaymentPrev"><div class="ui">📄</div><p>Click para subir PDF del pago</p></div>
+          </div>
+        </div>
+      </div>
+      <div class="fr full" style="margin-bottom:8px">
+        <div class="fg2">
+          <label>Deslinde / Término de Responsabilidad (PDF)</label>
+          <div class="photo-up" onclick="document.getElementById('aiDisclaimerInput').click()" style="border-style:dashed;min-height:100px;display:flex;flex-direction:column;align-items:center;justify-content:center">
+            <input type="file" id="aiDisclaimerInput" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="prevAIDisclaimer(event)">
+            <div id="aiDisclaimerPrev"><div class="ui">📋</div><p>Click para subir deslinde</p></div>
+          </div>
+        </div>
+      </div>
+      <div class="fr full">
+        <div class="fg2">
+          <label>Observaciones / Notas personales</label>
+          <textarea id="aiNotes" placeholder="Información adicional, consultas, etc..." style="min-height:80px"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-ghost" onclick="cm('addInscOv')">Cancelar</button>
+      <button class="btn btn-accent" id="aiSaveBtn" onclick="saveInscription()">GUARDAR INSCRIPCIÓN</button>
+    </div>
+  </div>
+</div>
+
 <!-- PARTICIPATION -->
 <div class="overlay" id="partOv" onclick="coo(event,'partOv')">
   <div class="modal" onclick="event.stopPropagation()">
@@ -752,6 +860,7 @@ let currentUser = null;
 let races = [], filtered = [];
 let selDists = [], curMood = null, editId = null, partRaceId = null;
 let partPhotos = [], racePhotoFile = null, racePhotoURL = null, geoC = null, wData = null;
+let inscriptions = [], aiPaymentFile = null, aiDisclaimerFile = null, aiEditId = null;
 
 const MS = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
 const TL = {trail:'Trail 🏔', road:'Road 🏙', ultra:'Ultra ⚡', mixed:'Mixto 🔀'};
@@ -782,6 +891,10 @@ async function init() {
       updateNav();
       renderCards();       // re-render para mostrar/ocultar botones admin
       if (activeTab === 'training') renderTrainingTab();
+      if (activeTab === 'inscriptions') {
+        if (currentUser && FB_READY) loadInscriptionsFromFirestore();
+        renderInscriptionsTab();
+      }
     });
     subscribeRaces();
   } else {
@@ -876,6 +989,45 @@ async function uploadPartPhoto(file, path) {
     };
     reader.readAsDataURL(file);
   });
+}
+
+/* ══════════════════════════════════════════
+   FIREBASE — INSCRIPTIONS
+══════════════════════════════════════════ */
+async function loadInscriptionsFromFirestore() {
+  if (!currentUser) return;
+  try {
+    const { collection: col, query: q2, where, orderBy: ob, onSnapshot: ons } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    const insQuery = q2(col(db, 'inscriptions'), where('userId','==', currentUser.id), ob('createdAt','desc'));
+    ons(insQuery, snap => {
+      inscriptions = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderInscriptionsTab();
+    });
+  } catch(e) {
+    console.error('Error loading inscriptions:', e);
+    inscriptions = [];
+  }
+}
+
+async function saveInscriptionToFirestore(insc) {
+  try {
+    const { doc: d2, setDoc: sd } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    const { id, ...data } = insc;
+    await sd(d2(db, 'inscriptions', id), data);
+  } catch(e) {
+    console.error('Error saving inscription:', e);
+    throw e;
+  }
+}
+
+async function deleteInscriptionFromFirestore(id) {
+  try {
+    const { doc: d2, deleteDoc: dd } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    await dd(d2(db, 'inscriptions', id));
+  } catch(e) {
+    console.error('Error deleting inscription:', e);
+    throw e;
+  }
 }
 
 /* ══════════════════════════════════════════
@@ -1403,6 +1555,306 @@ async function savePart() {
 }
 
 /* ══════════════════════════════════════════
+   INSCRIPTIONS
+══════════════════════════════════════════ */
+function renderInscriptionsTab() {
+  const lock    = document.getElementById('inscLock');
+  const content = document.getElementById('inscContent');
+  const grid    = document.getElementById('inscGrid');
+  const badge   = document.getElementById('inscBadge');
+
+  if (!currentUser) {
+    lock.style.display = 'block'; content.style.display = 'none'; return;
+  }
+  
+  lock.style.display = 'none'; content.style.display = 'block';
+
+  // Cargar inscriptions del usuario desde Firestore si está configurado
+  if (FB_READY && inscriptions.length === 0) {
+    loadInscriptionsFromFirestore();
+    return;
+  }
+
+  badge.textContent = inscriptions.length;
+  badge.style.display = inscriptions.length ? 'inline' : 'none';
+
+  if (!inscriptions.length) {
+    grid.innerHTML = `<div class="train-empty">
+      <div class="ei">📋</div>
+      <h3>SIN INSCRIPCIONES AÚN</h3>
+      <p>Registrate a una carrera y carga tu información de inscripción (pago, deslinde, etc.).</p>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = inscriptions.map(insc => buildInscriptionCard(insc)).join('');
+}
+
+function buildInscriptionCard(insc) {
+  const race = races.find(r => r.id === insc.raceId);
+  if (!race) return '';
+  const [y, mo, d] = race.date.split('-');
+  const dateStr = `${d}/${mo}/${y}`;
+  
+  return `<div class="wk-card" id="insccard-${insc.id}">
+    <div class="wk-map" onclick="openInscDetail('${insc.id}')" style="background:var(--surface2)">
+      <div class="wk-map-ph" style="font-size:48px">📋</div>
+      <div class="wk-type-badge">
+        <span class="bdg bdg-${race.type}">${TI[race.type] || '🏃'} ${TL[race.type] || race.type}</span>
+      </div>
+    </div>
+    <div class="wk-body">
+      <div class="wk-name">${race.name}</div>
+      <div class="wk-date">${dateStr}${race.provincia ? ' · ' + race.provincia : ''}</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:8px">
+        ${insc.inscriptionNumber ? '<div>🎫 Dorsal: <strong>' + insc.inscriptionNumber + '</strong></div>' : ''}
+        ${insc.distance ? '<div>📏 Distancia: <strong>' + insc.distance + '</strong></div>' : ''}
+      </div>
+    </div>
+    <div class="wk-foot">
+      <button class="wk-link-race" onclick="openInscDetail('${insc.id}')">👁 Ver detalles</button>
+      <button class="wk-del" onclick="deleteInscription('${insc.id}')">🗑</button>
+    </div>
+  </div>`;
+}
+
+function openAddInscription() {
+  if (!currentUser) { openLogin(); return; }
+  aiEditId = null;
+  aiPaymentFile = null;
+  aiDisclaimerFile = null;
+  
+  // Llenar selector de carreras
+  const raceSelect = document.getElementById('aiRace');
+  raceSelect.innerHTML = '<option value="">-- Elegir una carrera --</option>';
+  races.forEach(r => {
+    raceSelect.innerHTML += `<option value="${r.id}">${r.name} (${fd(r.date)})</option>`;
+  });
+  
+  // Limpiar formulario
+  document.getElementById('aiTitle').textContent = 'NUEVA INSCRIPCIÓN';
+  document.getElementById('aiNumber').value = '';
+  document.getElementById('aiDistance').value = '';
+  document.getElementById('aiCategory').value = '';
+  document.getElementById('aiNotes').value = '';
+  document.getElementById('aiPaymentPrev').innerHTML = '<div class="ui">📄</div><p>Click para subir PDF del pago</p>';
+  document.getElementById('aiDisclaimerPrev').innerHTML = '<div class="ui">📋</div><p>Click para subir deslinde</p>';
+  document.getElementById('aiRaceInfo').style.display = 'none';
+  
+  oo('addInscOv');
+}
+
+function updateAIRaceInfo() {
+  const raceId = document.getElementById('aiRace').value;
+  const race = races.find(r => r.id === raceId);
+  const raceInfo = document.getElementById('aiRaceInfo');
+  const distSelect = document.getElementById('aiDistance');
+  
+  if (!race) {
+    raceInfo.style.display = 'none';
+    distSelect.innerHTML = '<option value="">-- Seleccionar --</option>';
+    return;
+  }
+  
+  raceInfo.style.display = 'block';
+  document.getElementById('aiRaceName').textContent = race.name;
+  document.getElementById('aiRaceDetails').textContent = `${fd(race.date)}${race.provincia ? ' · ' + race.provincia : ''}${race.city ? ' · ' + race.city : ''}`;
+  
+  distSelect.innerHTML = '<option value="">-- Seleccionar --</option>';
+  (race.distances || []).forEach(d => {
+    distSelect.innerHTML += `<option value="${d}">${d}</option>`;
+  });
+}
+
+function prevAIPayment(e) {
+  const f = e.target.files[0]; if (!f) return;
+  aiPaymentFile = f;
+  const icon = f.type.includes('pdf') ? '📄' : '🖼';
+  document.getElementById('aiPaymentPrev').innerHTML = `<div style="text-align:center"><div class="ui">${icon}</div><p>${f.name}</p><p style="font-size:10px;color:var(--muted)">Listo para subir</p></div>`;
+}
+
+function prevAIDisclaimer(e) {
+  const f = e.target.files[0]; if (!f) return;
+  aiDisclaimerFile = f;
+  const icon = f.type.includes('pdf') ? '📋' : '🖼';
+  document.getElementById('aiDisclaimerPrev').innerHTML = `<div style="text-align:center"><div class="ui">${icon}</div><p>${f.name}</p><p style="font-size:10px;color:var(--muted)">Listo para subir</p></div>`;
+}
+
+async function saveInscription() {
+  const raceId = document.getElementById('aiRace').value;
+  if (!raceId) { toast('⚠️', 'Selecciona una carrera'); return; }
+  
+  const saveBtn = document.querySelector('#addInscOv .btn-accent');
+  saveBtn.innerHTML = '<span class="spin"></span> Guardando...'; 
+  saveBtn.disabled = true;
+
+  try {
+    let paymentURL = null, disclaimerURL = null;
+    
+    if (aiPaymentFile && FB_READY) {
+      toast('📤', 'Subiendo documentos...', 'ok');
+      const inscId = aiEditId || 'insc_' + Date.now();
+      const paymentPath = `inscriptions/${inscId}/payment_${Date.now()}`;
+      const result = await uploadPhoto(aiPaymentFile, paymentPath);
+      paymentURL = result.url;
+    }
+    
+    if (aiDisclaimerFile && FB_READY) {
+      const inscId = aiEditId || 'insc_' + Date.now();
+      const disclaimerPath = `inscriptions/${inscId}/disclaimer_${Date.now()}`;
+      const result = await uploadPhoto(aiDisclaimerFile, disclaimerPath);
+      disclaimerURL = result.url;
+    }
+
+    const insc = {
+      id: aiEditId || 'insc_' + Date.now(),
+      userId: currentUser.id,
+      userName: currentUser.name,
+      userPic: currentUser.picture || null,
+      raceId: raceId,
+      inscriptionNumber: document.getElementById('aiNumber').value.trim(),
+      distance: document.getElementById('aiDistance').value,
+      category: document.getElementById('aiCategory').value.trim(),
+      paymentURL: paymentURL || null,
+      disclaimerURL: disclaimerURL || null,
+      notes: document.getElementById('aiNotes').value.trim(),
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    if (FB_READY) {
+      await saveInscriptionToFirestore(insc);
+    } else {
+      const existIdx = inscriptions.findIndex(i => i.id === aiEditId);
+      if (existIdx >= 0) { inscriptions[existIdx] = insc; }
+      else { inscriptions.push(insc); }
+      renderInscriptionsTab();
+    }
+
+    cm('addInscOv');
+    toast('✅', aiEditId ? '¡Inscripción actualizada!' : '¡Inscripción guardada!', 'ok');
+  } catch(e) {
+    console.error(e);
+    toast('❌', 'Error al guardar la inscripción');
+  }
+
+  saveBtn.innerHTML = 'GUARDAR INSCRIPCIÓN';
+  saveBtn.disabled = false;
+}
+
+function openInscDetail(id) {
+  const insc = inscriptions.find(i => i.id === id);
+  if (!insc) return;
+  const race = races.find(r => r.id === insc.raceId);
+  if (!race) return;
+
+  const content = `
+    <div style="display:flex;gap:16px;margin-bottom:20px;flex-wrap:wrap">
+      <div style="flex:1;min-width:200px">
+        <div style="font-size:11px;color:var(--muted);font-family:'Space Mono',monospace;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px">CARRERA</div>
+        <div style="font-size:16px;font-weight:700">${race.name}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px">${fd(race.date)}${race.provincia ? ' · ' + race.provincia : ''}</div>
+      </div>
+      <div style="flex:1;min-width:200px">
+        <div style="font-size:11px;color:var(--muted);font-family:'Space Mono',monospace;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px">MI INSCRIPCIÓN</div>
+        <div style="font-size:13px">
+          ${insc.inscriptionNumber ? `<div>🎫 <strong>Dorsal:</strong> ${insc.inscriptionNumber}</div>` : ''}
+          ${insc.distance ? `<div>📏 <strong>Distancia:</strong> ${insc.distance}</div>` : ''}
+          ${insc.category ? `<div>🏷 <strong>Categoría:</strong> ${insc.category}</div>` : ''}
+        </div>
+      </div>
+    </div>
+    ${insc.paymentURL || insc.disclaimerURL ? `
+      <div style="border-top:1px solid var(--border);padding-top:16px;margin-bottom:16px">
+        <div style="font-size:11px;color:var(--muted);font-family:'Space Mono',monospace;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:12px">DOCUMENTOS</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          ${insc.paymentURL ? `<a href="${insc.paymentURL}" target="_blank" class="act-btn">📄 Ver pago</a>` : ''}
+          ${insc.disclaimerURL ? `<a href="${insc.disclaimerURL}" target="_blank" class="act-btn">📋 Ver deslinde</a>` : ''}
+        </div>
+      </div>
+    ` : ''}
+    ${insc.notes ? `
+      <div style="border-top:1px solid var(--border);padding-top:16px;margin-bottom:16px">
+        <div style="font-size:11px;color:var(--muted);font-family:'Space Mono',monospace;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px">NOTAS PERSONALES</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.6;white-space:pre-wrap">${insc.notes}</div>
+      </div>
+    ` : ''}
+    <div style="border-top:1px solid var(--border);padding-top:16px;margin-top:16px">
+      <div style="font-size:10px;color:var(--muted);font-family:'Space Mono',monospace">Guardado: ${insc.updatedAt ? insc.updatedAt.split('T')[0] : ''}</div>
+    </div>
+  `;
+
+  const modal = document.querySelector('#detailOv .modal');
+  document.getElementById('dName').textContent = 'MI INSCRIPCIÓN';
+  document.getElementById('dSub').textContent = race.name;
+  document.getElementById('dBody').innerHTML = content + `
+    <div style="margin-top:24px;display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn btn-accent" onclick="editInscription('${insc.id}')">✏️ EDITAR</button>
+      <button class="btn btn-ghost" onclick="cm('detailOv')">Cerrar</button>
+    </div>
+  `;
+  oo('detailOv');
+}
+
+function editInscription(id) {
+  cm('detailOv');
+  const insc = inscriptions.find(i => i.id === id);
+  if (!insc) return;
+  
+  aiEditId = id;
+  aiPaymentFile = null;
+  aiDisclaimerFile = null;
+  
+  // Llenar selector de carreras
+  const raceSelect = document.getElementById('aiRace');
+  raceSelect.innerHTML = '<option value="">-- Elegir una carrera --</option>';
+  races.forEach(r => {
+    raceSelect.innerHTML += `<option value="${r.id}" ${r.id === insc.raceId ? 'selected' : ''}>${r.name} (${fd(r.date)})</option>`;
+  });
+  
+  document.getElementById('aiTitle').textContent = 'EDITAR INSCRIPCIÓN';
+  document.getElementById('aiNumber').value = insc.inscriptionNumber || '';
+  document.getElementById('aiCategory').value = insc.category || '';
+  document.getElementById('aiNotes').value = insc.notes || '';
+  
+  // Actualizar distancias disponibles
+  updateAIRaceInfo();
+  document.getElementById('aiDistance').value = insc.distance || '';
+  
+  // Mostrar archivos existentes
+  if (insc.paymentURL) {
+    document.getElementById('aiPaymentPrev').innerHTML = `<div style="text-align:center"><div class="ui">📄</div><p>Pago actual</p><p style="font-size:11px;color:var(--accent);"><a href="${insc.paymentURL}" target="_blank">Ver archivo</a></p><p style="font-size:10px;color:var(--muted);margin-top:6px">Selecciona uno nuevo para reemplazar</p></div>`;
+  }
+  if (insc.disclaimerURL) {
+    document.getElementById('aiDisclaimerPrev').innerHTML = `<div style="text-align:center"><div class="ui">📋</div><p>Deslinde actual</p><p style="font-size:11px;color:var(--accent);"><a href="${insc.disclaimerURL}" target="_blank">Ver archivo</a></p><p style="font-size:10px;color:var(--muted);margin-top:6px">Selecciona uno nuevo para reemplazar</p></div>`;
+  }
+  
+  oo('addInscOv');
+}
+
+async function deleteInscription(id) {
+  const insc = inscriptions.find(i => i.id === id);
+  if (!insc) return;
+  const race = races.find(r => r.id === insc.raceId);
+  const raceName = race ? race.name : 'Inscripción';
+  
+  if (!confirm(`¿Eliminar inscripción a "${raceName}"? Esta acción no se puede deshacer.`)) return;
+  
+  try {
+    if (FB_READY) {
+      await deleteInscriptionFromFirestore(id);
+    } else {
+      inscriptions = inscriptions.filter(i => i.id !== id);
+      renderInscriptionsTab();
+    }
+    toast('🗑', 'Inscripción eliminada');
+  } catch(e) {
+    console.error(e);
+    toast('❌', 'Error al eliminar la inscripción');
+  }
+}
+
+/* ══════════════════════════════════════════
    PAGE LOADER
 ══════════════════════════════════════════ */
 function showPageLoader(show) {
@@ -1470,6 +1922,7 @@ function switchTab(tab) {
   document.getElementById('tab-' + tab).classList.add('active');
   document.getElementById('panel-' + tab).classList.add('active');
   if (tab === 'training') renderTrainingTab();
+  if (tab === 'inscriptions') renderInscriptionsTab();
 }
 
 /* ══════════════════════════════════════════
@@ -1523,11 +1976,11 @@ function renderTrainingTab() {
   if (params.get('strava_code') || new URLSearchParams(window.location.search).get('code') && sessionStorage.getItem('strava_pending')) {
     handleStravaCallback();
   }
-}
 
-function loadLocalWorkouts() {
-  try { return JSON.parse(localStorage.getItem('tg_workouts_' + currentUser?.id) || '[]'); } catch(e) { return []; }
-}
+    // Load inscriptions if logged in and FB ready
+    if (currentUser && FB_READY) {
+      loadInscriptionsFromFirestore();
+    }
 function saveLocalWorkouts() {
   try { localStorage.setItem('tg_workouts_' + currentUser?.id, JSON.stringify(workouts)); } catch(e) {}
 }
@@ -2118,7 +2571,9 @@ Object.assign(window, {
   selMood, bigImg, coo, cm, oo,
   switchTab, handleGpxUpload,
   connectStrava, disconnectStrava, syncStrava,
-  openWkDetail, openLinkRace, linkWkToRace, deleteWorkout
+  openWkDetail, openLinkRace, linkWkToRace, deleteWorkout,
+  openAddInscription, updateAIRaceInfo, prevAIPayment, prevAIDisclaimer,
+  saveInscription, openInscDetail, editInscription, deleteInscription
 });
 
 init();
