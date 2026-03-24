@@ -355,10 +355,6 @@ textarea{resize:vertical;min-height:70px;}
 <!-- MAIN TABS -->
 <nav class="main-tabs">
   <button class="tab-btn active" id="tab-calendar" onclick="switchTab('calendar')">🗓 CALENDARIO</button>
-  <button class="tab-btn" id="tab-inscriptions" onclick="switchTab('inscriptions')">
-    📋 MIS INSCRIPCIONES
-    <span class="tbadge" id="inscBadge" style="display:none">0</span>
-  </button>
   <button class="tab-btn" id="tab-training" onclick="switchTab('training')">
     🏃 MIS ENTRENAMIENTOS
     <span class="tbadge" id="trainBadge" style="display:none">0</span>
@@ -502,41 +498,6 @@ textarea{resize:vertical;min-height:70px;}
   </div><!-- /trainContent -->
 </div>
 </div><!-- /panel-training -->
-
-<!-- TAB: MIS INSCRIPCIONES -->
-<div class="tab-panel" id="panel-inscriptions">
-<div class="train-wrap">
-
-  <!-- LOCK (no logueado) -->
-  <div id="inscLock" class="train-lock" style="display:none">
-    <div class="tli">🔐</div>
-    <h3>INICIÁ SESIÓN</h3>
-    <p>Tus inscripciones son privadas. Ingresá con tu cuenta de Google para gestionar tus registros.</p>
-    <button class="btn btn-accent" onclick="openLogin()">Ingresar con Google</button>
-  </div>
-
-  <!-- CONTENT (logueado) -->
-  <div id="inscContent" style="display:none">
-
-    <!-- TOOLBAR -->
-    <div class="train-toolbar">
-      <div class="train-toolbar-left">
-        <button class="btn btn-accent" onclick="openAddInscription()">➕ NUEVA INSCRIPCIÓN</button>
-      </div>
-    </div>
-
-    <!-- INSCRIPTIONS GRID -->
-    <div class="train-grid" id="inscGrid">
-      <div class="train-empty">
-        <div class="ei">📋</div>
-        <h3>SIN INSCRIPCIONES AÚN</h3>
-        <p>Registrate a una carrera y carga tu información de inscripción (pago, deslinde, etc.).</p>
-      </div>
-    </div>
-
-  </div><!-- /inscContent -->
-</div>
-</div><!-- /panel-inscriptions -->
 
 <!-- WORKOUT DETAIL MODAL -->
 <div class="overlay" id="wkDetailOv" onclick="coo(event,'wkDetailOv')">
@@ -698,75 +659,6 @@ textarea{resize:vertical;min-height:70px;}
   </div>
 </div>
 
-<!-- ADD/EDIT INSCRIPTION -->
-<div class="overlay" id="addInscOv" onclick="coo(event,'addInscOv')">
-  <div class="modal" onclick="event.stopPropagation()">
-    <div class="mh">
-      <div><div class="mt" id="aiTitle">NUEVA INSCRIPCIÓN</div><div class="ms">Agrega información de tu inscripción</div></div>
-      <button class="xbtn" onclick="cm('addInscOv')">×</button>
-    </div>
-    <div class="mb">
-      <div class="fr full" style="margin-bottom:18px">
-        <div class="fg2"><label>Selecciona una carrera *</label>
-          <select id="aiRace" onchange="updateAIRaceInfo()" style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:7px;font-size:13px;outline:none">
-            <option value="">-- Elegir una carrera --</option>
-          </select>
-        </div>
-      </div>
-      <div id="aiRaceInfo" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:18px;display:none">
-        <div style="font-size:13px;color:var(--text);margin-bottom:6px" id="aiRaceName"></div>
-        <div style="font-size:11px;color:var(--muted)" id="aiRaceDetails"></div>
-      </div>
-      <div class="fr full">
-        <div class="fg2">
-          <label>Número de inscripción / Dorsal</label>
-          <input id="aiNumber" type="text" placeholder="ej. 42">
-        </div>
-      </div>
-      <div class="fr">
-        <div class="fg2">
-          <label>Distancia inscripta</label>
-          <select id="aiDistance" style="width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:7px;font-size:13px;outline:none">
-            <option value="">-- Seleccionar --</option>
-          </select>
-        </div>
-        <div class="fg2">
-          <label>Categoría</label>
-          <input id="aiCategory" type="text" placeholder="ej. Master, Absoluto...">
-        </div>
-      </div>
-      <div class="fr full" style="margin-bottom:8px">
-        <div class="fg2">
-          <label>PDF del Pago / Comprobante</label>
-          <div class="photo-up" onclick="document.getElementById('aiPaymentInput').click()" style="border-style:dashed;min-height:100px;display:flex;flex-direction:column;align-items:center;justify-content:center">
-            <input type="file" id="aiPaymentInput" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="prevAIPayment(event)">
-            <div id="aiPaymentPrev"><div class="ui">📄</div><p>Click para subir PDF del pago</p></div>
-          </div>
-        </div>
-      </div>
-      <div class="fr full" style="margin-bottom:8px">
-        <div class="fg2">
-          <label>Deslinde / Término de Responsabilidad (PDF)</label>
-          <div class="photo-up" onclick="document.getElementById('aiDisclaimerInput').click()" style="border-style:dashed;min-height:100px;display:flex;flex-direction:column;align-items:center;justify-content:center">
-            <input type="file" id="aiDisclaimerInput" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="prevAIDisclaimer(event)">
-            <div id="aiDisclaimerPrev"><div class="ui">📋</div><p>Click para subir deslinde</p></div>
-          </div>
-        </div>
-      </div>
-      <div class="fr full">
-        <div class="fg2">
-          <label>Observaciones / Notas personales</label>
-          <textarea id="aiNotes" placeholder="Información adicional, consultas, etc..." style="min-height:80px"></textarea>
-        </div>
-      </div>
-    </div>
-    <div class="mf">
-      <button class="btn btn-ghost" onclick="cm('addInscOv')">Cancelar</button>
-      <button class="btn btn-accent" id="aiSaveBtn" onclick="saveInscription()">GUARDAR INSCRIPCIÓN</button>
-    </div>
-  </div>
-</div>
-
 <!-- PARTICIPATION -->
 <div class="overlay" id="partOv" onclick="coo(event,'partOv')">
   <div class="modal" onclick="event.stopPropagation()">
@@ -860,7 +752,6 @@ let currentUser = null;
 let races = [], filtered = [];
 let selDists = [], curMood = null, editId = null, partRaceId = null;
 let partPhotos = [], racePhotoFile = null, racePhotoURL = null, geoC = null, wData = null;
-let inscriptions = [], aiPaymentFile = null, aiDisclaimerFile = null, aiEditId = null;
 
 const MS = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
 const TL = {trail:'Trail 🏔', road:'Road 🏙', ultra:'Ultra ⚡', mixed:'Mixto 🔀'};
@@ -891,10 +782,6 @@ async function init() {
       updateNav();
       renderCards();       // re-render para mostrar/ocultar botones admin
       if (activeTab === 'training') renderTrainingTab();
-      if (activeTab === 'inscriptions') {
-        if (currentUser && FB_READY) loadInscriptionsFromFirestore();
-        renderInscriptionsTab();
-      }
     });
     subscribeRaces();
   } else {
@@ -989,45 +876,6 @@ async function uploadPartPhoto(file, path) {
     };
     reader.readAsDataURL(file);
   });
-}
-
-/* ══════════════════════════════════════════
-   FIREBASE — INSCRIPTIONS
-══════════════════════════════════════════ */
-async function loadInscriptionsFromFirestore() {
-  if (!currentUser) return;
-  try {
-    const { collection: col, query: q2, where, orderBy: ob, onSnapshot: ons } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-    const insQuery = q2(col(db, 'inscriptions'), where('userId','==', currentUser.id), ob('createdAt','desc'));
-    ons(insQuery, snap => {
-      inscriptions = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      renderInscriptionsTab();
-    });
-  } catch(e) {
-    console.error('Error loading inscriptions:', e);
-    inscriptions = [];
-  }
-}
-
-async function saveInscriptionToFirestore(insc) {
-  try {
-    const { doc: d2, setDoc: sd } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-    const { id, ...data } = insc;
-    await sd(d2(db, 'inscriptions', id), data);
-  } catch(e) {
-    console.error('Error saving inscription:', e);
-    throw e;
-  }
-}
-
-async function deleteInscriptionFromFirestore(id) {
-  try {
-    const { doc: d2, deleteDoc: dd } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-    await dd(d2(db, 'inscriptions', id));
-  } catch(e) {
-    console.error('Error deleting inscription:', e);
-    throw e;
-  }
 }
 
 /* ══════════════════════════════════════════
@@ -1555,19 +1403,6 @@ async function savePart() {
 }
 
 /* ══════════════════════════════════════════
-   INSCRIPTIONS (Placeholder - funcionalidad agregada en versión siguiente)
-══════════════════════════════════════════ */
-function renderInscriptionsTab() {
-  const lock = document.getElementById('inscLock'), content = document.getElementById('inscContent');
-  if (!currentUser) { lock.style.display = 'block'; content.style.display = 'none'; return; }
-  lock.style.display = 'none'; content.style.display = 'block';
-  const badge = document.getElementById('inscBadge');
-  badge.textContent = 0;
-  badge.style.display = 'none';
-  document.getElementById('inscGrid').innerHTML = `<div class="train-empty"><div class="ei">📋</div><h3>SIN INSCRIPCIONES AÚN</h3><p>Registrate a una carrera y carga tu información de inscripción (pago, deslinde, etc.).</p></div>`;
-}
-
-/* ══════════════════════════════════════════
    PAGE LOADER
 ══════════════════════════════════════════ */
 function showPageLoader(show) {
@@ -1635,7 +1470,6 @@ function switchTab(tab) {
   document.getElementById('tab-' + tab).classList.add('active');
   document.getElementById('panel-' + tab).classList.add('active');
   if (tab === 'training') renderTrainingTab();
-  if (tab === 'inscriptions') renderInscriptionsTab();
 }
 
 /* ══════════════════════════════════════════
@@ -1689,17 +1523,11 @@ function renderTrainingTab() {
   if (params.get('strava_code') || new URLSearchParams(window.location.search).get('code') && sessionStorage.getItem('strava_pending')) {
     handleStravaCallback();
   }
-
-  // Load inscriptions if logged in and FB ready
-  if (currentUser && FB_READY) {
-    loadInscriptionsFromFirestore();
-  }
 }
 
 function loadLocalWorkouts() {
   try { return JSON.parse(localStorage.getItem('tg_workouts_' + currentUser?.id) || '[]'); } catch(e) { return []; }
 }
-
 function saveLocalWorkouts() {
   try { localStorage.setItem('tg_workouts_' + currentUser?.id, JSON.stringify(workouts)); } catch(e) {}
 }
@@ -2290,9 +2118,7 @@ Object.assign(window, {
   selMood, bigImg, coo, cm, oo,
   switchTab, handleGpxUpload,
   connectStrava, disconnectStrava, syncStrava,
-  openWkDetail, openLinkRace, linkWkToRace, deleteWorkout,
-  openAddInscription, updateAIRaceInfo, prevAIPayment, prevAIDisclaimer,
-  saveInscription, openInscDetail, editInscription, deleteInscription
+  openWkDetail, openLinkRace, linkWkToRace, deleteWorkout
 });
 
 init();
