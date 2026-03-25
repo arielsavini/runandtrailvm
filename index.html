@@ -1652,7 +1652,6 @@ function renderTrainingTab() {
   // Cargar workouts del usuario desde Firestore si está configurado
   if (FB_READY) {
     loadWorkoutsFromFirestore();
-    loadInscripcionesFromFirestore();
   } else {
     // Demo workouts locales
     workouts = loadLocalWorkouts();
@@ -2272,7 +2271,11 @@ function renderInscripcionesTab() {
     lock.style.display = 'block'; content.style.display = 'none'; return;
   }
   lock.style.display = 'none'; content.style.display = 'block';
-  renderInscripciones();
+  if (FB_READY) {
+    loadInscripcionesFromFirestore();
+  } else {
+    renderInscripciones();
+  }
 }
 
 function renderInscripciones() {
