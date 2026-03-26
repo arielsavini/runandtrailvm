@@ -1641,18 +1641,28 @@ let wkDetailMapInst = null;
 /* ══════════════════════════════════════════
    TRAINING TAB RENDER
 ══════════════════════════════════════════ */
+let _workoutsListenerActive = false;
+
 function renderTrainingTab() {
   const lock    = document.getElementById('trainLock');
   const content = document.getElementById('trainContent');
 
+  console.log('[tab training] currentUser:', currentUser?.id || 'NULL', '| FB_READY:', FB_READY, '| listener:', _workoutsListenerActive);
+
   if (!currentUser) {
-    lock.style.display = 'block'; content.style.display = 'none'; return;
+    lock.style.display = 'block'; content.style.display = 'none';
+    console.warn('[tab training] NO HAY USUARIO LOGUEADO — mostrando lock screen');
+    return;
   }
   lock.style.display = 'none'; content.style.display = 'block';
 
-  // Cargar workouts del usuario desde Firestore si está configurado
-  if (FB_READY) {
+  // Cargar workouts solo la primera vez (evitar listeners duplicados)
+  if (FB_READY && !_workoutsListenerActive) {
+    _workoutsListenerActive = true;
     loadWorkoutsFromFirestore();
+  } else if (FB_READY) {
+    // Ya hay listener activo, solo re-render con datos actuales
+    renderWorkouts();
   } else {
     // Demo workouts locales
     workouts = loadLocalWorkouts();
@@ -1684,14 +1694,36 @@ function saveLocalWorkouts() {
 
 async function loadWorkoutsFromFirestore() {
   try {
-    const { collection: col, query: q2, where, onSnapshot: ons } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    const { collection: col, query: q2, where, getDocs, onSnapshot: ons } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
     const wkQuery = q2(col(db, 'workouts'), where('userId','==', currentUser.id));
-    ons(wkQuery, snap => {
-      workouts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-      workouts.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
-      renderWorkouts();
-    });
+
+    // Fetch inmediato para mostrar datos enseguida
+    const snap = await getDocs(wkQuery);
+    workouts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    workouts.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+    renderWorkouts();
+
+    if (snap.empty) {
+      console.log('[workouts] Firestore query returned 0 docs. userId:', currentUser.id);
+    } else {
+      console.log('[workouts] Loaded', snap.docs.length, 'workouts from Firestore');
+    }
+
+    // Listener en tiempo real para actualizaciones (sync posterior)
+    ons(wkQuery,
+      s => {
+        workouts = s.docs.map(d => ({ id: d.id, ...d.data() }));
+        workouts.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+        renderWorkouts();
+      },
+      err => {
+        console.warn('[workouts] Firestore listener error:', err.code, err.message);
+        toast('⚠️', 'Error Firestore: ' + err.code);
+      }
+    );
   } catch(e) {
+    console.error('[workouts] loadWorkoutsFromFirestore error:', e.code || e.message);
+    toast('⚠️', 'Error cargando entrenamientos: ' + (e.code || e.message));
     workouts = loadLocalWorkouts();
     renderWorkouts();
   }
@@ -2175,10 +2207,12 @@ async function syncStrava() {
         linkedRaceId:  null
       };
       if (FB_READY) { await saveWorkoutToFirestore(wk); }
-      else { workouts.unshift(wk); }
+      workouts.unshift(wk);
       newCount++;
     }
-    if (!FB_READY) { saveLocalWorkouts(); renderWorkouts(); }
+    workouts.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+    if (!FB_READY) saveLocalWorkouts();
+    renderWorkouts();
     toast('✅', `${newCount} actividades nuevas de Strava`, 'ok');
   } catch(e) {
     toast('⚠️', 'Error al sincronizar Strava');
