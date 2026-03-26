@@ -362,10 +362,38 @@ textarea{resize:vertical;min-height:70px;}
 .insc-detail-info .val{font-size:14px;color:var(--text);}
 .insc-pdf-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;font-size:12px;color:var(--muted);transition:all .15s;cursor:pointer;text-decoration:none;}
 .insc-pdf-btn:hover{border-color:var(--accent);color:var(--accent);}
+.insc-btn-sec{background:var(--surface2);border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:8px 10px;font-size:12px;cursor:pointer;transition:all .15s;}
+.insc-btn-sec:hover{border-color:var(--accent);color:var(--accent);}
 @media(max-width:640px){
   .insc-wrap{padding:16px 16px 56px;}
   .insc-grid{grid-template-columns:1fr;}
 }
+
+/* WORKOUT FILTERS */
+.wk-filter-bar{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 18px;display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-bottom:18px;}
+.wf-group{display:flex;flex-direction:column;gap:4px;}
+.wf-label{font-size:9px;font-family:'Space Mono',monospace;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;}
+.wf-sel{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:7px 10px;border-radius:6px;font-size:12px;font-family:'DM Sans',sans-serif;outline:none;min-width:120px;cursor:pointer;}
+.wf-sel:focus{border-color:var(--accent);}
+.wf-sel option{background:#085c24;}
+.wf-btn{padding:7px 14px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;}
+.wf-apply{background:var(--accent);color:#0c0c0a;border:none;}
+.wf-apply:hover{background:#d4eb2e;}
+.wf-clr{background:transparent;border:1px solid var(--border);color:var(--muted);}
+.wf-clr:hover{border-color:var(--muted);color:var(--text);}
+.wf-count{font-size:11px;color:var(--muted);font-family:'Space Mono',monospace;white-space:nowrap;}
+
+/* MONTHLY STATS CHART */
+.monthly-chart-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px 20px;margin-bottom:20px;}
+.monthly-chart-title{font-size:10px;font-family:'Space Mono',monospace;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.monthly-chart-title::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--accent);}
+#monthlyChartCanvas{display:block;width:100%!important;height:140px!important;}
+
+/* LOAD MORE */
+.wk-loadmore{text-align:center;padding:20px 0;display:none;}
+.wk-loadmore.visible{display:block;}
+.btn-loadmore{padding:10px 32px;background:var(--surface);border:1px solid var(--border);color:var(--muted);border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;}
+.btn-loadmore:hover{border-color:var(--accent);color:var(--accent);}
 
 </style>
 </head>
@@ -567,6 +595,45 @@ textarea{resize:vertical;min-height:70px;}
       <div class="tscard"><div class="tsl">Desnivel +</div><div class="tsv" id="tsSumElev">0</div><div class="tsu">m</div></div>
     </div>
 
+    <!-- MONTHLY STATS CHART -->
+    <div class="monthly-chart-wrap" id="monthlyChartWrap" style="display:none">
+      <div class="monthly-chart-title">Km por mes (últimos 12 meses)</div>
+      <canvas id="monthlyChartCanvas"></canvas>
+    </div>
+
+    <!-- WORKOUT FILTERS -->
+    <div class="wk-filter-bar">
+      <div class="wf-group">
+        <div class="wf-label">Tipo</div>
+        <select id="wfType" class="wf-sel">
+          <option value="">Todos</option>
+          <option value="run">🏃 Running</option>
+          <option value="trail">🏔 Trail Run</option>
+          <option value="cycling">🚴 Ciclismo</option>
+          <option value="swimming">🏊 Natación</option>
+        </select>
+      </div>
+      <div class="wf-group">
+        <div class="wf-label">Año</div>
+        <select id="wfYear" class="wf-sel"><option value="">Todos</option></select>
+      </div>
+      <div class="wf-group">
+        <div class="wf-label">Mes</div>
+        <select id="wfMonth" class="wf-sel">
+          <option value="">Todos</option>
+          <option value="01">Enero</option><option value="02">Febrero</option><option value="03">Marzo</option>
+          <option value="04">Abril</option><option value="05">Mayo</option><option value="06">Junio</option>
+          <option value="07">Julio</option><option value="08">Agosto</option><option value="09">Septiembre</option>
+          <option value="10">Octubre</option><option value="11">Noviembre</option><option value="12">Diciembre</option>
+        </select>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="wf-btn wf-apply" onclick="applyWkFilters()">Filtrar</button>
+        <button class="wf-btn wf-clr" onclick="clearWkFilters()">Limpiar</button>
+      </div>
+      <div class="wf-count" id="wkFilterCount"></div>
+    </div>
+
     <!-- WORKOUT CARDS -->
     <div class="train-grid" id="trainGrid">
       <div class="train-empty">
@@ -574,6 +641,12 @@ textarea{resize:vertical;min-height:70px;}
         <h3>SIN ENTRENAMIENTOS AÚN</h3>
         <p>Subí un archivo GPX o FIT desde Garmin Connect, o conectá tu cuenta de Strava para sincronizar automáticamente.</p>
       </div>
+    </div>
+
+    <!-- LOAD MORE -->
+    <div class="wk-loadmore" id="wkLoadMore">
+      <button class="btn-loadmore" onclick="loadMoreWorkouts()">Cargar más actividades</button>
+      <div style="font-size:11px;color:var(--muted);margin-top:8px;font-family:'Space Mono',monospace" id="wkLoadMoreInfo"></div>
     </div>
 
   </div><!-- /trainContent -->
@@ -1654,6 +1727,9 @@ let workouts        = [];   // array de entrenamientos del usuario actual
 let stravaToken     = null;
 let linkingWkId     = null;
 let wkDetailMapInst = null;
+let workoutFilters  = { type: '', year: '', month: '' };
+const WK_PAGE_SIZE  = 20;
+let wkCurrentPage   = 0;
 
 /* ══════════════════════════════════════════
    TRAINING TAB RENDER
@@ -1782,29 +1858,111 @@ function renderWorkouts() {
   const grid  = document.getElementById('trainGrid');
   const badge = document.getElementById('trainBadge');
 
-  // update badge
+  // Populate year filter options dynamically
+  populateWkYearFilter();
+
+  // Update badge (total unfiltered)
   badge.textContent = workouts.length;
   badge.style.display = workouts.length ? 'inline' : 'none';
 
-  // update summary
+  // Update summary stats (always all workouts)
   updateTrainSummary();
 
-  if (!workouts.length) {
-    grid.innerHTML = `<div class="train-empty">
-      <div class="ei">🏃</div>
-      <h3>SIN ENTRENAMIENTOS AÚN</h3>
-      <p>Subí un archivo <strong>GPX</strong> o <strong>FIT</strong> desde Garmin Connect,<br>o conectá tu cuenta de <strong>Strava</strong> para sincronizar.</p>
-    </div>`;
+  // Monthly chart
+  renderMonthlyStats();
+
+  // Apply filters
+  const filtered = getFilteredWorkouts();
+  const toShow   = filtered.slice(0, (wkCurrentPage + 1) * WK_PAGE_SIZE);
+
+  // Update filter count label
+  const countEl = document.getElementById('wkFilterCount');
+  if (countEl) {
+    const hasFilter = workoutFilters.type || workoutFilters.year || workoutFilters.month;
+    countEl.textContent = hasFilter ? `${filtered.length} de ${workouts.length}` : `${workouts.length} actividades`;
+  }
+
+  // Empty states
+  if (!filtered.length) {
+    grid.innerHTML = workouts.length
+      ? `<div class="train-empty"><div class="ei">🔍</div><h3>SIN RESULTADOS</h3><p>No hay actividades que coincidan con los filtros seleccionados.</p></div>`
+      : `<div class="train-empty"><div class="ei">🏃</div><h3>SIN ENTRENAMIENTOS AÚN</h3><p>Subí un archivo <strong>GPX</strong> o <strong>FIT</strong> desde Garmin Connect,<br>o conectá tu cuenta de <strong>Strava</strong> para sincronizar.</p></div>`;
+    const lm = document.getElementById('wkLoadMore');
+    if (lm) lm.classList.remove('visible');
     return;
   }
 
-  grid.innerHTML = workouts.map(w => buildWkCard(w)).join('');
-
-  // Destruir instancias viejas de Leaflet antes de crear nuevas
+  // Destroy old Leaflet instances before rebuilding DOM
   Object.keys(miniMaps).forEach(k => { try { miniMaps[k].remove(); } catch(e) {} delete miniMaps[k]; });
 
-  // Render mini-maps after DOM update
-  workouts.forEach(w => { if (w.track && w.track.length) renderMiniMap(w.id, w.track); });
+  grid.innerHTML = toShow.map(w => buildWkCard(w)).join('');
+  toShow.forEach(w => { if (w.track && w.track.length) renderMiniMap(w.id, w.track); });
+
+  // Load more button
+  const lm = document.getElementById('wkLoadMore');
+  if (lm) {
+    const remaining = filtered.length - toShow.length;
+    if (remaining > 0) {
+      lm.classList.add('visible');
+      const info = document.getElementById('wkLoadMoreInfo');
+      if (info) info.textContent = `Mostrando ${toShow.length} de ${filtered.length} actividades`;
+    } else {
+      lm.classList.remove('visible');
+    }
+  }
+}
+
+function getFilteredWorkouts() {
+  return workouts.filter(w => {
+    if (workoutFilters.type  && w.type !== workoutFilters.type) return false;
+    if (workoutFilters.year  && !(w.date || '').startsWith(workoutFilters.year)) return false;
+    if (workoutFilters.month && (w.date || '').substring(5, 7) !== workoutFilters.month) return false;
+    return true;
+  });
+}
+
+function populateWkYearFilter() {
+  const sel = document.getElementById('wfYear');
+  if (!sel) return;
+  const currentVal = sel.value;
+  const years = [...new Set(workouts.map(w => (w.date || '').substring(0, 4)).filter(Boolean))].sort((a, b) => b - a);
+  sel.innerHTML = '<option value="">Todos</option>' + years.map(y => `<option value="${y}"${y === currentVal ? ' selected' : ''}>${y}</option>`).join('');
+}
+
+function applyWkFilters() {
+  workoutFilters.type  = document.getElementById('wfType').value;
+  workoutFilters.year  = document.getElementById('wfYear').value;
+  workoutFilters.month = document.getElementById('wfMonth').value;
+  wkCurrentPage = 0;
+  renderWorkouts();
+}
+
+function clearWkFilters() {
+  workoutFilters = { type: '', year: '', month: '' };
+  ['wfType','wfYear','wfMonth'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+  wkCurrentPage = 0;
+  renderWorkouts();
+}
+
+function loadMoreWorkouts() {
+  wkCurrentPage++;
+  // Append new cards without destroying existing ones
+  const filtered = getFilteredWorkouts();
+  const start    = wkCurrentPage * WK_PAGE_SIZE;
+  const batch    = filtered.slice(start, start + WK_PAGE_SIZE);
+  const grid     = document.getElementById('trainGrid');
+  if (grid && batch.length) {
+    grid.insertAdjacentHTML('beforeend', batch.map(w => buildWkCard(w)).join(''));
+    batch.forEach(w => { if (w.track && w.track.length) renderMiniMap(w.id, w.track); });
+  }
+  const lm   = document.getElementById('wkLoadMore');
+  const info = document.getElementById('wkLoadMoreInfo');
+  const shown = Math.min((wkCurrentPage + 1) * WK_PAGE_SIZE, filtered.length);
+  if (shown >= filtered.length) {
+    if (lm) lm.classList.remove('visible');
+  } else {
+    if (info) info.textContent = `Mostrando ${shown} de ${filtered.length} actividades`;
+  }
 }
 
 function buildWkCard(w) {
@@ -1852,6 +2010,86 @@ function updateTrainSummary() {
   document.getElementById('tsSumDist').textContent = totalDist.toFixed(1);
   document.getElementById('tsSumTime').textContent = totalTime.toFixed(1);
   document.getElementById('tsSumElev').textContent = Math.round(totalElev);
+}
+
+/* ══════════════════════════════════════════
+   MONTHLY KM CHART
+══════════════════════════════════════════ */
+function renderMonthlyStats() {
+  const wrap = document.getElementById('monthlyChartWrap');
+  if (!wrap) return;
+  if (!workouts.length) { wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+
+  // Build last 12 months
+  const now = new Date();
+  const months = [];
+  for (let i = 11; i >= 0; i--) {
+    const d   = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const key = d.toISOString().substring(0, 7);
+    months.push({ key, label: d.toLocaleString('es', { month: 'short' }) + '\'' + String(d.getFullYear()).slice(2), km: 0 });
+  }
+  workouts.forEach(w => {
+    const mo = months.find(m => m.key === (w.date || '').substring(0, 7));
+    if (mo) mo.km += (w.distance || 0) / 1000;
+  });
+  months.forEach(m => { m.km = Math.round(m.km * 10) / 10; });
+
+  const canvas = document.getElementById('monthlyChartCanvas');
+  if (!canvas) return;
+  drawBarChart(canvas, months.map(m => m.km), months.map(m => m.label));
+}
+
+function drawBarChart(canvas, values, labels) {
+  const dpr = window.devicePixelRatio || 1;
+  const W   = canvas.offsetWidth || 600;
+  const H   = 140;
+  canvas.width  = W * dpr;
+  canvas.height = H * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const maxV   = Math.max(...values, 1);
+  const n      = values.length;
+  const pad    = 10;
+  const botPad = 28;
+  const topPad = 18;
+  const chartW = W - pad * 2;
+  const chartH = H - botPad - topPad;
+  const gap    = chartW / n;
+  const barW   = gap * 0.65;
+
+  ctx.clearRect(0, 0, W, H);
+
+  values.forEach((v, i) => {
+    const barH = (v / maxV) * chartH;
+    const x    = pad + i * gap + (gap - barW) / 2;
+    const y    = topPad + chartH - barH;
+
+    const grad = ctx.createLinearGradient(0, y, 0, topPad + chartH);
+    grad.addColorStop(0, '#e8ff47');
+    grad.addColorStop(1, 'rgba(232,255,71,0.25)');
+    ctx.fillStyle = barH > 0 ? grad : 'rgba(255,255,255,0.05)';
+    ctx.beginPath();
+    if (ctx.roundRect) {
+      ctx.roundRect(x, barH > 0 ? y : topPad + chartH - 2, barW, barH > 0 ? barH : 2, [3, 3, 0, 0]);
+    } else {
+      ctx.rect(x, barH > 0 ? y : topPad + chartH - 2, barW, barH > 0 ? barH : 2);
+    }
+    ctx.fill();
+
+    if (v > 0) {
+      ctx.fillStyle = '#e8ff47';
+      ctx.font = `bold ${10}px 'Space Mono', monospace`;
+      ctx.textAlign = 'center';
+      ctx.fillText(v >= 10 ? Math.round(v) : v, x + barW / 2, y - 4);
+    }
+
+    ctx.fillStyle = 'rgba(168,216,181,0.75)';
+    ctx.font = `${9}px 'Space Mono', monospace`;
+    ctx.textAlign = 'center';
+    ctx.fillText(labels[i], x + barW / 2, H - 8);
+  });
 }
 
 /* ══════════════════════════════════════════
@@ -2189,28 +2427,76 @@ function disconnectStrava() {
   toast('👋', 'Strava desconectado');
 }
 
+/* ══════════════════════════════════════════
+   STRAVA TOKEN AUTO-REFRESH
+══════════════════════════════════════════ */
+async function ensureFreshToken() {
+  if (!stravaToken) return false;
+  // expires_at is Unix seconds — refresh 60s before expiry
+  const expiresAt = stravaToken.expires_at || 0;
+  if (Date.now() / 1000 < expiresAt - 60) return true; // still valid
+
+  toast('🔄', 'Renovando token de Strava...', 'ok');
+  try {
+    const res = await fetch(STRAVA_AUTH_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ grant_type: 'refresh_token', refresh_token: stravaToken.refresh_token })
+    });
+    const data = await res.json();
+    if (data.access_token) {
+      stravaToken = { ...stravaToken, ...data };
+      sessionStorage.setItem('strava_token', JSON.stringify(stravaToken));
+      toast('✅', 'Token de Strava renovado', 'ok');
+      return true;
+    }
+  } catch(e) { console.error('[strava] refresh error:', e); }
+  toast('⚠️', 'Token de Strava expirado. Reconectá tu cuenta.');
+  disconnectStrava();
+  return false;
+}
+
 async function syncStrava() {
   if (!stravaToken) return;
+  const ok = await ensureFreshToken();
+  if (!ok) return;
+
   const spin = document.getElementById('syncSpin');
   spin.style.display = 'inline-block';
   toast('🔄', 'Sincronizando actividades de Strava...', 'ok');
   try {
-    const res = await fetch(`${FUNCTIONS_BASE_URL}/stravaActivities?token=${stravaToken.access_token}`);
-    const activities = await res.json();
-    if (!Array.isArray(activities)) { toast('⚠️','Token expirado. Reconectá Strava.'); spin.style.display='none'; return; }
+    // Fetch ALL activities via pagination — Strava max 200/page
+    let allActivities = [];
+    let page = 1;
+    while (true) {
+      const res = await fetch(
+        `https://www.strava.com/api/v3/athlete/activities?per_page=200&page=${page}`,
+        { headers: { 'Authorization': `Bearer ${stravaToken.access_token}` } }
+      );
+      if (res.status === 401) {
+        toast('⚠️', 'Token de Strava inválido. Reconectá tu cuenta.');
+        disconnectStrava(); spin.style.display = 'none'; return;
+      }
+      const batch = await res.json();
+      if (!Array.isArray(batch) || batch.length === 0) break;
+      allActivities = allActivities.concat(batch);
+      if (batch.length < 200) break;
+      page++;
+      toast('🔄', `Descargando... (${allActivities.length} actividades)`, 'ok');
+    }
 
     let newCount = 0;
-    for (const a of activities) {
+    for (const a of allActivities) {
       const exists = workouts.find(w => w.stravaId === a.id);
       if (exists) continue;
-      // Fetch streams via Cloud Function proxy
+      // Fetch GPS/hr streams via Cloud Function proxy
       let track = [], elevProfile = [], hrStream = [];
       try {
         const streamRes = await fetch(`${FUNCTIONS_BASE_URL}/stravaStreams?activityId=${a.id}&token=${stravaToken.access_token}`);
         const streams = await streamRes.json();
-        if (streams.latlng?.data)    track        = streams.latlng.data.map(([lat,lng]) => ({lat,lng}));
-        if (streams.altitude?.data)  elevProfile  = decimateArray(streams.altitude.data, 200);
-        if (streams.heartrate?.data) hrStream     = decimateArray(streams.heartrate.data, 200);
+        if (streams.latlng?.data)    track       = streams.latlng.data.map(([lat,lng]) => ({lat,lng}));
+        if (streams.altitude?.data)  elevProfile = decimateArray(streams.altitude.data, 200);
+        if (streams.heartrate?.data) hrStream    = decimateArray(streams.heartrate.data, 200);
       } catch(e) {}
 
       const wk = {
@@ -2237,13 +2523,13 @@ async function syncStrava() {
       workouts.unshift(wk);
       newCount++;
     }
-    // Deduplicar array en memoria por si hubo errores en saves anteriores
     workouts = [...new Map(workouts.map(w => [w.id, w])).values()];
     workouts.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
     if (!FB_READY) saveLocalWorkouts();
     renderWorkouts();
     toast('✅', `${newCount} actividades nuevas de Strava`, 'ok');
   } catch(e) {
+    console.error('[strava] sync error:', e);
     toast('⚠️', 'Error al sincronizar Strava');
   }
   spin.style.display = 'none';
@@ -2384,6 +2670,7 @@ function buildInscCard(ins) {
     </div>
     <div class="insc-card-foot">
       <button class="insc-btn-pri" onclick="openInscDetail('${ins.id}')">Ver detalles</button>
+      <button class="insc-btn-sec" onclick="editInsc('${ins.id}')">✏️</button>
       <button class="insc-btn-del" onclick="deleteInsc('${ins.id}')">🗑</button>
     </div>
   </div>`;
@@ -2558,6 +2845,45 @@ async function loadInscripcionesFromFirestore() {
   } catch(e) { console.error('Error cargando inscripciones:', e); }
 }
 
+/* ══════════════════════════════════════════
+   EDITAR INSCRIPCIÓN
+══════════════════════════════════════════ */
+function editInsc(id) {
+  const ins = inscripciones.find(i => i.id === id); if (!ins) return;
+  inscEditId = id; inscPagoFile = null; inscDeslindeFile = null;
+  document.getElementById('inscModalTitle').textContent = 'EDITAR INSCRIPCIÓN';
+  document.getElementById('inscSaveBtn').textContent    = 'ACTUALIZAR';
+
+  // Load race selector with current race pre-selected
+  const sel = document.getElementById('inscRaceSel');
+  sel.innerHTML = '<option value="">Seleccioná una carrera...</option>' +
+    races.sort((a,b) => a.date > b.date ? 1 : -1).map(r =>
+      `<option value="${r.id}"${r.id === ins.raceId ? ' selected' : ''}>${r.name} — ${fd(r.date)}</option>`
+    ).join('');
+
+  // Distance options for pre-selected race
+  const raceForDist = races.find(r => r.id === ins.raceId);
+  const distSel = document.getElementById('inscDist');
+  distSel.innerHTML = '<option value="">—</option>' +
+    (raceForDist?.distances || []).map(d => `<option${d === ins.distancia ? ' selected' : ''}>${d}</option>`).join('');
+
+  // Pre-fill fields
+  document.getElementById('inscDorsal').value  = ins.dorsal    || '';
+  document.getElementById('inscCat').value     = ins.categoria || '';
+  document.getElementById('inscKitDate').value = ins.kitDate   || '';
+  document.getElementById('inscNotas').value   = ins.notas     || '';
+
+  // Show existing file status
+  document.getElementById('inscPagoPrev').innerHTML = ins.pagoURL
+    ? `<div style="display:flex;align-items:center;gap:8px;padding:4px"><span style="font-size:20px">📄</span><span style="font-size:12px;color:var(--accent)">Comprobante ya cargado ✓ <span style="color:var(--muted)">(subí otro para reemplazar)</span></span></div>`
+    : '<div class="ui">📄</div><p>Click para subir PDF o imagen</p>';
+  document.getElementById('inscDeslindePrev').innerHTML = ins.deslindeURL
+    ? `<div style="display:flex;align-items:center;gap:8px;padding:4px"><span style="font-size:20px">📋</span><span style="font-size:12px;color:var(--accent)">Deslinde ya cargado ✓ <span style="color:var(--muted)">(subí otro para reemplazar)</span></span></div>`
+    : '<div class="ui">📋</div><p>Click para subir PDF o imagen</p>';
+
+  oo('addInscOv');
+}
+
 // Exponer funciones al HTML (necesario con type="module")
 Object.assign(window, {
   openLogin, logout, loginWithGoogle,
@@ -2570,10 +2896,22 @@ Object.assign(window, {
   switchTab, handleGpxUpload,
   connectStrava, disconnectStrava, syncStrava,
   openWkDetail, openLinkRace, linkWkToRace, deleteWorkout,
-  openAddInsc, inscRaceChanged, prevInscFile, saveInsc, openInscDetail, deleteInsc
+  applyWkFilters, clearWkFilters, loadMoreWorkouts,
+  openAddInsc, inscRaceChanged, prevInscFile, saveInsc, openInscDetail, deleteInsc, editInsc
 });
 
 init();
+</script>
+
+<script>
+// Service Worker — modo offline
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').then(reg => {
+      console.log('[SW] registrado:', reg.scope);
+    }).catch(err => console.warn('[SW] error:', err));
+  });
+}
 </script>
 </body>
 </html>
