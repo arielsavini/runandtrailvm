@@ -1762,13 +1762,16 @@ function renderTrainingTab() {
     renderWorkouts();
   }
 
-  // Strava token check
+  // Strava token check — sessionStorage primero, luego Firestore (persistencia por usuario)
   const st = sessionStorage.getItem('strava_token');
   if (st) {
     stravaToken = JSON.parse(st);
     document.getElementById('stravaDisconnected').style.display = 'none';
     document.getElementById('stravaConnected').style.display    = 'flex';
     document.getElementById('syncStravaBtn').style.display      = 'flex';
+  } else if (FB_READY && currentUser) {
+    // Intentar recuperar token de Firestore (otro dispositivo / sesión nueva)
+    loadStravaTokenFromFirestore();
   }
 
   // Handle Strava OAuth callback
@@ -2405,6 +2408,7 @@ async function handleStravaCallback() {
     if (data.access_token) {
       stravaToken = data;
       sessionStorage.setItem('strava_token', JSON.stringify(data));
+      await saveStravaTokenToFirestore(data);
       document.getElementById('stravaDisconnected').style.display = 'none';
       document.getElementById('stravaConnected').style.display    = 'flex';
       document.getElementById('syncStravaBtn').style.display      = 'flex';
@@ -2421,6 +2425,7 @@ async function handleStravaCallback() {
 function disconnectStrava() {
   stravaToken = null;
   sessionStorage.removeItem('strava_token');
+  deleteStravaTokenFromFirestore();
   document.getElementById('stravaDisconnected').style.display = 'flex';
   document.getElementById('stravaConnected').style.display    = 'none';
   document.getElementById('syncStravaBtn').style.display      = 'none';
@@ -2447,6 +2452,7 @@ async function ensureFreshToken() {
     if (data.access_token) {
       stravaToken = { ...stravaToken, ...data };
       sessionStorage.setItem('strava_token', JSON.stringify(stravaToken));
+      await saveStravaTokenToFirestore(stravaToken);
       toast('✅', 'Token de Strava renovado', 'ok');
       return true;
     }
@@ -2454,6 +2460,58 @@ async function ensureFreshToken() {
   toast('⚠️', 'Token de Strava expirado. Reconectá tu cuenta.');
   disconnectStrava();
   return false;
+}
+
+/* ══════════════════════════════════════════
+   STRAVA TOKEN PERSISTENCE (Firestore por usuario)
+══════════════════════════════════════════ */
+async function saveStravaTokenToFirestore(tokenData) {
+  if (!FB_READY || !currentUser) return;
+  try {
+    const { doc, setDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    // Solo guardamos los campos esenciales — no el access_token (expira igual)
+    const toSave = {
+      refresh_token: tokenData.refresh_token,
+      expires_at:    tokenData.expires_at,
+      athlete:       tokenData.athlete || null,
+      updatedAt:     new Date().toISOString()
+    };
+    await setDoc(doc(db, 'strava_tokens', currentUser.id), toSave);
+  } catch(e) { console.warn('[strava] no se pudo guardar token en Firestore:', e.message); }
+}
+
+async function loadStravaTokenFromFirestore() {
+  if (!FB_READY || !currentUser) return;
+  try {
+    const { doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    const snap = await getDoc(doc(db, 'strava_tokens', currentUser.id));
+    if (!snap.exists()) return;
+    const saved = snap.data();
+    // Tenemos refresh_token guardado → renovamos para obtener access_token fresco
+    const res = await fetch(STRAVA_AUTH_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ grant_type: 'refresh_token', refresh_token: saved.refresh_token })
+    });
+    const fresh = await res.json();
+    if (fresh.access_token) {
+      stravaToken = fresh;
+      sessionStorage.setItem('strava_token', JSON.stringify(fresh));
+      await saveStravaTokenToFirestore(fresh);
+      document.getElementById('stravaDisconnected').style.display = 'none';
+      document.getElementById('stravaConnected').style.display    = 'flex';
+      document.getElementById('syncStravaBtn').style.display      = 'flex';
+      console.log('[strava] Token restaurado desde Firestore para', currentUser.id);
+    }
+  } catch(e) { console.warn('[strava] no se pudo restaurar token desde Firestore:', e.message); }
+}
+
+async function deleteStravaTokenFromFirestore() {
+  if (!FB_READY || !currentUser) return;
+  try {
+    const { doc, deleteDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    await deleteDoc(doc(db, 'strava_tokens', currentUser.id));
+  } catch(e) {}
 }
 
 async function syncStrava() {

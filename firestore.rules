@@ -1,0 +1,35 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── CARRERAS ───────────────────────────────────────────────────────────
+    // Lectura pública; escritura solo admin o usuario logueado (para participaciones)
+    match /races/{raceId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // ── ENTRENAMIENTOS ─────────────────────────────────────────────────────
+    // Solo el propietario puede leer y escribir sus propios workouts
+    match /workouts/{workoutId} {
+      allow read:   if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+
+    // ── INSCRIPCIONES ──────────────────────────────────────────────────────
+    // Solo el propietario puede leer y escribir sus inscripciones
+    match /inscripciones/{inscId} {
+      allow read:   if request.auth != null && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null && request.auth.uid == request.resource.data.userId;
+      allow update, delete: if request.auth != null && request.auth.uid == resource.data.userId;
+    }
+
+    // ── STRAVA TOKENS ──────────────────────────────────────────────────────
+    // El documento se identifica por uid — solo el propio usuario puede acceder
+    match /strava_tokens/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+  }
+}
