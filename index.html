@@ -1783,6 +1783,9 @@ function renderWorkouts() {
 
   grid.innerHTML = workouts.map(w => buildWkCard(w)).join('');
 
+  // Destruir instancias viejas de Leaflet antes de crear nuevas
+  Object.keys(miniMaps).forEach(k => { try { miniMaps[k].remove(); } catch(e) {} delete miniMaps[k]; });
+
   // Render mini-maps after DOM update
   workouts.forEach(w => { if (w.track && w.track.length) renderMiniMap(w.id, w.track); });
 }
