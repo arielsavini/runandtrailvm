@@ -1700,6 +1700,8 @@ async function loadWorkoutsFromFirestore() {
     // Fetch inmediato para mostrar datos enseguida
     const snap = await getDocs(wkQuery);
     workouts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    // Deduplicar por id por seguridad
+    workouts = [...new Map(workouts.map(w => [w.id, w])).values()];
     workouts.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
     renderWorkouts();
 
@@ -1713,6 +1715,7 @@ async function loadWorkoutsFromFirestore() {
     ons(wkQuery,
       s => {
         workouts = s.docs.map(d => ({ id: d.id, ...d.data() }));
+        workouts = [...new Map(workouts.map(w => [w.id, w])).values()];
         workouts.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
         renderWorkouts();
       },
@@ -1732,13 +1735,14 @@ async function loadWorkoutsFromFirestore() {
 async function saveWorkoutToFirestore(wk) {
   try {
     const { doc: d2, setDoc: sd } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-    const { id, ...data } = wk;
+    const { id, ...rawData } = wk;
+    // Firestore no acepta valores undefined — los eliminamos antes de guardar
+    const data = Object.fromEntries(Object.entries(rawData).filter(([, v]) => v !== undefined));
     await sd(d2(db, 'workouts', id), data);
-    console.log('[workouts] Guardado en Firestore:', id, 'userId:', data.userId);
+    console.log('[workouts] Guardado en Firestore:', id);
   } catch(e) {
     console.error('[workouts] Error al guardar en Firestore:', e.code, e.message, '| workout id:', wk.id);
-    toast('⚠️', 'Error guardando entrenamiento: ' + (e.code || e.message), 'err');
-    workouts.push(wk); saveLocalWorkouts();
+    // No agregamos wk al array aquí — syncStrava lo hace siempre después de esta llamada
   }
 }
 
@@ -2213,6 +2217,8 @@ async function syncStrava() {
       workouts.unshift(wk);
       newCount++;
     }
+    // Deduplicar array en memoria por si hubo errores en saves anteriores
+    workouts = [...new Map(workouts.map(w => [w.id, w])).values()];
     workouts.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
     if (!FB_READY) saveLocalWorkouts();
     renderWorkouts();
