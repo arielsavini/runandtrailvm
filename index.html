@@ -1625,8 +1625,9 @@ function switchTab(tab) {
    STRAVA CONFIG
    Registrate gratis en https://www.strava.com/settings/api
 ══════════════════════════════════════════ */
-const STRAVA_CLIENT_ID     = '213897';   // ← reemplazá
-const STRAVA_CLIENT_SECRET = 'b6ecba8267a2feb7d1eee2e10dfb772baf691e07';       // ← reemplazá (solo si usás backend)
+const STRAVA_CLIENT_ID     = '213897';           // ← tu Client ID de Strava (strava.com/settings/api)
+const FUNCTIONS_BASE_URL   = 'https://us-central1-run-trail-vm.cloudfunctions.net'; // Firebase Cloud Functions (stravaActivities, stravaStreams)
+const STRAVA_AUTH_URL      = 'https://runandtrailvm.workers.dev';                    // Cloudflare Worker (token exchange)
 const STRAVA_REDIRECT      = window.location.origin + window.location.pathname;
 
 /* ══════════════════════════════════════════
@@ -2091,13 +2092,16 @@ async function handleStravaCallback() {
   if (!code) return;
   window.history.replaceState({}, document.title, window.location.pathname);
   toast('⏳', 'Conectando con Strava...');
-  // El intercambio de code → token requiere backend (el secret no debe estar en el cliente)
-  // Usamos un proxy público gratuito para demo, o el usuario puede configurar un Cloud Function
+  // El intercambio code → token se hace en el Cloudflare Worker para no exponer el client_secret
+  if (STRAVA_AUTH_URL.includes('TU_SUBDOMINIO')) {
+    toast('⚙️', 'Configurá STRAVA_AUTH_URL con la URL de tu Cloudflare Worker.');
+    return;
+  }
   try {
-    const res = await fetch('https://www.strava.com/oauth/token', {
+    const res = await fetch(STRAVA_AUTH_URL, {
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ client_id:STRAVA_CLIENT_ID, client_secret:STRAVA_CLIENT_SECRET, code, grant_type:'authorization_code' })
+      body: JSON.stringify({ code, grant_type:'authorization_code' })
     });
     const data = await res.json();
     if (data.access_token) {
@@ -2131,9 +2135,7 @@ async function syncStrava() {
   spin.style.display = 'inline-block';
   toast('🔄', 'Sincronizando actividades de Strava...', 'ok');
   try {
-    const res = await fetch('https://www.strava.com/api/v3/athlete/activities?per_page=50', {
-      headers: { 'Authorization': 'Bearer ' + stravaToken.access_token }
-    });
+    const res = await fetch(`${FUNCTIONS_BASE_URL}/stravaActivities?token=${stravaToken.access_token}`);
     const activities = await res.json();
     if (!Array.isArray(activities)) { toast('⚠️','Token expirado. Reconectá Strava.'); spin.style.display='none'; return; }
 
@@ -2141,12 +2143,10 @@ async function syncStrava() {
     for (const a of activities) {
       const exists = workouts.find(w => w.stravaId === a.id);
       if (exists) continue;
-      // Fetch GPX stream for this activity
+      // Fetch streams via Cloud Function proxy
       let track = [], elevProfile = [], hrStream = [];
       try {
-        const streamRes = await fetch(`https://www.strava.com/api/v3/activities/${a.id}/streams?keys=latlng,altitude,heartrate&key_by_type=true`, {
-          headers: { 'Authorization': 'Bearer ' + stravaToken.access_token }
-        });
+        const streamRes = await fetch(`${FUNCTIONS_BASE_URL}/stravaStreams?activityId=${a.id}&token=${stravaToken.access_token}`);
         const streams = await streamRes.json();
         if (streams.latlng?.data)    track        = streams.latlng.data.map(([lat,lng]) => ({lat,lng}));
         if (streams.altitude?.data)  elevProfile  = decimateArray(streams.altitude.data, 200);
