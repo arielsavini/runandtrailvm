@@ -251,6 +251,17 @@ textarea{resize:vertical;min-height:70px;}
 .admin-fab{position:fixed;bottom:28px;left:28px;z-index:300;background:var(--accent);color:#0c0c0a;border:none;border-radius:100px;padding:12px 22px;font-weight:700;font-size:13px;display:none;align-items:center;gap:8px;box-shadow:0 4px 20px rgba(232,255,71,.3);transition:all .15s;font-family:'DM Sans',sans-serif;}
 .admin-fab:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(232,255,71,.4);}
 .admin-fab.on{display:flex;}
+/* PWA INSTALL BANNER */
+.pwa-banner{position:fixed;bottom:0;left:0;right:0;z-index:400;background:var(--surface);border-top:2px solid var(--accent);padding:14px 20px;display:none;align-items:center;gap:14px;box-shadow:0 -4px 24px rgba(0,0,0,.4);}
+.pwa-banner.show{display:flex;}
+.pwa-banner-icon{font-size:32px;flex-shrink:0;}
+.pwa-banner-text{flex:1;}
+.pwa-banner-text strong{font-size:14px;font-weight:700;color:var(--text);display:block;margin-bottom:2px;}
+.pwa-banner-text span{font-size:12px;color:var(--muted);}
+.pwa-install-btn{background:var(--accent);color:#0c0c0a;border:none;border-radius:7px;padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:'DM Sans',sans-serif;transition:all .15s;}
+.pwa-install-btn:hover{background:#d4eb2e;}
+.pwa-dismiss-btn{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:7px;padding:9px 12px;font-size:12px;cursor:pointer;white-space:nowrap;font-family:'DM Sans',sans-serif;transition:all .15s;}
+.pwa-dismiss-btn:hover{color:var(--text);border-color:var(--muted);}
 
 /* SPINNER */
 .spin{display:inline-block;width:13px;height:13px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:sp .7s linear infinite;}
@@ -336,6 +347,40 @@ textarea{resize:vertical;min-height:70px;}
   .main-tabs{padding:0 16px;}
   .train-wrap{padding:16px 16px 56px;}
   .train-grid{grid-template-columns:1fr;}
+}
+@media(max-width:640px){
+  /* MODALES — adaptación móvil */
+  .overlay{padding:0;align-items:flex-end;}
+  .modal{border-radius:16px 16px 0 0;max-height:92vh;border-bottom:none;}
+  .modal-wide{max-width:100%;}
+  .mh{padding:16px;}
+  .mb{padding:14px 16px;}
+  .mf{padding:12px 16px;flex-wrap:wrap;}
+  .mf .btn{flex:1;justify-content:center;}
+
+  /* FORMULARIO CARRERA — colapsar todas las grillas a 1 columna */
+  .fr{grid-template-columns:1fr !important;}
+  .fr.three{grid-template-columns:1fr !important;}
+
+  /* Mapbox y clima más compactos */
+  .mapbox{height:110px;}
+  .wbox{flex-wrap:wrap;}
+
+  /* Distancias pill tags — más pequeños en móvil */
+  .dtag{padding:4px 10px;font-size:10px;}
+
+  /* Inscripciones y entrenamientos */
+  .insc-wrap{padding:16px 16px 80px;}
+  .insc-summary{grid-template-columns:1fr 1fr;}
+  .train-summary{grid-template-columns:1fr 1fr;}
+
+  /* PWA banner más compacto */
+  .pwa-banner{flex-wrap:wrap;gap:10px;padding:12px 16px;}
+  .pwa-banner-text{flex:1 1 100%;}
+  .pwa-install-btn,.pwa-dismiss-btn{flex:1;}
+
+  /* Admin fab — espacio para el banner */
+  .admin-fab{bottom:80px;}
 }
 .leaflet-container{background:var(--surface3)!important;}
 
@@ -694,6 +739,17 @@ textarea{resize:vertical;min-height:70px;}
   </div>
 </div>
 <button class="admin-fab" id="adminFab" onclick="openAddRace()">＋ AGREGAR CARRERA</button>
+
+<!-- PWA Install Banner -->
+<div class="pwa-banner" id="pwaBanner">
+  <div class="pwa-banner-icon">🏃</div>
+  <div class="pwa-banner-text">
+    <strong>Instalar RUN &amp; TRAIL VM</strong>
+    <span>Agregá la app a tu pantalla de inicio para acceso rápido</span>
+  </div>
+  <button class="pwa-install-btn" onclick="pwaInstall()">Instalar</button>
+  <button class="pwa-dismiss-btn" onclick="pwaDismiss()">Ahora no</button>
+</div>
 
 <!-- =============== MODALS =============== -->
 
@@ -2982,6 +3038,36 @@ if ('serviceWorker' in navigator) {
       console.log('[SW] registrado:', reg.scope);
     }).catch(err => console.warn('[SW] error:', err));
   });
+}
+
+// PWA Install prompt
+let _pwaPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  _pwaPrompt = e;
+  // Mostrar banner solo si el usuario no lo descartó antes
+  if (!sessionStorage.getItem('pwa_dismissed')) {
+    document.getElementById('pwaBanner').classList.add('show');
+  }
+});
+window.addEventListener('appinstalled', () => {
+  document.getElementById('pwaBanner').classList.remove('show');
+  _pwaPrompt = null;
+  showToast('✅ App instalada correctamente', 'ok');
+});
+function pwaInstall() {
+  if (!_pwaPrompt) return;
+  _pwaPrompt.prompt();
+  _pwaPrompt.userChoice.then(choice => {
+    if (choice.outcome === 'accepted') {
+      document.getElementById('pwaBanner').classList.remove('show');
+    }
+    _pwaPrompt = null;
+  });
+}
+function pwaDismiss() {
+  document.getElementById('pwaBanner').classList.remove('show');
+  sessionStorage.setItem('pwa_dismissed', '1');
 }
 </script>
 </body>
