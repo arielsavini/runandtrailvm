@@ -1,6 +1,7 @@
 /**
  * Service Worker — RUN & TRAIL VM
  * Estrategia: Cache-First para assets estáticos, Network-First para datos dinámicos
+ * Push Notifications: muestra notificaciones y maneja clicks
  */
 
 const CACHE_NAME    = 'run-trail-vm-v1';
@@ -71,6 +72,38 @@ self.addEventListener('fetch', event => {
         }
         return new Response('', { status: 408 });
       });
+    })
+  );
+});
+
+// ── PUSH NOTIFICATIONS ────────────────────────────────────────────────────────
+self.addEventListener('push', event => {
+  let data = { title: 'RUN & TRAIL VM', body: '¡Hay novedades!' };
+  try { data = event.data?.json() ?? data; } catch(e) {}
+
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body:    data.body,
+      icon:    './icons/icon-192.png',
+      badge:   './icons/icon-192.png',
+      data:    { url: data.url || './' },
+      vibrate: [200, 100, 200],
+      tag:     data.tag || 'run-trail-notif',
+      renotify: true,
+      actions: data.actions || [],
+    })
+  );
+});
+
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+  const url = event.notification.data?.url || './';
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
+      for (const c of list) {
+        if ('focus' in c) return c.focus();
+      }
+      if (clients.openWindow) return clients.openWindow(url);
     })
   );
 });
