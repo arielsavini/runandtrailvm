@@ -3020,6 +3020,71 @@ function editInsc(id) {
   oo('addInscOv');
 }
 
+// ── PUSH NOTIFICATIONS ────────────────────────────────────────────────────────
+const VAPID_PUBLIC_KEY = 'BKFpfYVK7qQ3pcYxVxV9s02se6jV-HV5LxEJj97oTOZmtnXtme99_aZUtCCvCOQGHtLXuNYIljb9Sv1ciIiGeCA';
+
+function urlBase64ToUint8Array(b64) {
+  const pad = '='.repeat((4 - b64.length % 4) % 4);
+  const raw = atob((b64 + pad).replace(/-/g, '+').replace(/_/g, '/'));
+  return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
+}
+
+async function togglePushNotifications() {
+  if (!currentUser) { toast('⚠️', 'Iniciá sesión para activar notificaciones'); return; }
+  const enabled = localStorage.getItem('push_subscribed') === '1';
+  if (enabled) {
+    await unsubscribePush();
+  } else {
+    await subscribePush();
+  }
+}
+
+async function subscribePush() {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    toast('❌', 'Tu navegador no soporta notificaciones push'); return;
+  }
+  try {
+    const perm = await Notification.requestPermission();
+    if (perm !== 'granted') {
+      toast('ℹ️', 'Permiso de notificaciones denegado'); return;
+    }
+    const reg  = await navigator.serviceWorker.ready;
+    const sub  = await reg.pushManager.subscribe({
+      userVisibleOnly:      true,
+      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+    });
+    if (FB_READY && currentUser) {
+      await setDoc(doc(db, 'push_subscriptions', currentUser.id), {
+        subscription: sub.toJSON(),
+        email:        currentUser.email,
+        updatedAt:    new Date().toISOString(),
+      });
+    }
+    localStorage.setItem('push_subscribed', '1');
+    updateNav();
+    toast('🔔', 'Notificaciones activadas — te avisamos 7 días antes de cada carrera', 'ok');
+  } catch(e) {
+    console.error('subscribePush:', e);
+    toast('❌', 'No se pudo activar las notificaciones', 'err');
+  }
+}
+
+async function unsubscribePush() {
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager.getSubscription();
+    if (sub) await sub.unsubscribe();
+    if (FB_READY && currentUser) {
+      await deleteDoc(doc(db, 'push_subscriptions', currentUser.id));
+    }
+    localStorage.removeItem('push_subscribed');
+    updateNav();
+    toast('🔕', 'Notificaciones desactivadas');
+  } catch(e) {
+    console.error('unsubscribePush:', e);
+  }
+}
+
 // Exponer funciones al HTML (necesario con type="module")
 Object.assign(window, {
   openLogin, logout, loginWithGoogle,
@@ -3033,7 +3098,8 @@ Object.assign(window, {
   connectStrava, disconnectStrava, syncStrava,
   openWkDetail, openLinkRace, linkWkToRace, deleteWorkout,
   applyWkFilters, clearWkFilters, loadMoreWorkouts,
-  openAddInsc, inscRaceChanged, prevInscFile, saveInsc, openInscDetail, deleteInsc, editInsc
+  openAddInsc, inscRaceChanged, prevInscFile, saveInsc, openInscDetail, deleteInsc, editInsc,
+  togglePushNotifications
 });
 
 init();
@@ -3079,72 +3145,6 @@ function pwaDismiss() {
   sessionStorage.setItem('pwa_dismissed', '1');
 }
 
-// ── PUSH NOTIFICATIONS ────────────────────────────────────────────────────────
-const VAPID_PUBLIC_KEY = 'BKFpfYVK7qQ3pcYxVxV9s02se6jV-HV5LxEJj97oTOZmtnXtme99_aZUtCCvCOQGHtLXuNYIljb9Sv1ciIiGeCA';
-
-function urlBase64ToUint8Array(b64) {
-  const pad = '='.repeat((4 - b64.length % 4) % 4);
-  const raw = atob((b64 + pad).replace(/-/g, '+').replace(/_/g, '/'));
-  return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
-}
-
-async function togglePushNotifications() {
-  if (!currentUser) { showToast('⚠️', 'Iniciá sesión para activar notificaciones'); return; }
-  const enabled = localStorage.getItem('push_subscribed') === '1';
-  if (enabled) {
-    await unsubscribePush();
-  } else {
-    await subscribePush();
-  }
-}
-
-async function subscribePush() {
-  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-    showToast('❌', 'Tu navegador no soporta notificaciones push'); return;
-  }
-  try {
-    const perm = await Notification.requestPermission();
-    if (perm !== 'granted') {
-      showToast('ℹ️', 'Permiso de notificaciones denegado'); return;
-    }
-    const reg  = await navigator.serviceWorker.ready;
-    const sub  = await reg.pushManager.subscribe({
-      userVisibleOnly:      true,
-      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
-    });
-    // Guardar suscripción en Firestore
-    if (FB_READY && currentUser) {
-      await setDoc(doc(db, 'push_subscriptions', currentUser.id), {
-        subscription: sub.toJSON(),
-        email:        currentUser.email,
-        updatedAt:    new Date().toISOString(),
-      });
-    }
-    localStorage.setItem('push_subscribed', '1');
-    updateNav();
-    showToast('🔔', 'Notificaciones activadas — te avisamos 7 días antes de cada carrera', 'ok');
-  } catch(e) {
-    console.error('subscribePush:', e);
-    showToast('❌', 'No se pudo activar las notificaciones', 'err');
-  }
-}
-
-async function unsubscribePush() {
-  try {
-    const reg = await navigator.serviceWorker.ready;
-    const sub = await reg.pushManager.getSubscription();
-    if (sub) await sub.unsubscribe();
-    // Eliminar de Firestore
-    if (FB_READY && currentUser) {
-      await deleteDoc(doc(db, 'push_subscriptions', currentUser.id));
-    }
-    localStorage.removeItem('push_subscribed');
-    updateNav();
-    showToast('🔕', 'Notificaciones desactivadas');
-  } catch(e) {
-    console.error('unsubscribePush:', e);
-  }
-}
 </script>
 </body>
 </html>
