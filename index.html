@@ -3383,16 +3383,23 @@ function generateShareCard() {
   const canvas = document.getElementById('shareCanvas');
   if (!canvas) return;
 
-  if (_sharePhoto) {
-    // Cargar imagen y luego dibujar
-    const img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload  = () => _drawShareCard(canvas, img);
-    img.onerror = () => _drawShareCard(canvas, null);
-    img.src = _sharePhoto;
-  } else {
+  if (!_sharePhoto) {
     _drawShareCard(canvas, null);
+    return;
   }
+
+  // Intento 1: con crossOrigin (canvas limpio → download funciona)
+  const img = new Image();
+  img.crossOrigin = 'anonymous';
+  img.onload = () => _drawShareCard(canvas, img);
+  img.onerror = () => {
+    // Intento 2: sin crossOrigin (canvas puede quedar tainted, pero la imagen se VE)
+    const img2 = new Image();
+    img2.onload  = () => _drawShareCard(canvas, img2);
+    img2.onerror = () => _drawShareCard(canvas, null);
+    img2.src = _sharePhoto;
+  };
+  img.src = _sharePhoto;
 }
 
 function _drawShareCard(canvas, bgImg) {
@@ -3581,9 +3588,17 @@ function _wrapTextCanvas(ctx, text, x, y, maxW, lineH) {
 function downloadShareCard() {
   const canvas = document.getElementById('shareCanvas');
   if (!canvas) return;
+  let dataUrl;
+  try {
+    dataUrl = canvas.toDataURL('image/png');
+  } catch(e) {
+    // Canvas tainted por CORS — ofrecer guardar por long-press / clic derecho
+    toast('ℹ️', 'Mantené presionado la imagen (o clic derecho → Guardar) para guardarla');
+    return;
+  }
   const a = document.createElement('a');
   a.download = `resultado_${(_shareRace?.name || 'carrera').replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '')}.png`;
-  a.href = canvas.toDataURL('image/png');
+  a.href = dataUrl;
   a.click();
   toast('⬇', 'Imagen descargada', 'ok');
 }
@@ -3605,18 +3620,21 @@ async function nativeShare() {
   const canvas = document.getElementById('shareCanvas');
   if (!canvas || !navigator.share) return;
   try {
-    canvas.toBlob(async blob => {
-      const file = new File([blob], 'resultado.png', { type: 'image/png' });
-      const shareData = {
-        title: _shareRace?.name || 'Mi resultado',
-        text:  `¡Terminé ${_shareRace?.name || 'la carrera'}!${_sharePart?.time ? ' Tiempo: ' + _sharePart.time : ''}`,
-      };
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({ ...shareData, files: [file] });
-      } else {
-        await navigator.share(shareData);
-      }
-    }, 'image/png');
+    let blob;
+    try {
+      blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+    } catch(e) {
+      blob = null;
+    }
+    const shareData = {
+      title: _shareRace?.name || 'Mi resultado',
+      text:  `¡Terminé ${_shareRace?.name || 'la carrera'}!${_sharePart?.time ? ' Tiempo: ' + _sharePart.time : ''}`,
+    };
+    if (blob && navigator.canShare && navigator.canShare({ files: [new File([blob], 'resultado.png', { type: 'image/png' })] })) {
+      await navigator.share({ ...shareData, files: [new File([blob], 'resultado.png', { type: 'image/png' })] });
+    } else {
+      await navigator.share(shareData);
+    }
   } catch(e) {
     if (e.name !== 'AbortError') toast('⚠️', 'No se pudo compartir');
   }
