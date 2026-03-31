@@ -459,6 +459,33 @@ textarea{resize:vertical;min-height:70px;}
 .btn-loadmore{padding:10px 32px;background:var(--surface);border:1px solid var(--border);color:var(--muted);border-radius:7px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;}
 .btn-loadmore:hover{border-color:var(--accent);color:var(--accent);}
 
+/* ── MAPA DE CARRERAS ── */
+.map-wrap{padding:24px 32px 56px;}
+#raceMapView{height:calc(100vh - 300px);min-height:440px;border-radius:var(--r);overflow:hidden;border:1px solid var(--border);}
+.map-toolbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;}
+.map-legend{display:flex;gap:14px;flex-wrap:wrap;align-items:center;}
+.map-legend-item{display:flex;align-items:center;gap:6px;font-size:11px;font-family:'Space Mono',monospace;color:var(--muted);}
+.map-legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+.leaflet-popup-content-wrapper{background:var(--surface) !important;color:var(--text) !important;border:1px solid var(--border) !important;border-radius:10px !important;box-shadow:0 8px 32px rgba(0,0,0,.55) !important;}
+.leaflet-popup-tip{background:var(--surface) !important;}
+.leaflet-popup-close-button{color:var(--muted) !important;font-size:18px !important;right:10px !important;top:10px !important;}
+.leaflet-popup-content{margin:14px 16px !important;}
+@media(max-width:640px){.map-wrap{padding:16px 16px 80px;}#raceMapView{height:calc(100vh - 240px);min-height:320px;}}
+
+/* ── COMPARTIR RESULTADO ── */
+.share-preview{display:flex;justify-content:center;margin-bottom:20px;}
+#shareCanvas{border-radius:12px;max-width:100%;display:block;}
+.share-actions{display:flex;gap:10px;flex-wrap:wrap;}
+.share-act-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:11px 16px;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;min-width:110px;font-family:'DM Sans',sans-serif;}
+.share-act-btn:hover{transform:translateY(-1px);}
+.sbtn-wa{background:#25D366;color:#fff;}
+.sbtn-wa:hover{background:#1ebe5d;}
+.sbtn-dl{background:var(--surface2);color:var(--text);border:1px solid var(--border);}
+.sbtn-dl:hover{border-color:var(--accent);color:var(--accent);}
+.sbtn-native{background:var(--accent);color:#0c0c0a;}
+.sbtn-native:hover{background:#d4eb2e;}
+.share-hint{font-size:11px;color:var(--muted);font-family:'Space Mono',monospace;text-align:center;margin-top:12px;line-height:1.6;}
+
 </style>
 </head>
 <body>
@@ -496,6 +523,7 @@ textarea{resize:vertical;min-height:70px;}
     🏃 MIS ENTRENAMIENTOS
     <span class="tbadge" id="trainBadge" style="display:none">0</span>
   </button>
+  <button class="tab-btn" id="tab-mapa" onclick="switchTab('mapa')">🗺 MAPA</button>
 </nav>
 
 <!-- TAB: CALENDARIO -->
@@ -717,7 +745,29 @@ textarea{resize:vertical;min-height:70px;}
 </div>
 </div><!-- /panel-training -->
 
-<!-- WORKOUT DETAIL MODAL -->
+<!-- TAB: MAPA -->
+<div class="tab-panel" id="panel-mapa">
+<div class="map-wrap">
+  <div class="map-toolbar">
+    <div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--text)">MAPA DE CARRERAS</div>
+      <div style="font-size:11px;color:var(--muted);font-family:'Space Mono',monospace;margin-top:2px" id="mapRaceCount">Cargando carreras...</div>
+    </div>
+    <div class="map-legend">
+      <div class="map-legend-item"><div class="map-legend-dot" style="background:#6eeaa0"></div>Trail</div>
+      <div class="map-legend-item"><div class="map-legend-dot" style="background:#4fa8e8"></div>Road</div>
+      <div class="map-legend-item"><div class="map-legend-dot" style="background:#c9a0fc"></div>Ultra</div>
+      <div class="map-legend-item"><div class="map-legend-dot" style="background:#f59e0b"></div>Mixto</div>
+    </div>
+  </div>
+  <div id="raceMapView"></div>
+  <div style="margin-top:10px;font-size:11px;color:var(--muted);font-family:'Space Mono',monospace;text-align:center">
+    📍 Clic en un punto para ver los detalles · Carreras sin coordenadas no aparecen en el mapa
+  </div>
+</div>
+</div><!-- /panel-mapa -->
+
+
 <div class="overlay" id="wkDetailOv" onclick="coo(event,'wkDetailOv')">
   <div class="modal modal-wide" onclick="event.stopPropagation()">
     <div class="mh">
@@ -933,6 +983,30 @@ textarea{resize:vertical;min-height:70px;}
   </div>
 </div>
 
+<!-- MODAL: COMPARTIR RESULTADO -->
+<div class="overlay" id="shareOv" onclick="coo(event,'shareOv')">
+  <div class="modal" style="max-width:460px" onclick="event.stopPropagation()">
+    <div class="mh">
+      <div>
+        <div class="mt">COMPARTIR RESULTADO</div>
+        <div class="ms" id="shareOvSub">—</div>
+      </div>
+      <button class="xbtn" onclick="cm('shareOv')">×</button>
+    </div>
+    <div class="mb">
+      <div class="share-preview">
+        <canvas id="shareCanvas" width="360" height="360"></canvas>
+      </div>
+      <div class="share-actions">
+        <button class="share-act-btn sbtn-dl" onclick="downloadShareCard()">⬇ Descargar</button>
+        <button class="share-act-btn sbtn-wa" onclick="shareToWhatsApp()">📱 WhatsApp</button>
+        <button class="share-act-btn sbtn-native" id="nativeShareBtn" onclick="nativeShare()" style="display:none">📤 Compartir</button>
+      </div>
+      <div class="share-hint">Descargá la imagen y compartila en Instagram Stories o WhatsApp</div>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: NUEVA INSCRIPCIÓN -->
 <div class="overlay" id="addInscOv" onclick="coo(event,'addInscOv')">
   <div class="modal" onclick="event.stopPropagation()">
@@ -1095,6 +1169,7 @@ function renderAll() {
   renderFeatured();
   renderCards();
   updateStats();
+  if (activeTab === 'mapa' && raceMapInst) renderMapTab();
 }
 
 /* ══════════════════════════════════════════
@@ -1416,6 +1491,7 @@ function openDetail(id) {
       ${r.url    ? `<a class="act-btn" href="${r.url}" target="_blank">🔗 Página oficial</a>` : ''}
       ${r.coords ? `<a class="act-btn" href="https://www.google.com/maps?q=${r.coords.lat},${r.coords.lng}" target="_blank">🗺 Google Maps</a>` : ''}
       <button class="act-btn" onclick="cm('detailOv');openPart('${r.id}')">${currentUser ? ((r.participations||[]).find(p=>p.userId===currentUser.id) ? '✏ Mi información' : '⏱ Registrar mis tiempos') : '🔐 Iniciá sesión para registrar'}</button>
+      ${currentUser && (r.participations||[]).find(p=>p.userId===currentUser.id) ? `<button class="act-btn" style="color:var(--accent);border-color:rgba(232,255,71,.3)" onclick="openShareCard('${r.id}')">📤 Compartir resultado</button>` : ''}
       ${currentUser?.isAdmin ? `<button class="act-btn" style="color:#ff6b6b;border-color:rgba(255,68,68,.3)" onclick="cm('detailOv');delRace('${r.id}')">🗑 Eliminar</button><button class="act-btn" onclick="cm('detailOv');editRace('${r.id}')">✏ Editar</button>` : ''}
     </div>
     <div class="sdiv"></div>
@@ -1787,6 +1863,7 @@ function switchTab(tab) {
   document.getElementById('panel-' + tab).classList.add('active');
   if (tab === 'training')       renderTrainingTab();
   if (tab === 'inscripciones')  renderInscripcionesTab();
+  if (tab === 'mapa')           renderMapTab();
 }
 
 /* ══════════════════════════════════════════
@@ -3085,6 +3162,316 @@ async function unsubscribePush() {
   }
 }
 
+/* ══════════════════════════════════════════
+   MAPA DE CARRERAS
+══════════════════════════════════════════ */
+let raceMapInst    = null;
+let raceMapMarkers = [];
+
+function renderMapTab() {
+  const mapEl = document.getElementById('raceMapView');
+  if (!mapEl) return;
+
+  // Inicializar mapa solo una vez
+  if (!raceMapInst) {
+    raceMapInst = L.map(mapEl, { attributionControl: false });
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(raceMapInst);
+    raceMapInst.setView([-38.4, -63.6], 4);
+  }
+
+  // Forzar recálculo de tamaño al mostrar el tab
+  setTimeout(() => raceMapInst.invalidateSize(), 80);
+
+  // Eliminar marcadores anteriores
+  raceMapMarkers.forEach(m => raceMapInst.removeLayer(m));
+  raceMapMarkers = [];
+
+  const typeColors = { trail:'#6eeaa0', road:'#4fa8e8', ultra:'#c9a0fc', mixed:'#f59e0b' };
+  const withCoords = races.filter(r => r.coords?.lat && r.coords?.lng);
+  const noCoords   = races.length - withCoords.length;
+
+  const countEl = document.getElementById('mapRaceCount');
+  if (countEl) {
+    countEl.textContent = withCoords.length
+      ? `${withCoords.length} carrera${withCoords.length !== 1 ? 's' : ''} en el mapa${noCoords > 0 ? ' · ' + noCoords + ' sin coordenadas' : ''}`
+      : 'Ninguna carrera tiene coordenadas aún';
+  }
+
+  withCoords.forEach(r => {
+    const color  = typeColors[r.type] || '#e8ff47';
+    const [y, mo, d] = (r.date || '----').split('-');
+    const mNames = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+    const pc     = (r.participations || []).length;
+
+    const icon = L.divIcon({
+      className: '',
+      html: `<div style="width:16px;height:16px;border-radius:50%;background:${color};border:2.5px solid rgba(0,0,0,.55);box-shadow:0 2px 10px rgba(0,0,0,.6);cursor:pointer;transition:transform .15s" onmouseover="this.style.transform='scale(1.6)'" onmouseout="this.style.transform=''"></div>`,
+      iconSize:    [16, 16],
+      iconAnchor:  [8, 8],
+      popupAnchor: [0, -12]
+    });
+
+    const distHtml = (r.distances || [])
+      .map(x => `<span style="display:inline-block;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.13);border-radius:100px;padding:2px 8px;font-size:10px;margin:1px 2px;font-family:monospace">${x}</span>`)
+      .join('');
+
+    const popupHtml = `
+      <div style="font-family:system-ui,sans-serif;padding:2px 0;min-width:200px">
+        <div style="font-size:10px;color:${color};text-transform:uppercase;letter-spacing:1px;margin-bottom:5px;font-weight:700">${TL[r.type] || r.type}</div>
+        <div style="font-weight:700;font-size:14px;line-height:1.3;margin-bottom:4px;color:#f2f1ea">${r.name}</div>
+        <div style="font-size:11px;color:#a8d8b5;margin-bottom:8px">${parseInt(d)} ${mNames[parseInt(mo)-1]} ${y}${r.provincia ? ' · ' + r.provincia : ''}</div>
+        ${distHtml ? `<div style="margin-bottom:8px">${distHtml}</div>` : ''}
+        ${pc > 0 ? `<div style="font-size:11px;color:#6eeaa0;margin-bottom:8px">⏱ ${pc} registro${pc > 1 ? 's' : ''}</div>` : ''}
+        <button onclick="openDetailFromMap('${r.id}')" style="width:100%;background:#e8ff47;color:#0c0c0a;border:none;border-radius:6px;padding:8px 12px;font-size:12px;font-weight:700;cursor:pointer;margin-top:2px">Ver detalles →</button>
+      </div>`;
+
+    const marker = L.marker([parseFloat(r.coords.lat), parseFloat(r.coords.lng)], { icon })
+      .bindPopup(L.popup({ maxWidth: 260 }).setContent(popupHtml))
+      .addTo(raceMapInst);
+    raceMapMarkers.push(marker);
+  });
+
+  // Ajustar vista a todos los marcadores
+  if (withCoords.length >= 2) {
+    const bounds = withCoords.map(r => [parseFloat(r.coords.lat), parseFloat(r.coords.lng)]);
+    try { raceMapInst.fitBounds(bounds, { padding: [40, 40], maxZoom: 9 }); } catch(e) {}
+  } else if (withCoords.length === 1) {
+    raceMapInst.setView([parseFloat(withCoords[0].coords.lat), parseFloat(withCoords[0].coords.lng)], 10);
+  }
+}
+
+function openDetailFromMap(id) {
+  if (raceMapInst) raceMapInst.closePopup();
+  openDetail(id);
+}
+
+/* ══════════════════════════════════════════
+   COMPARTIR RESULTADO (Canvas share card)
+══════════════════════════════════════════ */
+let _shareRace = null;
+let _sharePart = null;
+
+function openShareCard(raceId) {
+  _shareRace = races.find(r => r.id === raceId);
+  if (!_shareRace || !currentUser) return;
+  _sharePart = (_shareRace.participations || []).find(p => p.userId === currentUser.id) || {};
+  document.getElementById('shareOvSub').textContent = _shareRace.name;
+  // Mostrar botón de compartir nativo solo si el navegador lo soporta
+  document.getElementById('nativeShareBtn').style.display = navigator.share ? 'flex' : 'none';
+  oo('shareOv');
+  setTimeout(generateShareCard, 100);
+}
+
+function generateShareCard() {
+  const canvas = document.getElementById('shareCanvas');
+  if (!canvas) return;
+  const S = 1080;
+  canvas.width = S; canvas.height = S;
+  const ctx = canvas.getContext('2d');
+
+  // Fondo degradado
+  const bg = ctx.createLinearGradient(0, 0, S, S);
+  bg.addColorStop(0,    '#0d8f39');
+  bg.addColorStop(0.45, '#074f1f');
+  bg.addColorStop(1,    '#031208');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, S, S);
+
+  // Línea de acento superior
+  ctx.fillStyle = '#e8ff47';
+  ctx.fillRect(0, 0, S, 10);
+
+  // Ornamento diagonal sutil
+  ctx.save();
+  ctx.globalAlpha = 0.04;
+  ctx.strokeStyle = '#e8ff47';
+  ctx.lineWidth = 200;
+  ctx.beginPath();
+  ctx.moveTo(-100, S + 100);
+  ctx.lineTo(S + 100, -100);
+  ctx.stroke();
+  ctx.restore();
+
+  const r  = _shareRace;
+  const p  = _sharePart || {};
+  const [y, mo, d] = (r.date || '----').split('-');
+  const mNames = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+  const typeColors = { trail:'#6eeaa0', road:'#4fa8e8', ultra:'#c9a0fc', mixed:'#f59e0b' };
+  const typeColor  = typeColors[r.type] || '#e8ff47';
+
+  // ── Logo ──────────────────────────────────────────────
+  ctx.font = "700 58px 'Bebas Neue', 'Arial Black', Impact, sans-serif";
+  ctx.fillStyle = '#e8ff47';
+  ctx.textAlign = 'left';
+  ctx.fillText('RUN & TRAIL', 80, 118);
+  const logoW = ctx.measureText('RUN & TRAIL ').width;
+  ctx.fillStyle = '#f2f1ea';
+  ctx.fillText('VM', 80 + logoW, 118);
+
+  // Badge ARG
+  ctx.fillStyle = '#e8ff47';
+  ctx.fillRect(80, 133, 108, 30);
+  ctx.fillStyle = '#0c0c0a';
+  ctx.font = "700 13px 'Space Mono', monospace";
+  ctx.textAlign = 'left';
+  ctx.fillText('ARGENTINA', 92, 153);
+
+  // Badge tipo carrera
+  ctx.globalAlpha = 0.18;
+  ctx.fillStyle = typeColor;
+  ctx.fillRect(S - 220, 72, 148, 34);
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = typeColor;
+  ctx.font = "700 13px 'Space Mono', monospace";
+  ctx.textAlign = 'center';
+  ctx.fillText((TL[r.type] || r.type || 'CARRERA').toUpperCase(), S - 220 + 74, 94);
+
+  // Separador
+  ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(80, 198); ctx.lineTo(S - 80, 198); ctx.stroke();
+
+  // ── Nombre de la carrera ──────────────────────────────
+  const nameLen = r.name.length;
+  const nameSz  = nameLen > 25 ? 68 : nameLen > 18 ? 80 : 96;
+  ctx.fillStyle = '#f2f1ea';
+  ctx.textAlign = 'center';
+  ctx.font = `700 ${nameSz}px 'Bebas Neue', 'Arial Black', Impact, sans-serif`;
+  _wrapTextCanvas(ctx, r.name.toUpperCase(), S / 2, 288, S - 160, nameSz * 1.12);
+
+  // Calcular posición vertical de stats según qué datos hay
+  const hasDist = p.distance && p.distance !== '—' && p.distance !== '';
+  const hasTime = !!(p.time);
+  const hasPos  = !!(p.position && parseInt(p.position) > 0);
+
+  // ── Distancia (dato principal) ───────────────────────
+  let nextY = 440;
+  if (hasDist) {
+    ctx.fillStyle = '#e8ff47';
+    ctx.font = "700 160px 'Bebas Neue', 'Arial Black', Impact, sans-serif";
+    ctx.textAlign = 'center';
+    ctx.fillText(p.distance, S / 2, nextY + 130);
+    ctx.fillStyle = 'rgba(232,255,71,0.5)';
+    ctx.font = "700 24px 'Space Mono', monospace";
+    ctx.fillText('DISTANCIA', S / 2, nextY + 170);
+    nextY += 220;
+  }
+
+  // ── Tiempo ───────────────────────────────────────────
+  if (hasTime) {
+    ctx.fillStyle = '#f2f1ea';
+    ctx.font = "700 100px 'Bebas Neue', 'Arial Black', Impact, sans-serif";
+    ctx.textAlign = 'center';
+    ctx.fillText(p.time, S / 2, nextY + 80);
+    ctx.fillStyle = '#a8d8b5';
+    ctx.font = "700 22px 'Space Mono', monospace";
+    ctx.fillText('TIEMPO FINAL', S / 2, nextY + 114);
+    nextY += 148;
+  }
+
+  // ── Posición ─────────────────────────────────────────
+  if (hasPos) {
+    ctx.globalAlpha = 0.1;
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(S / 2 - 130, nextY + 10, 260, 64);
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = '#f2f1ea';
+    ctx.font = "700 52px 'Bebas Neue', 'Arial Black', Impact, sans-serif";
+    ctx.textAlign = 'center';
+    ctx.fillText(`POS. #${p.position}`, S / 2, nextY + 58);
+    nextY += 90;
+  }
+
+  // ── Si no hay ningún stat, mostrar emoji motivacional ─
+  if (!hasDist && !hasTime && !hasPos) {
+    ctx.font = "130px serif";
+    ctx.textAlign = 'center';
+    ctx.fillText('🏃', S / 2, 680);
+  }
+
+  // ── Fecha y provincia ─────────────────────────────────
+  const dateStr = `${parseInt(d)} ${mNames[parseInt(mo) - 1]} ${y}${r.provincia ? '  ·  ' + r.provincia.toUpperCase() : ''}`;
+  ctx.fillStyle = 'rgba(168,216,181,0.75)';
+  ctx.font = "400 26px 'Space Mono', monospace";
+  ctx.textAlign = 'center';
+  ctx.fillText(dateStr, S / 2, 930);
+
+  // Línea inferior decorativa
+  ctx.strokeStyle = 'rgba(232,255,71,0.15)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(80, 960); ctx.lineTo(S - 80, 960); ctx.stroke();
+
+  // URL de la app
+  ctx.fillStyle = 'rgba(255,255,255,0.22)';
+  ctx.font = "400 20px 'Space Mono', monospace";
+  ctx.textAlign = 'center';
+  ctx.fillText('runandtrailvm.web.app', S / 2, 1005);
+
+  // Escalar visualmente a 360px (canvas interno 1080 para calidad)
+  canvas.style.width  = '360px';
+  canvas.style.height = '360px';
+}
+
+function _wrapTextCanvas(ctx, text, x, y, maxW, lineH) {
+  const words = text.split(' ');
+  let line = '';
+  words.forEach((word, i) => {
+    const test = line + (line ? ' ' : '') + word;
+    if (ctx.measureText(test).width > maxW && line) {
+      ctx.fillText(line, x, y);
+      line = word;
+      y += lineH;
+    } else {
+      line = test;
+    }
+    if (i === words.length - 1) ctx.fillText(line, x, y);
+  });
+}
+
+function downloadShareCard() {
+  const canvas = document.getElementById('shareCanvas');
+  if (!canvas) return;
+  const a = document.createElement('a');
+  a.download = `resultado_${(_shareRace?.name || 'carrera').replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_]/g, '')}.png`;
+  a.href = canvas.toDataURL('image/png');
+  a.click();
+  toast('⬇', 'Imagen descargada', 'ok');
+}
+
+function shareToWhatsApp() {
+  const r = _shareRace, p = _sharePart || {};
+  if (!r) return;
+  const [y, mo, d] = (r.date || '----').split('-');
+  const lines = [`🏃 *${r.name}*`];
+  if (p.distance && p.distance !== '—') lines.push(`📏 ${p.distance}`);
+  if (p.time) lines.push(`⏱ ${p.time}`);
+  if (p.position) lines.push(`🏅 Posición #${p.position}`);
+  lines.push(`📅 ${parseInt(d)}/${mo}/${y}${r.provincia ? ' · ' + r.provincia : ''}`);
+  lines.push(`\n_Registrado en RUN & TRAIL VM_`);
+  window.open(`https://wa.me/?text=${encodeURIComponent(lines.join('\n'))}`, '_blank');
+}
+
+async function nativeShare() {
+  const canvas = document.getElementById('shareCanvas');
+  if (!canvas || !navigator.share) return;
+  try {
+    canvas.toBlob(async blob => {
+      const file = new File([blob], 'resultado.png', { type: 'image/png' });
+      const shareData = {
+        title: _shareRace?.name || 'Mi resultado',
+        text:  `¡Terminé ${_shareRace?.name || 'la carrera'}!${_sharePart?.time ? ' Tiempo: ' + _sharePart.time : ''}`,
+      };
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ ...shareData, files: [file] });
+      } else {
+        await navigator.share(shareData);
+      }
+    }, 'image/png');
+  } catch(e) {
+    if (e.name !== 'AbortError') toast('⚠️', 'No se pudo compartir');
+  }
+}
+
 // Exponer funciones al HTML (necesario con type="module")
 Object.assign(window, {
   openLogin, logout, loginWithGoogle,
@@ -3099,7 +3486,9 @@ Object.assign(window, {
   openWkDetail, openLinkRace, linkWkToRace, deleteWorkout,
   applyWkFilters, clearWkFilters, loadMoreWorkouts,
   openAddInsc, inscRaceChanged, prevInscFile, saveInsc, openInscDetail, deleteInsc, editInsc,
-  togglePushNotifications
+  togglePushNotifications,
+  renderMapTab, openDetailFromMap,
+  openShareCard, downloadShareCard, shareToWhatsApp, nativeShare
 });
 
 init();
