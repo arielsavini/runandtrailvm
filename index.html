@@ -186,12 +186,21 @@ textarea{resize:vertical;min-height:70px;}
 .wbox .wd{font-size:11px;color:var(--muted);}
 .wfbtn{margin-left:auto;padding:7px 13px;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;font-size:11px;font-family:'Space Mono',monospace;transition:all .15s;}
 .wfbtn:hover{border-color:var(--accent);color:var(--accent);}
-.mapbox{background:var(--surface2);border:1px solid var(--border);border-radius:8px;height:150px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;position:relative;overflow:hidden;transition:border-color .15s;}
-.mapbox:hover{border-color:var(--accent);}
 .mapgrid{position:absolute;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:28px 28px;opacity:.5;}
-.mapbox .mpin{font-size:24px;position:relative;z-index:1;}
-.mapbox .mtxt{font-size:11px;color:var(--muted);font-family:'Space Mono',monospace;position:relative;z-index:1;}
-.mapbox .mcoords{font-size:10px;color:var(--accent);font-family:'Space Mono',monospace;position:relative;z-index:1;}
+/* LOCATION PICKER */
+.loc-picker{display:flex;flex-direction:column;gap:6px;}
+.loc-results{background:var(--surface3);border:1px solid var(--border);border-radius:7px;max-height:190px;overflow-y:auto;}
+.loc-result-item{display:block;width:100%;text-align:left;background:transparent;border:none;border-bottom:1px solid var(--border);color:var(--muted);padding:9px 12px;font-size:12px;cursor:pointer;transition:background .12s,color .12s;line-height:1.4;font-family:'DM Sans',sans-serif;}
+.loc-result-item:last-child{border-bottom:none;}
+.loc-result-item:hover{background:rgba(232,255,71,.07);color:var(--text);}
+.loc-result-item::before{content:'📍 ';font-size:11px;}
+.loc-no-results{padding:10px 12px;font-size:12px;color:var(--muted);font-style:italic;}
+.loc-map-preview{height:140px;border-radius:7px;overflow:hidden;border:1px solid var(--border);}
+.loc-bottom{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;}
+.loc-coords{font-size:10px;color:var(--accent);font-family:'Space Mono',monospace;}
+.loc-clear-btn{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;transition:all .12s;white-space:nowrap;}
+.loc-clear-btn:hover{border-color:rgba(255,68,68,.4);color:#ff6b6b;}
+@media(max-width:640px){.loc-map-preview{height:110px;}}
 .sdiv{height:1px;background:var(--border);margin:18px 0;}
 
 /* DETAIL */
@@ -887,12 +896,18 @@ textarea{resize:vertical;min-height:70px;}
       <div class="fr">
         <div class="fg2"><label>Link oficial</label><input id="rUrl" type="url" placeholder="https://..."></div>
         <div class="fg2">
-          <label>Geolocalización</label>
-          <div class="mapbox" id="mapBox" onclick="getGPS()">
-            <div class="mapgrid"></div>
-            <div class="mpin">📍</div>
-            <div class="mtxt" id="mapTxt">Click para obtener GPS</div>
-            <div class="mcoords" id="mapCoords"></div>
+          <label>Ubicación en el mapa</label>
+          <div class="loc-picker">
+            <div style="display:flex;gap:8px">
+              <input id="locSearch" type="text" placeholder="ej. Villa Carlos Paz, Córdoba, Argentina" onkeydown="if(event.key==='Enter'){event.preventDefault();searchLocation()}">
+              <button type="button" class="wfbtn" id="locSearchBtn" onclick="searchLocation()">📍 Buscar</button>
+            </div>
+            <div id="locResults" class="loc-results" style="display:none"></div>
+            <div id="locMapPreview" class="loc-map-preview" style="display:none"></div>
+            <div id="locBottom" class="loc-bottom" style="display:none">
+              <span id="locCoords" class="loc-coords"></span>
+              <button type="button" class="loc-clear-btn" onclick="clearLocation()">✕ Limpiar</button>
+            </div>
           </div>
         </div>
       </div>
@@ -1122,6 +1137,7 @@ let currentUser = null;
 let races = [], filtered = [];
 let selDists = [], curMood = null, editId = null, partRaceId = null;
 let partPhotos = [], racePhotoFile = null, racePhotoURL = null, geoC = null, wData = null;
+let locPickerMap = null, _locSearchResults = [];
 
 const MS = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
 const TL = {trail:'Trail 🏔', road:'Road 🏙', ultra:'Ultra ⚡', mixed:'Mixto 🔀'};
@@ -1514,8 +1530,7 @@ function openAddRace() {
   document.getElementById('rProv').value = '';
   document.getElementById('rFeatured').checked = false;
   document.getElementById('wbox').style.display = 'none';
-  document.getElementById('mapCoords').textContent = '';
-  document.getElementById('mapTxt').textContent = 'Click para obtener GPS';
+  clearLocation();
   document.getElementById('rpPrev').innerHTML = '<div class="ui">📷</div><p>Click para subir foto de portada</p>';
   document.querySelectorAll('.dtag').forEach(t => t.classList.remove('sel'));
   oo('addRaceOv');
@@ -1538,7 +1553,7 @@ function editRace(id) {
   document.querySelectorAll('.dtag').forEach(t => { if (selDists.includes(t.textContent.trim())) t.classList.add('sel'); });
   if (r.photo) { racePhotoURL = r.photo; document.getElementById('rpPrev').innerHTML = `<img src="${r.photo}" class="prev">`; }
   if (r.weather) { wData = r.weather; document.getElementById('wicon').textContent = r.weather.icon; document.getElementById('wtemp').textContent = `${r.weather.temp}°C`; document.getElementById('wdesc').textContent = r.weather.desc; document.getElementById('wbox').style.display = 'flex'; }
-  if (r.coords)  { geoC = r.coords; document.getElementById('mapCoords').textContent = `${r.coords.lat}, ${r.coords.lng}`; document.getElementById('mapTxt').textContent = '✅ Ubicación guardada'; }
+  if (r.coords) { geoC = r.coords; const locLabel = [r.city, r.provincia].filter(Boolean).join(', '); _showLocOnPicker(r.coords.lat, r.coords.lng, locLabel); }
 }
 
 function prevRacePhoto(e) {
@@ -1569,15 +1584,68 @@ function addCD(e) {
   e.target.value = '';
 }
 
-function getGPS() {
-  document.getElementById('mapTxt').innerHTML = '<span class="spin"></span> Obteniendo...';
-  if (!navigator.geolocation) { document.getElementById('mapTxt').textContent = 'GPS no disponible'; return; }
-  navigator.geolocation.getCurrentPosition(pos => {
-    geoC = { lat: pos.coords.latitude.toFixed(5), lng: pos.coords.longitude.toFixed(5) };
-    document.getElementById('mapTxt').textContent = '✅ Ubicación obtenida';
-    document.getElementById('mapCoords').textContent = `${geoC.lat}, ${geoC.lng}`;
-    toast('📍', 'Ubicación GPS capturada', 'ok');
-  }, () => { document.getElementById('mapTxt').textContent = 'No se pudo obtener GPS'; });
+/* ══════════════════════════════════════════
+   LOCATION PICKER (Nominatim / OpenStreetMap)
+══════════════════════════════════════════ */
+async function searchLocation() {
+  const q = document.getElementById('locSearch').value.trim();
+  if (!q) { toast('⚠️', 'Ingresá un lugar para buscar'); return; }
+  const btn = document.getElementById('locSearchBtn');
+  btn.innerHTML = '<span class="spin"></span>';
+  const resultsBox = document.getElementById('locResults');
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=6&addressdetails=1`,
+      { headers: { 'Accept-Language': 'es' } }
+    );
+    _locSearchResults = await res.json();
+    resultsBox.style.display = 'block';
+    if (!_locSearchResults.length) {
+      resultsBox.innerHTML = '<div class="loc-no-results">Sin resultados. Intentá con más detalle, ej: "Villa Mercedes, San Luis, Argentina".</div>';
+    } else {
+      resultsBox.innerHTML = _locSearchResults.map((r, i) =>
+        `<button type="button" class="loc-result-item" onclick="selectLocation(${i})">${r.display_name}</button>`
+      ).join('');
+    }
+  } catch(e) {
+    toast('⚠️', 'Error al buscar. Verificá tu conexión.');
+  }
+  btn.innerHTML = '📍 Buscar';
+}
+
+function selectLocation(idx) {
+  const r = _locSearchResults[idx]; if (!r) return;
+  geoC = { lat: parseFloat(r.lat).toFixed(5), lng: parseFloat(r.lon).toFixed(5) };
+  document.getElementById('locSearch').value = r.display_name.split(',').slice(0, 3).join(',').trim();
+  document.getElementById('locResults').style.display = 'none';
+  _showLocOnPicker(geoC.lat, geoC.lng, null);
+  toast('📍', 'Ubicación seleccionada', 'ok');
+}
+
+function _showLocOnPicker(lat, lng, label) {
+  if (label) document.getElementById('locSearch').value = label;
+  document.getElementById('locCoords').textContent = `${lat}, ${lng}`;
+  document.getElementById('locBottom').style.display = 'flex';
+  const mapEl = document.getElementById('locMapPreview');
+  mapEl.style.display = 'block';
+  setTimeout(() => {
+    if (locPickerMap) { locPickerMap.remove(); locPickerMap = null; }
+    locPickerMap = L.map(mapEl, { zoomControl: false, attributionControl: false, scrollWheelZoom: false, dragging: false });
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(locPickerMap);
+    const ll = [parseFloat(lat), parseFloat(lng)];
+    locPickerMap.setView(ll, 13);
+    L.circleMarker(ll, { radius: 8, color: '#e8ff47', fillColor: '#e8ff47', fillOpacity: 1, weight: 3 }).addTo(locPickerMap);
+  }, 80);
+}
+
+function clearLocation() {
+  geoC = null;
+  const el = id => document.getElementById(id);
+  if (el('locSearch'))     el('locSearch').value = '';
+  if (el('locResults'))    el('locResults').style.display    = 'none';
+  if (el('locMapPreview')) el('locMapPreview').style.display = 'none';
+  if (el('locBottom'))     el('locBottom').style.display     = 'none';
+  if (locPickerMap) { locPickerMap.remove(); locPickerMap = null; }
 }
 
 async function fetchW() {
@@ -3478,7 +3546,7 @@ Object.assign(window, {
   openAddRace, editRace, delRace, saveRace,
   openDetail, openPart, savePart,
   applyFilters, clearFilters,
-  togDist, addCD, getGPS, fetchW,
+  togDist, addCD, searchLocation, selectLocation, clearLocation, fetchW,
   prevRacePhoto, prevPartPhotos,
   selMood, bigImg, coo, cm, oo,
   switchTab, handleGpxUpload,
