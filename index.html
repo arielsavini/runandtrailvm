@@ -777,6 +777,7 @@ textarea{resize:vertical;min-height:70px;}
       <div class="map-legend-item"><div class="map-legend-dot" style="background:#4fa8e8"></div>Road</div>
       <div class="map-legend-item"><div class="map-legend-dot" style="background:#c9a0fc"></div>Ultra</div>
       <div class="map-legend-item"><div class="map-legend-dot" style="background:#f59e0b"></div>Mixto</div>
+      <div class="map-legend-item"><span style="background:#e8ff47;color:#0c0c0a;border-radius:100px;padding:1px 6px;font-size:9px;font-weight:700;font-family:monospace">⏱ N</span>&nbsp;Con tiempos</div>
     </div>
   </div>
   <div id="raceMapView"></div>
@@ -3287,10 +3288,15 @@ function renderMapTab() {
 
     const icon = L.divIcon({
       className: '',
-      html: `<div style="width:16px;height:16px;border-radius:50%;background:${color};border:2.5px solid rgba(0,0,0,.55);box-shadow:0 2px 10px rgba(0,0,0,.6);cursor:pointer;transition:transform .15s" onmouseover="this.style.transform='scale(1.6)'" onmouseout="this.style.transform=''"></div>`,
-      iconSize:    [16, 16],
-      iconAnchor:  [8, 8],
-      popupAnchor: [0, -12]
+      html: pc > 0
+        ? `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer" onmouseover="this.querySelector('.map-dot').style.transform='scale(1.5)'" onmouseout="this.querySelector('.map-dot').style.transform=''">
+            <div style="background:#e8ff47;color:#0c0c0a;border-radius:100px;padding:1px 5px;font-size:9px;font-weight:700;font-family:monospace;white-space:nowrap;box-shadow:0 1px 6px rgba(0,0,0,.7);line-height:1.5">⏱ ${pc}</div>
+            <div class="map-dot" style="width:16px;height:16px;border-radius:50%;background:${color};border:2.5px solid rgba(0,0,0,.55);box-shadow:0 2px 10px rgba(0,0,0,.6);transition:transform .15s"></div>
+          </div>`
+        : `<div class="map-dot" style="width:16px;height:16px;border-radius:50%;background:${color};border:2.5px solid rgba(0,0,0,.55);box-shadow:0 2px 10px rgba(0,0,0,.6);cursor:pointer;transition:transform .15s" onmouseover="this.style.transform='scale(1.6)'" onmouseout="this.style.transform=''"></div>`,
+      iconSize:    pc > 0 ? [40, 30] : [16, 16],
+      iconAnchor:  pc > 0 ? [20, 28] : [8, 8],
+      popupAnchor: [0, pc > 0 ? -32 : -12]
     });
 
     const distHtml = (r.distances || [])
