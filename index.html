@@ -528,6 +528,47 @@ textarea{resize:vertical;min-height:70px;}
 .share-photo-none:hover{opacity:1;border-color:var(--muted);}
 .share-photo-none.selected{border-color:var(--accent);opacity:1;}
 
+/* ── TRIATLÓN ── */
+.tri-wrap{padding:24px 32px 56px;}
+.tri-toolbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px;}
+.btn-new-tri{display:flex;align-items:center;gap:8px;padding:10px 20px;background:#38bdf8;color:#0c0c0a;border:none;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif;}
+.btn-new-tri:hover{background:#0ea5e9;transform:translateY(-1px);}
+.tri-summary{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:24px;}
+.tri-card-summary{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;}
+.tri-card-summary .tsl{font-size:9px;font-family:'Space Mono',monospace;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px;}
+.tri-card-summary .tsv{font-family:'Bebas Neue',sans-serif;font-size:36px;color:#38bdf8;line-height:1;}
+.tri-card-summary .tsu{font-size:11px;color:var(--muted);}
+.tri-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;}
+.tri-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;transition:transform .18s,border-color .18s,box-shadow .18s;}
+.tri-card:hover{transform:translateY(-3px);border-color:rgba(56,189,248,.35);box-shadow:0 10px 36px rgba(0,0,0,.4);}
+.tri-card-head{padding:14px 16px 10px;display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
+.tri-card-name{font-weight:700;font-size:15px;line-height:1.3;flex:1;}
+.tri-card-badge{flex-shrink:0;padding:3px 10px;border-radius:100px;font-size:10px;font-weight:700;font-family:'Space Mono',monospace;background:rgba(56,189,248,.15);color:#38bdf8;border:1px solid rgba(56,189,248,.35);}
+.tri-card-meta{padding:0 16px 10px;display:flex;flex-direction:column;gap:5px;}
+.tri-meta-row{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);}
+.tri-meta-row strong{color:var(--text);}
+.tri-segments{display:flex;gap:6px;padding:0 16px 12px;flex-wrap:wrap;}
+.tri-seg{display:flex;align-items:center;gap:4px;background:var(--surface3);border:1px solid var(--border);border-radius:100px;padding:4px 10px;font-size:10px;font-weight:700;font-family:'Space Mono',monospace;color:var(--text);}
+.tri-seg.swim{background:rgba(56,189,248,.1);border-color:rgba(56,189,248,.3);color:#38bdf8;}
+.tri-seg.bike{background:rgba(245,158,11,.1);border-color:rgba(245,158,11,.3);color:#f59e0b;}
+.tri-seg.run{background:rgba(110,234,160,.1);border-color:rgba(110,234,160,.3);color:var(--trail);}
+.tri-card-foot{padding:10px 16px 14px;display:flex;gap:7px;border-top:1px solid var(--border);}
+.tri-btn-pri{flex:1;background:#38bdf8;color:#0c0c0a;border:none;border-radius:6px;padding:8px;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;}
+.tri-btn-pri:hover{background:#0ea5e9;}
+.tri-btn-del{background:rgba(255,68,68,.08);border:1px solid rgba(255,68,68,.2);color:#ff6b6b;border-radius:6px;padding:8px 12px;font-size:12px;cursor:pointer;transition:all .15s;}
+.tri-btn-del:hover{background:rgba(255,68,68,.2);}
+.tri-lock{text-align:center;padding:80px 24px;color:var(--muted);}
+.tri-lock .tli{font-size:52px;margin-bottom:16px;}
+.tri-lock h3{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--text);margin-bottom:8px;}
+.tri-empty{text-align:center;padding:64px 24px;color:var(--muted);}
+.tri-empty .ei{font-size:52px;margin-bottom:16px;}
+.tri-empty h3{font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--text);margin-bottom:8px;}
+.tri-type-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
+.tri-type-tab{padding:7px 16px;border-radius:100px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif;}
+.tri-type-tab:hover{border-color:rgba(56,189,248,.4);color:#38bdf8;}
+.tri-type-tab.active{background:rgba(56,189,248,.12);border-color:rgba(56,189,248,.5);color:#38bdf8;}
+@media(max-width:640px){.tri-wrap{padding:16px 16px 56px;}.tri-grid{grid-template-columns:1fr;}.tri-summary{grid-template-columns:1fr 1fr;}}
+
 </style>
 </head>
 <body>
@@ -566,6 +607,9 @@ textarea{resize:vertical;min-height:70px;}
     <span class="tbadge" id="trainBadge" style="display:none">0</span>
   </button>
   <button class="tab-btn" id="tab-mapa" onclick="switchTab('mapa')">🗺 MAPA</button>
+  <button class="tab-btn" id="tab-triatlon" onclick="switchTab('triatlon')">🏊 TRIATLÓN
+    <span class="tbadge" id="triBadge" style="display:none">0</span>
+  </button>
 </nav>
 
 <!-- MAIN TABS (mobile dropdown) -->
@@ -585,6 +629,10 @@ textarea{resize:vertical;min-height:70px;}
       <span class="tbadge" id="trainBadgeMob" style="display:none">0</span>
     </button>
     <button class="tab-dropdown-item" id="dtab-mapa" onclick="switchTab('mapa');closeTabDropdown()">🗺 MAPA</button>
+    <button class="tab-dropdown-item" id="dtab-triatlon" onclick="switchTab('triatlon');closeTabDropdown()">
+      🏊 TRIATLÓN
+      <span class="tbadge" id="triBadgeMob" style="display:none">0</span>
+    </button>
   </div>
 </div>
 
@@ -830,6 +878,59 @@ textarea{resize:vertical;min-height:70px;}
 </div>
 </div><!-- /panel-mapa -->
 
+<!-- TAB: TRIATLÓN -->
+<div class="tab-panel" id="panel-triatlon">
+<div class="tri-wrap">
+
+  <!-- LOCK -->
+  <div id="triLock" class="tri-lock" style="display:none">
+    <div class="tli">🏊</div>
+    <h3>INICIÁ SESIÓN</h3>
+    <p style="font-size:14px;max-width:320px;margin:0 auto 24px;line-height:1.6">Registrá tus eventos de triatlón, tiempos por segmento y resultados.</p>
+    <button class="btn btn-accent" onclick="openLogin()">Ingresar con Google</button>
+  </div>
+
+  <!-- CONTENT -->
+  <div id="triContent" style="display:none">
+    <div class="tri-toolbar">
+      <div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--text)">MIS TRIATLONES</div>
+        <div style="font-size:11px;color:var(--muted);font-family:'Space Mono',monospace;margin-top:2px">Swim · Bike · Run</div>
+      </div>
+      <button class="btn-new-tri" onclick="openAddTri()">＋ NUEVO EVENTO</button>
+    </div>
+
+    <!-- SUMMARY -->
+    <div class="tri-summary">
+      <div class="tri-card-summary"><div class="tsl">Eventos</div><div class="tsv" id="triSumTotal">0</div></div>
+      <div class="tri-card-summary"><div class="tsl">Distancia natación</div><div class="tsv" id="triSumSwim">0</div><div class="tsu">m nado</div></div>
+      <div class="tri-card-summary"><div class="tsl">Distancia ciclismo</div><div class="tsv" id="triSumBike">0</div><div class="tsu">km bici</div></div>
+      <div class="tri-card-summary"><div class="tsl">Distancia running</div><div class="tsv" id="triSumRun">0</div><div class="tsu">km run</div></div>
+    </div>
+
+    <!-- FILTER TABS -->
+    <div class="tri-type-tabs">
+      <button class="tri-type-tab active" data-filter="" onclick="filterTri(this,'')">Todos</button>
+      <button class="tri-type-tab" data-filter="sprint" onclick="filterTri(this,'sprint')">🏅 Sprint</button>
+      <button class="tri-type-tab" data-filter="olimpico" onclick="filterTri(this,'olimpico')">🥇 Olímpico</button>
+      <button class="tri-type-tab" data-filter="media" onclick="filterTri(this,'media')">⚡ Media distancia (70.3)</button>
+      <button class="tri-type-tab" data-filter="ironman" onclick="filterTri(this,'ironman')">🔴 Ironman</button>
+      <button class="tri-type-tab" data-filter="acuatlon" onclick="filterTri(this,'acuatlon')">🌊 Acuatlón</button>
+      <button class="tri-type-tab" data-filter="duatlon" onclick="filterTri(this,'duatlon')">🚴 Duatlón</button>
+    </div>
+
+    <!-- GRID -->
+    <div class="tri-grid" id="triGrid">
+      <div class="tri-empty">
+        <div class="ei">🏊‍♂️</div>
+        <h3>SIN EVENTOS AÚN</h3>
+        <p style="font-size:14px;line-height:1.7;max-width:320px;margin:0 auto">Registrá tu primer triatlón con tiempos de nado, bici y carrera.</p>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div><!-- /panel-triatlon -->
 
 <div class="overlay" id="wkDetailOv" onclick="coo(event,'wkDetailOv')">
   <div class="modal modal-wide" onclick="event.stopPropagation()">
@@ -1143,6 +1244,85 @@ textarea{resize:vertical;min-height:70px;}
     <div class="mb" id="inscDetBody"></div>
     <div class="mf">
       <button class="btn btn-ghost" onclick="cm('inscDetailOv')">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: NUEVO EVENTO TRIATLÓN -->
+<div class="overlay" id="addTriOv" onclick="coo(event,'addTriOv')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="mh">
+      <div><div class="mt" id="triModalTitle">NUEVO EVENTO TRIATLÓN</div><div class="ms">Swim · Bike · Run</div></div>
+      <button class="xbtn" onclick="cm('addTriOv')">×</button>
+    </div>
+    <div class="mb">
+      <!-- Nombre y tipo -->
+      <div class="fr">
+        <div class="fg2"><label>Nombre del evento *</label><input id="triName" type="text" placeholder="ej. Triatlón Portezuelo 2025"></div>
+        <div class="fg2"><label>Modalidad *</label>
+          <select id="triType">
+            <option value="sprint">🏅 Sprint (750m / 20km / 5km)</option>
+            <option value="olimpico">🥇 Olímpico (1.5km / 40km / 10km)</option>
+            <option value="media">⚡ Media distancia / 70.3</option>
+            <option value="ironman">🔴 Ironman (3.8km / 180km / 42.2km)</option>
+            <option value="acuatlon">🌊 Acuatlón</option>
+            <option value="duatlon">🚴 Duatlón</option>
+            <option value="otro">Otro</option>
+          </select>
+        </div>
+      </div>
+      <!-- Fecha y lugar -->
+      <div class="fr three">
+        <div class="fg2"><label>Fecha *</label><input id="triDate" type="date"></div>
+        <div class="fg2"><label>Provincia</label>
+          <select id="triProv">
+            <option value="">Seleccionar...</option>
+            <option>Buenos Aires</option><option>CABA</option><option>Córdoba</option>
+            <option>Mendoza</option><option>Santa Fe</option><option>Tucumán</option>
+            <option>Salta</option><option>Jujuy</option><option>Neuquén</option>
+            <option>Río Negro</option><option>Chubut</option><option>Santa Cruz</option>
+            <option>Tierra del Fuego</option><option>Entre Ríos</option><option>Misiones</option>
+            <option>Corrientes</option><option>Chaco</option><option>Formosa</option>
+            <option>San Luis</option><option>San Juan</option><option>La Rioja</option>
+            <option>Catamarca</option><option>Santiago del Estero</option><option>La Pampa</option>
+          </select>
+        </div>
+        <div class="fg2"><label>Ciudad / Lugar</label><input id="triCity" type="text" placeholder="ej. San Rafael"></div>
+      </div>
+      <div class="sdiv"></div>
+      <!-- Segmentos: tiempos y distancias -->
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:#38bdf8;margin-bottom:12px;display:flex;align-items:center;gap:8px;">🏊 NATACIÓN<span style="flex:1;height:1px;background:var(--border);display:block"></span></div>
+      <div class="fr">
+        <div class="fg2"><label>Distancia nado (m)</label><input id="triSwimDist" type="number" placeholder="ej. 1500" min="0"></div>
+        <div class="fg2"><label>Tiempo nado (hh:mm:ss)</label><input id="triSwimTime" type="text" placeholder="00:25:30"></div>
+      </div>
+      <div class="sdiv"></div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:#f59e0b;margin-bottom:12px;display:flex;align-items:center;gap:8px;">🚴 CICLISMO<span style="flex:1;height:1px;background:var(--border);display:block"></span></div>
+      <div class="fr">
+        <div class="fg2"><label>Distancia bici (km)</label><input id="triBikeDist" type="number" placeholder="ej. 40" min="0" step="0.1"></div>
+        <div class="fg2"><label>Tiempo bici (hh:mm:ss)</label><input id="triBikeTime" type="text" placeholder="01:05:00"></div>
+      </div>
+      <div class="sdiv"></div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:var(--trail);margin-bottom:12px;display:flex;align-items:center;gap:8px;">🏃 RUNNING<span style="flex:1;height:1px;background:var(--border);display:block"></span></div>
+      <div class="fr">
+        <div class="fg2"><label>Distancia run (km)</label><input id="triRunDist" type="number" placeholder="ej. 10" min="0" step="0.1"></div>
+        <div class="fg2"><label>Tiempo run (hh:mm:ss)</label><input id="triRunTime" type="text" placeholder="00:48:00"></div>
+      </div>
+      <div class="sdiv"></div>
+      <!-- Tiempo total y posición -->
+      <div class="fr three">
+        <div class="fg2"><label>Tiempo total (hh:mm:ss)</label><input id="triTotalTime" type="text" placeholder="02:25:00"></div>
+        <div class="fg2"><label>Posición general</label><input id="triPos" type="number" placeholder="ej. 15" min="1"></div>
+        <div class="fg2"><label>Categoría</label><input id="triCat" type="text" placeholder="ej. M35-39, Absoluto"></div>
+      </div>
+      <!-- Notas -->
+      <div class="fr full">
+        <div class="fg2"><label>Notas y sensaciones</label><textarea id="triNotes" placeholder="¿Cómo fue la transición? ¿El clima, el terreno de carrera...?"></textarea></div>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-ghost" onclick="cm('addTriOv')">Cancelar</button>
+      <button class="btn" style="background:#38bdf8;color:#0c0c0a;font-weight:700;border:none;border-radius:7px;padding:10px 22px;font-size:13px;cursor:pointer;" id="triSaveBtn" onclick="saveTri()">GUARDAR EVENTO</button>
     </div>
   </div>
 </div>
@@ -1995,6 +2175,7 @@ function switchTab(tab) {
   if (tab === 'training')       renderTrainingTab();
   if (tab === 'inscripciones')  renderInscripcionesTab();
   if (tab === 'mapa')           renderMapTab();
+  if (tab === 'triatlon')       renderTriathlonTab();
 }
 function toggleTabDropdown() {
   const trigger = document.getElementById('tabDropdownTrigger');
@@ -3708,6 +3889,187 @@ async function nativeShare() {
   }
 }
 
+/* ══════════════════════════════════════════
+   TRIATLÓN
+══════════════════════════════════════════ */
+let triathlons       = [];
+let triFilterType    = '';
+let editTriId        = null;
+let _triListenerActive = false;
+
+function renderTriathlonTab() {
+  const lock    = document.getElementById('triLock');
+  const content = document.getElementById('triContent');
+  if (!currentUser) {
+    lock.style.display = 'block'; content.style.display = 'none'; return;
+  }
+  lock.style.display = 'none'; content.style.display = 'block';
+  if (FB_READY && !_triListenerActive) {
+    _triListenerActive = true;
+    const q = query(collection(db, 'users', currentUser.uid, 'triathlons'), orderBy('date', 'desc'));
+    onSnapshot(q, snap => {
+      triathlons = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderTriGrid();
+    });
+  } else {
+    renderTriGrid();
+  }
+}
+
+function renderTriGrid() {
+  const grid = document.getElementById('triGrid');
+  const list = triFilterType ? triathlons.filter(t => t.type === triFilterType) : triathlons;
+
+  // summary (siempre total)
+  document.getElementById('triSumTotal').textContent = triathlons.length;
+  const swimTot = triathlons.reduce((a, t) => a + (parseFloat(t.swimDist) || 0), 0);
+  const bikeTot = triathlons.reduce((a, t) => a + (parseFloat(t.bikeDist) || 0), 0);
+  const runTot  = triathlons.reduce((a, t) => a + (parseFloat(t.runDist) || 0), 0);
+  document.getElementById('triSumSwim').textContent = Math.round(swimTot);
+  document.getElementById('triSumBike').textContent = Math.round(bikeTot * 10) / 10;
+  document.getElementById('triSumRun').textContent  = Math.round(runTot  * 10) / 10;
+
+  // badge
+  const b = document.getElementById('triBadge');
+  b.textContent = triathlons.length; b.style.display = triathlons.length ? 'inline' : 'none';
+  const bm = document.getElementById('triBadgeMob');
+  if (bm) { bm.textContent = triathlons.length; bm.style.display = triathlons.length ? 'inline' : 'none'; }
+
+  if (!list.length) {
+    grid.innerHTML = `<div class="tri-empty" style="grid-column:1/-1">
+      <div class="ei">🏊‍♂️</div>
+      <h3>SIN EVENTOS AÚN</h3>
+      <p style="font-size:14px;line-height:1.7;max-width:320px;margin:0 auto">Registrá tu primer triatlón con tiempos de nado, bici y carrera.</p>
+    </div>`; return;
+  }
+  grid.innerHTML = list.map(t => buildTriCard(t)).join('');
+}
+
+function buildTriCard(t) {
+  const [y, mo, d] = (t.date || '----').split('-');
+  const typeLabel = { sprint:'Sprint', olimpico:'Olímpico', media:'70.3', ironman:'Ironman', acuatlon:'Acuatlón', duatlon:'Duatlón', otro:'Otro' }[t.type] || t.type;
+  const segs = [];
+  if (t.swimDist) segs.push(`<span class="tri-seg swim">🏊 ${t.swimDist}m${t.swimTime ? ' · '+t.swimTime : ''}</span>`);
+  if (t.bikeDist) segs.push(`<span class="tri-seg bike">🚴 ${t.bikeDist}km${t.bikeTime ? ' · '+t.bikeTime : ''}</span>`);
+  if (t.runDist)  segs.push(`<span class="tri-seg run">🏃 ${t.runDist}km${t.runTime ? ' · '+t.runTime : ''}</span>`);
+  const loc = [t.city, t.province].filter(Boolean).join(', ');
+  return `<div class="tri-card">
+    <div class="tri-card-head">
+      <div class="tri-card-name">${t.name || 'Evento'}</div>
+      <span class="tri-card-badge">${typeLabel}</span>
+    </div>
+    <div class="tri-card-meta">
+      ${t.date ? `<div class="tri-meta-row">📅 <strong>${d?.padStart(2,'0')} ${MS[parseInt(mo,10)-1]||''} ${y}</strong></div>` : ''}
+      ${loc ? `<div class="tri-meta-row">📍 ${loc}</div>` : ''}
+      ${t.totalTime ? `<div class="tri-meta-row">⏱ Tiempo total: <strong>${t.totalTime}</strong></div>` : ''}
+      ${t.pos ? `<div class="tri-meta-row">🏆 Posición: <strong>#${t.pos}</strong>${t.cat ? ' · '+t.cat : ''}</div>` : ''}
+    </div>
+    ${segs.length ? `<div class="tri-segments">${segs.join('')}</div>` : ''}
+    ${t.notes ? `<div style="padding:0 16px 10px;font-size:12px;color:var(--muted);font-style:italic;line-height:1.5">${t.notes}</div>` : ''}
+    <div class="tri-card-foot">
+      <button class="tri-btn-pri" onclick="openEditTri('${t.id}')">✏️ Editar</button>
+      <button class="tri-btn-del" onclick="deleteTriConfirm('${t.id}')">🗑</button>
+    </div>
+  </div>`;
+}
+
+function filterTri(btn, type) {
+  document.querySelectorAll('.tri-type-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  triFilterType = type;
+  renderTriGrid();
+}
+
+function openAddTri() {
+  if (!currentUser) { openLogin(); return; }
+  editTriId = null;
+  document.getElementById('triModalTitle').textContent = 'NUEVO EVENTO TRIATLÓN';
+  ['triName','triSwimDist','triSwimTime','triBikeDist','triBikeTime','triRunDist','triRunTime','triTotalTime','triPos','triCat','triNotes','triCity'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('triDate').value = '';
+  document.getElementById('triType').value = 'sprint';
+  document.getElementById('triProv').value = '';
+  oo('addTriOv');
+}
+
+function openEditTri(id) {
+  const t = triathlons.find(x => x.id === id);
+  if (!t) return;
+  editTriId = id;
+  document.getElementById('triModalTitle').textContent = 'EDITAR EVENTO';
+  document.getElementById('triName').value      = t.name || '';
+  document.getElementById('triType').value      = t.type || 'sprint';
+  document.getElementById('triDate').value      = t.date || '';
+  document.getElementById('triProv').value      = t.province || '';
+  document.getElementById('triCity').value      = t.city || '';
+  document.getElementById('triSwimDist').value  = t.swimDist || '';
+  document.getElementById('triSwimTime').value  = t.swimTime || '';
+  document.getElementById('triBikeDist').value  = t.bikeDist || '';
+  document.getElementById('triBikeTime').value  = t.bikeTime || '';
+  document.getElementById('triRunDist').value   = t.runDist || '';
+  document.getElementById('triRunTime').value   = t.runTime || '';
+  document.getElementById('triTotalTime').value = t.totalTime || '';
+  document.getElementById('triPos').value       = t.pos || '';
+  document.getElementById('triCat').value       = t.cat || '';
+  document.getElementById('triNotes').value     = t.notes || '';
+  oo('addTriOv');
+}
+
+async function saveTri() {
+  const name = document.getElementById('triName').value.trim();
+  const date = document.getElementById('triDate').value;
+  if (!name) { toast('⚠️', 'Completá el nombre del evento'); return; }
+  if (!date) { toast('⚠️', 'Elegí una fecha'); return; }
+
+  const btn = document.getElementById('triSaveBtn');
+  btn.disabled = true; btn.textContent = 'Guardando...';
+
+  const data = {
+    name,
+    type:      document.getElementById('triType').value,
+    date,
+    province:  document.getElementById('triProv').value,
+    city:      document.getElementById('triCity').value.trim(),
+    swimDist:  document.getElementById('triSwimDist').value || '',
+    swimTime:  document.getElementById('triSwimTime').value.trim(),
+    bikeDist:  document.getElementById('triBikeDist').value || '',
+    bikeTime:  document.getElementById('triBikeTime').value.trim(),
+    runDist:   document.getElementById('triRunDist').value || '',
+    runTime:   document.getElementById('triRunTime').value.trim(),
+    totalTime: document.getElementById('triTotalTime').value.trim(),
+    pos:       document.getElementById('triPos').value || '',
+    cat:       document.getElementById('triCat').value.trim(),
+    notes:     document.getElementById('triNotes').value.trim(),
+    updatedAt: serverTimestamp(),
+  };
+  if (!editTriId) data.createdAt = serverTimestamp();
+
+  try {
+    const ref = editTriId
+      ? doc(db, 'users', currentUser.uid, 'triathlons', editTriId)
+      : doc(collection(db, 'users', currentUser.uid, 'triathlons'));
+    await setDoc(ref, data, { merge: true });
+    cm('addTriOv');
+    toast('🏊', editTriId ? 'Evento actualizado' : 'Evento guardado');
+  } catch(e) {
+    toast('❌', 'Error al guardar: ' + e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = 'GUARDAR EVENTO';
+  }
+}
+
+async function deleteTriConfirm(id) {
+  if (!confirm('¿Eliminás este evento de triatlón?')) return;
+  try {
+    await deleteDoc(doc(db, 'users', currentUser.uid, 'triathlons', id));
+    toast('🗑', 'Evento eliminado');
+  } catch(e) {
+    toast('❌', 'Error: ' + e.message);
+  }
+}
+
 // Exponer funciones al HTML (necesario con type="module")
 Object.assign(window, {
   openLogin, logout, loginWithGoogle,
@@ -3724,7 +4086,8 @@ Object.assign(window, {
   openAddInsc, inscRaceChanged, prevInscFile, saveInsc, openInscDetail, deleteInsc, editInsc,
   togglePushNotifications,
   renderMapTab, openDetailFromMap,
-  openShareCard, selectSharePhoto, downloadShareCard, shareToWhatsApp, nativeShare
+  openShareCard, selectSharePhoto, downloadShareCard, shareToWhatsApp, nativeShare,
+  openAddTri, openEditTri, saveTri, deleteTriConfirm, filterTri
 });
 
 init();
