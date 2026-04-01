@@ -288,8 +288,6 @@ textarea{resize:vertical;min-height:70px;}
   .topbar{padding:10px 16px;}
   .nav-right{gap:6px;}
   .nav-right .btn{padding:6px 10px;font-size:12px;}
-  .main-tabs{padding:0 8px;top:53px;}
-  .tab-btn{padding:10px 14px;font-size:14px;letter-spacing:1px;}
   .hero,.featured-wrap,.filter-wrap,.res-bar,.cards-wrap{padding-left:16px;padding-right:16px;}
   .feat-row{grid-template-columns:1fr;}
   .filter-bar{grid-template-columns:1fr;}
@@ -309,6 +307,10 @@ textarea{resize:vertical;min-height:70px;}
 .tab-btn .tbadge{background:var(--accent);color:#0c0c0a;font-size:10px;font-weight:700;padding:1px 6px;border-radius:100px;font-family:'Space Mono',monospace;}
 .tab-panel{display:none;}
 .tab-panel.active{display:block;}
+@media(max-width:640px){
+  .main-tabs{padding:0 8px;top:53px;}
+  .tab-btn{padding:10px 14px;font-size:14px;letter-spacing:1px;}
+}
 
 /* ── TRAINING SECTION ── */
 .train-wrap{padding:24px 32px 56px;}
