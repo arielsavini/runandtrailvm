@@ -1,0 +1,9 @@
+name = "strava-auth"
+main = "worker.js"
+compatibility_date = "2024-01-01"
+
+# Los secrets se cargan con:
+#   npx wrangler secret put STRAVA_CLIENT_ID
+#   npx wrangler secret put STRAVA_CLIENT_SECRET
+#
+# Nunca escribas los valores aquí — usa los comandos de arriba

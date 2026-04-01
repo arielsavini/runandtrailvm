@@ -1,0 +1,55 @@
+{
+  "name": "RUN & TRAIL VM",
+  "short_name": "RUN TRAIL",
+  "description": "Calendario de carreras de running y trail en Villa Mercedes y San Luis",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0c8233",
+  "theme_color": "#0c8233",
+  "lang": "es",
+  "categories": ["sports", "health", "fitness"],
+  "icons": [
+    {
+      "src": "./icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icons/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "./icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Calendario de Carreras",
+      "short_name": "Carreras",
+      "description": "Ver calendario de carreras",
+      "url": "./index.html#carreras",
+      "icons": [{ "src": "./icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Mis Entrenamientos",
+      "short_name": "Entrenamientos",
+      "description": "Ver mis entrenamientos",
+      "url": "./index.html#training",
+      "icons": [{ "src": "./icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

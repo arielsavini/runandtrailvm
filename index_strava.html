@@ -1,0 +1,2550 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RUN &amp; TRAIL VM</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+:root {
+  --bg:#0c8233; --surface:#0a6e2b; --surface2:#085c24; --surface3:#074f1f;
+  --border:#1a9945; --accent:#e8ff47; --accent2:#ff6b35;
+  --text:#f2f1ea; --muted:#a8d8b5;
+  --trail:#6eeaa0; --road:#4fa8e8; --ultra:#c9a0fc; --mixed:#f59e0b;
+  --r:10px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;overflow-x:hidden;}
+body::after{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.035'/%3E%3C/svg%3E");pointer-events:none;z-index:9999;opacity:.5;}
+a{text-decoration:none;color:inherit;}
+button{cursor:pointer;font-family:inherit;}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+
+/* TOPBAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 32px;border-bottom:1px solid var(--border);position:sticky;top:0;z-index:200;background:rgba(10,110,43,.96);backdrop-filter:blur(16px);}
+.logo{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:4px;display:flex;align-items:center;gap:10px;color:var(--text);}
+.logo em{color:var(--accent);font-style:normal;}
+.logo-badge{background:var(--accent);color:#0c0c0a;font-size:11px;font-weight:700;padding:2px 7px;border-radius:4px;letter-spacing:1px;}
+.nav-right{display:flex;align-items:center;gap:10px;}
+.btn{padding:8px 18px;border-radius:7px;border:none;font-size:13px;font-weight:600;transition:all .15s;display:inline-flex;align-items:center;gap:6px;}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--border);}
+.btn-ghost:hover{color:var(--text);border-color:var(--muted);}
+.btn-accent{background:var(--accent);color:#0c0c0a;font-weight:700;}
+.btn-accent:hover{background:#d4eb2e;transform:translateY(-1px);}
+.avatar{width:34px;height:34px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#0c0c0a;background:linear-gradient(135deg,var(--accent),var(--accent2));cursor:pointer;overflow:hidden;transition:border-color .15s;}
+.avatar:hover{border-color:var(--accent);}
+.avatar img{width:100%;height:100%;object-fit:cover;}
+.user-chip{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted);}
+.user-chip .dot{width:6px;height:6px;border-radius:50%;background:var(--trail);}
+.admin-badge{background:rgba(232,255,71,.12);border:1px solid rgba(232,255,71,.3);color:var(--accent);font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;letter-spacing:1px;font-family:'Space Mono',monospace;}
+
+/* HERO */
+.hero{padding:48px 32px 0;display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:16px;}
+.hero-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(52px,9vw,104px);line-height:.88;letter-spacing:2px;}
+.hero-title em{color:var(--accent);font-style:normal;}
+.hero-sub{color:var(--muted);font-family:'Space Mono',monospace;font-size:11px;margin-top:10px;letter-spacing:1.5px;}
+.hero-stats{display:flex;gap:28px;flex-wrap:wrap;align-items:center;}
+.hero-stat{text-align:center;}
+.hero-stat .val{font-family:'Bebas Neue',sans-serif;font-size:40px;color:var(--accent);line-height:1;}
+.hero-stat .lbl{font-size:10px;color:var(--muted);font-family:'Space Mono',monospace;letter-spacing:1px;}
+
+/* FEATURED */
+.featured-wrap{padding:32px 32px 0;}
+.feat-label{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+.feat-label::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--accent);animation:pulse 1.8s ease infinite;}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:.3;transform:scale(1.5);}}
+.feat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;}
+.feat-card{position:relative;border-radius:var(--r);overflow:hidden;height:160px;cursor:pointer;border:1px solid var(--border);transition:transform .2s,border-color .2s;}
+.feat-card:hover{transform:translateY(-3px);border-color:var(--accent);}
+.feat-card .fbg{position:absolute;inset:0;background:linear-gradient(135deg,var(--surface2),var(--surface3));display:flex;align-items:center;justify-content:center;font-size:38px;}
+.feat-card .fbg img{width:100%;height:100%;object-fit:cover;object-position:center top;}
+.feat-card .fov{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.88) 0%,rgba(0,0,0,.15) 60%,transparent 100%);}
+.feat-card .finfo{position:absolute;bottom:0;left:0;right:0;padding:12px;}
+.feat-card .fname{font-weight:700;font-size:13px;line-height:1.3;margin-bottom:3px;}
+.feat-card .fmeta{font-size:10px;color:rgba(255,255,255,.55);font-family:'Space Mono',monospace;}
+
+/* FILTERS */
+.filter-wrap{padding:28px 32px 0;}
+.filter-bar{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px 20px;display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:12px;align-items:end;}
+.fg{display:flex;flex-direction:column;gap:5px;}
+.fl{font-size:10px;font-family:'Space Mono',monospace;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;}
+.fsel,.finp{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:7px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .15s;width:100%;}
+.fsel:focus,.finp:focus{border-color:var(--accent);}
+.fsel option{background:#085c24;}
+.fbtn-row{display:flex;gap:8px;align-items:flex-end;}
+.btn-fil{background:var(--accent);color:#0c0c0a;border:none;border-radius:7px;padding:9px 20px;font-weight:700;font-size:13px;white-space:nowrap;transition:all .15s;cursor:pointer;}
+.btn-fil:hover{background:#d4eb2e;}
+.btn-clr{background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:7px;padding:9px 14px;font-size:13px;transition:all .15s;white-space:nowrap;cursor:pointer;}
+.btn-clr:hover{color:var(--text);border-color:var(--muted);}
+.active-chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;}
+.chip{display:flex;align-items:center;gap:5px;background:rgba(232,255,71,.08);border:1px solid rgba(232,255,71,.25);color:var(--accent);border-radius:100px;padding:4px 10px;font-size:11px;font-family:'Space Mono',monospace;}
+.chip button{background:none;border:none;color:var(--accent);font-size:14px;line-height:1;padding:0;}
+
+/* RESULTS BAR */
+.res-bar{padding:20px 32px 12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.res-count{font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);}
+.res-count strong{color:var(--text);}
+.sort-sel{background:var(--surface2);border:1px solid var(--border);color:var(--muted);padding:6px 10px;border-radius:6px;font-size:12px;outline:none;}
+
+/* CARDS */
+.cards-wrap{padding:0 32px 56px;}
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;}
+.race-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;cursor:pointer;transition:transform .2s,border-color .2s,box-shadow .2s;display:flex;flex-direction:column;}
+.race-card:hover{transform:translateY(-4px);border-color:rgba(232,255,71,.3);box-shadow:0 14px 44px rgba(0,0,0,.45);}
+.c-img{position:relative;height:200px;overflow:hidden;background:var(--surface2);}
+.c-img img{width:100%;height:100%;object-fit:cover;object-position:center top;transition:transform .4s;}
+.race-card:hover .c-img img{transform:scale(1.06);}
+.c-img-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:42px;background:linear-gradient(135deg,var(--surface2),var(--surface3));}
+.c-ov{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.78) 0%,transparent 55%);}
+.c-badges{position:absolute;top:10px;left:10px;display:flex;gap:5px;flex-wrap:wrap;}
+.bdg{padding:3px 9px;border-radius:100px;font-size:10px;font-weight:700;font-family:'Space Mono',monospace;backdrop-filter:blur(4px);}
+.bdg-trail{background:rgba(62,207,122,.22);color:var(--trail);border:1px solid rgba(62,207,122,.45);}
+.bdg-road{background:rgba(79,168,232,.22);color:var(--road);border:1px solid rgba(79,168,232,.45);}
+.bdg-ultra{background:rgba(185,124,248,.22);color:var(--ultra);border:1px solid rgba(185,124,248,.45);}
+.bdg-mixed{background:rgba(245,158,11,.22);color:var(--mixed);border:1px solid rgba(245,158,11,.45);}
+.bdg-dark{background:rgba(0,0,0,.65);color:#fff;border:1px solid rgba(255,255,255,.12);}
+.bdg-acc{background:var(--accent);color:#0c0c0a;border:none;}
+.c-part-count{position:absolute;top:10px;right:10px;background:rgba(232,255,71,.88);color:#0c0c0a;border-radius:100px;font-size:10px;font-weight:700;padding:3px 8px;font-family:'Space Mono',monospace;}
+.c-date{position:absolute;bottom:10px;right:10px;background:rgba(0,0,0,.72);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.1);border-radius:6px;padding:6px 10px;text-align:center;}
+.c-date .day{font-family:'Bebas Neue',sans-serif;font-size:22px;line-height:1;color:#fff;}
+.c-date .mon{font-family:'Space Mono',monospace;font-size:9px;color:rgba(255,255,255,.55);text-transform:uppercase;}
+.c-body{padding:14px 16px;flex:1;display:flex;flex-direction:column;gap:7px;}
+.c-name{font-weight:700;font-size:16px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.c-loc{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);}
+.c-dists{display:flex;gap:5px;flex-wrap:wrap;}
+.dpill{padding:3px 9px;border-radius:100px;font-size:10px;font-weight:700;font-family:'Space Mono',monospace;background:var(--surface3);border:1px solid var(--border);color:var(--text);}
+.c-weather{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--muted);}
+.c-weather .wt{color:var(--accent);font-weight:700;}
+.c-foot{padding:10px 16px 14px;display:flex;gap:7px;border-top:1px solid var(--border);}
+.cb-pri{flex:1;background:var(--accent);color:#0c0c0a;border:none;border-radius:6px;padding:8px;font-size:12px;font-weight:700;transition:all .15s;}
+.cb-pri:hover{background:#d4eb2e;}
+.cb-sec{background:var(--surface2);color:var(--muted);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:12px;transition:all .15s;}
+.cb-sec:hover{color:var(--text);border-color:var(--muted);}
+.cb-adm{background:rgba(255,68,68,.1);color:#ff6b6b;border:1px solid rgba(255,68,68,.25);border-radius:6px;padding:8px 10px;font-size:12px;transition:all .15s;}
+.cb-adm:hover{background:rgba(255,68,68,.22);}
+
+/* EMPTY */
+.empty{grid-column:1/-1;padding:64px 24px;text-align:center;color:var(--muted);}
+.empty-icon{font-size:52px;margin-bottom:16px;}
+.empty-title{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--text);margin-bottom:8px;}
+.empty-sub{font-size:14px;max-width:320px;margin:0 auto 24px;line-height:1.6;}
+
+/* MODALS */
+.overlay{position:fixed;inset:0;z-index:500;background:rgba(0,40,10,.85);backdrop-filter:blur(5px);display:none;align-items:center;justify-content:center;padding:16px;}
+.overlay.open{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:14px;width:100%;max-width:680px;max-height:92vh;overflow-y:auto;animation:mIn .2s ease;}
+.modal-wide{max-width:820px;}
+@keyframes mIn{from{opacity:0;transform:translateY(18px) scale(.97);}to{opacity:1;transform:translateY(0) scale(1);}}
+.mh{padding:22px 26px 18px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+.mt{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;color:var(--accent);}
+.ms{font-size:11px;color:var(--muted);margin-top:2px;font-family:'Space Mono',monospace;}
+.xbtn{width:30px;height:30px;background:transparent;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:18px;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;}
+.xbtn:hover{color:var(--text);border-color:var(--muted);}
+.mb{padding:22px 26px;}
+.mf{padding:14px 26px 22px;display:flex;gap:10px;justify-content:flex-end;}
+
+/* FORMS */
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.fr.full{grid-template-columns:1fr;}
+.fr.three{grid-template-columns:1fr 1fr 1fr;}
+.fg2{display:flex;flex-direction:column;gap:5px;}
+label{font-size:10px;font-family:'Space Mono',monospace;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;}
+input,select,textarea{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:9px 12px;border-radius:7px;font-size:13px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .15s;width:100%;}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);}
+select option{background:#085c24;}
+textarea{resize:vertical;min-height:70px;}
+.photo-up{border:2px dashed var(--border);border-radius:9px;padding:26px;text-align:center;cursor:pointer;transition:border-color .15s;position:relative;overflow:hidden;}
+.photo-up:hover{border-color:var(--accent);}
+.photo-up input{position:absolute;inset:0;opacity:0;cursor:pointer;}
+.photo-up .ui{font-size:26px;margin-bottom:5px;}
+.photo-up p{color:var(--muted);font-size:12px;}
+.photo-up .prev{width:100%;max-height:220px;object-fit:contain;background:var(--surface3);border-radius:6px;margin-top:8px;display:block;}
+.dist-tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:4px;}
+.dtag{padding:5px 13px;border-radius:100px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:11px;font-family:'Space Mono',monospace;cursor:pointer;transition:all .15s;}
+.dtag:hover{border-color:var(--accent);color:var(--accent);}
+.dtag.sel{background:var(--accent);color:#0c0c0a;border-color:var(--accent);font-weight:700;}
+.wbox{display:flex;align-items:center;gap:10px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:11px 14px;margin-top:6px;}
+.wbox .wi{font-size:24px;}
+.wbox .wt{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--accent);}
+.wbox .wd{font-size:11px;color:var(--muted);}
+.wfbtn{margin-left:auto;padding:7px 13px;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;font-size:11px;font-family:'Space Mono',monospace;transition:all .15s;}
+.wfbtn:hover{border-color:var(--accent);color:var(--accent);}
+.mapbox{background:var(--surface2);border:1px solid var(--border);border-radius:8px;height:150px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;position:relative;overflow:hidden;transition:border-color .15s;}
+.mapbox:hover{border-color:var(--accent);}
+.mapgrid{position:absolute;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:28px 28px;opacity:.5;}
+.mapbox .mpin{font-size:24px;position:relative;z-index:1;}
+.mapbox .mtxt{font-size:11px;color:var(--muted);font-family:'Space Mono',monospace;position:relative;z-index:1;}
+.mapbox .mcoords{font-size:10px;color:var(--accent);font-family:'Space Mono',monospace;position:relative;z-index:1;}
+.sdiv{height:1px;background:var(--border);margin:18px 0;}
+
+/* DETAIL */
+.dhero{width:100%;max-height:320px;object-fit:cover;object-position:center top;border-radius:8px;margin-bottom:18px;display:block;}
+.dhero-ph{width:100%;height:200px;background:linear-gradient(135deg,var(--surface2),var(--surface3));border-radius:8px;margin-bottom:18px;display:flex;align-items:center;justify-content:center;font-size:54px;}
+.meta-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:18px;}
+.mc{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:11px;}
+.mc .ml{font-size:9px;font-family:'Space Mono',monospace;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:3px;}
+.mc .mv{font-size:15px;font-weight:600;}
+.act-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px;}
+.act-btn{display:flex;align-items:center;gap:6px;padding:8px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;font-size:12px;color:var(--muted);transition:all .15s;cursor:pointer;}
+.act-btn:hover{border-color:var(--accent);color:var(--accent);}
+.stitle{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;margin-bottom:12px;display:flex;align-items:center;gap:10px;}
+.stitle::after{content:'';flex:1;height:1px;background:var(--border);}
+.pcard{background:var(--surface2);border:1px solid var(--border);border-radius:9px;padding:14px;margin-bottom:10px;}
+.ptop{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.puser{display:flex;align-items:center;gap:9px;}
+.pav{width:30px;height:30px;border-radius:50%;overflow:hidden;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#0c0c0a;flex-shrink:0;}
+.pav img{width:100%;height:100%;object-fit:cover;}
+.pname{font-weight:600;font-size:13px;}
+.pwhen{font-size:10px;color:var(--muted);font-family:'Space Mono',monospace;}
+.pstats{display:flex;gap:18px;flex-wrap:wrap;margin-bottom:8px;}
+.pst .lbl{font-size:10px;color:var(--muted);}
+.pst .val{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--accent);letter-spacing:1px;}
+.pst .val.sm{font-size:17px;color:var(--text);}
+.pcomment{font-size:12px;color:var(--muted);font-style:italic;line-height:1.6;}
+.pphotos{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;}
+.pphotos img{width:58px;height:58px;object-fit:cover;border-radius:6px;cursor:pointer;transition:transform .15s;}
+.pphotos img:hover{transform:scale(1.07);}
+
+/* MOOD */
+.mood-row{display:flex;gap:7px;}
+.mbtn{flex:1;padding:9px 6px;border-radius:7px;border:1px solid var(--border);background:transparent;font-size:18px;text-align:center;transition:all .15s;}
+.mbtn:hover{border-color:var(--muted);transform:scale(1.08);}
+.mbtn.sel{border-color:var(--accent);background:rgba(232,255,71,.1);transform:scale(1.1);}
+.mlbl{font-size:9px;font-family:'Space Mono',monospace;color:var(--muted);text-align:center;margin-top:3px;}
+
+/* LOGIN */
+.lcenter{text-align:center;padding:20px 0;}
+.lcenter .li{font-size:46px;margin-bottom:14px;}
+.lcenter h2{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;margin-bottom:6px;}
+.lcenter p{color:var(--muted);font-size:13px;margin-bottom:28px;line-height:1.6;}
+.gbtn{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;padding:13px 20px;border-radius:8px;background:#fff;color:#1a1a1a;border:none;font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;transition:all .15s;box-shadow:0 2px 12px rgba(0,0,0,.35);margin-bottom:14px;cursor:pointer;}
+.gbtn:hover{transform:translateY(-2px);box-shadow:0 6px 22px rgba(0,0,0,.42);}
+.cwarn{background:rgba(232,255,71,.07);border:1px solid rgba(232,255,71,.25);border-radius:8px;padding:12px 16px;text-align:left;margin-top:10px;}
+.cwarn .cwt{font-size:11px;font-family:'Space Mono',monospace;color:var(--accent);margin-bottom:5px;}
+.cwarn p{font-size:12px;color:var(--muted);line-height:1.7;}
+.cwarn code{color:var(--text);background:rgba(255,255,255,.06);padding:1px 5px;border-radius:3px;}
+
+/* TOAST */
+.toast{position:fixed;bottom:28px;right:28px;z-index:9000;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:12px 18px;display:flex;align-items:center;gap:10px;font-size:13px;max-width:300px;transform:translateY(80px);opacity:0;transition:all .28s cubic-bezier(.34,1.56,.64,1);box-shadow:0 8px 32px rgba(0,0,0,.4);}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast.ok{border-color:rgba(62,207,122,.4);}
+.toast.err{border-color:rgba(255,68,68,.4);}
+
+/* FAB ADMIN */
+.admin-fab{position:fixed;bottom:28px;left:28px;z-index:300;background:var(--accent);color:#0c0c0a;border:none;border-radius:100px;padding:12px 22px;font-weight:700;font-size:13px;display:none;align-items:center;gap:8px;box-shadow:0 4px 20px rgba(232,255,71,.3);transition:all .15s;font-family:'DM Sans',sans-serif;}
+.admin-fab:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(232,255,71,.4);}
+.admin-fab.on{display:flex;}
+
+/* SPINNER */
+.spin{display:inline-block;width:13px;height:13px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:sp .7s linear infinite;}
+@keyframes sp{to{transform:rotate(360deg);}}
+
+/* RESPONSIVE */
+@media(max-width:900px){.filter-bar{grid-template-columns:1fr 1fr;}.feat-row{grid-template-columns:1fr 1fr;}}
+@media(max-width:640px){
+  .topbar{padding:12px 16px;}
+  .hero,.featured-wrap,.filter-wrap,.res-bar,.cards-wrap{padding-left:16px;padding-right:16px;}
+  .feat-row{grid-template-columns:1fr;}
+  .filter-bar{grid-template-columns:1fr;}
+  .cards-grid{grid-template-columns:1fr;}
+  .fr{grid-template-columns:1fr;}
+  .fr.three{grid-template-columns:1fr 1fr;}
+  .mb{padding:16px;}
+  .mh{padding:16px;}
+}
+
+/* ── TABS ── */
+.main-tabs{display:flex;gap:0;border-bottom:2px solid var(--border);padding:0 32px;margin-top:24px;position:sticky;top:57px;z-index:190;background:var(--bg);}
+.tab-btn{padding:12px 24px;font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:2px;border:none;background:transparent;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .15s;display:flex;align-items:center;gap:8px;}
+.tab-btn:hover{color:var(--text);}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
+.tab-btn .tbadge{background:var(--accent);color:#0c0c0a;font-size:10px;font-weight:700;padding:1px 6px;border-radius:100px;font-family:'Space Mono',monospace;}
+.tab-panel{display:none;}
+.tab-panel.active{display:block;}
+
+/* ── TRAINING SECTION ── */
+.train-wrap{padding:24px 32px 56px;}
+.train-toolbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px;}
+.train-toolbar-left{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.strava-btn{display:flex;align-items:center;gap:8px;padding:9px 18px;background:#fc4c02;color:#fff;border:none;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;}
+.strava-btn:hover{background:#e04400;transform:translateY(-1px);}
+.strava-btn svg{width:20px;height:20px;}
+.strava-connected{display:flex;align-items:center;gap:8px;padding:7px 14px;background:rgba(252,76,2,.15);border:1px solid rgba(252,76,2,.4);border-radius:7px;font-size:12px;color:#fc4c02;font-weight:700;}
+.gpx-upload-btn{display:flex;align-items:center;gap:7px;padding:9px 16px;background:var(--surface);border:1px solid var(--border);color:var(--muted);border-radius:7px;font-size:13px;cursor:pointer;transition:all .15s;position:relative;}
+.gpx-upload-btn:hover{border-color:var(--accent);color:var(--accent);}
+.gpx-upload-btn input{position:absolute;inset:0;opacity:0;cursor:pointer;}
+.train-summary{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:24px;}
+.tscard{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;}
+.tscard .tsl{font-size:9px;font-family:'Space Mono',monospace;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px;}
+.tscard .tsv{font-family:'Bebas Neue',sans-serif;font-size:36px;color:var(--accent);line-height:1;}
+.tscard .tsu{font-size:11px;color:var(--muted);}
+.train-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px;}
+.wk-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;cursor:pointer;transition:transform .18s,border-color .18s,box-shadow .18s;}
+.wk-card:hover{transform:translateY(-3px);border-color:rgba(232,255,71,.35);box-shadow:0 10px 36px rgba(0,0,0,.4);}
+.wk-map{height:140px;background:var(--surface2);position:relative;}
+.wk-map .wk-map-inner{width:100%;height:100%;}
+.wk-map .wk-map-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:32px;background:linear-gradient(135deg,var(--surface2),var(--surface3));}
+.wk-type-badge{position:absolute;top:8px;left:8px;z-index:5;}
+.wk-body{padding:12px 14px;}
+.wk-name{font-weight:700;font-size:15px;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.wk-date{font-size:11px;color:var(--muted);font-family:'Space Mono',monospace;margin-bottom:10px;}
+.wk-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+.wk-stat .wsl{font-size:9px;color:var(--muted);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:1px;}
+.wk-stat .wsv{font-size:14px;font-weight:700;color:var(--text);}
+.wk-foot{padding:8px 14px 12px;border-top:1px solid var(--border);display:flex;gap:6px;}
+.wk-link-race{flex:1;background:rgba(232,255,71,.08);border:1px solid rgba(232,255,71,.2);color:var(--accent);border-radius:6px;padding:7px;font-size:11px;font-weight:700;text-align:center;cursor:pointer;transition:all .15s;}
+.wk-link-race:hover{background:rgba(232,255,71,.18);}
+.wk-del{background:rgba(255,68,68,.08);border:1px solid rgba(255,68,68,.2);color:#ff6b6b;border-radius:6px;padding:7px 10px;font-size:11px;cursor:pointer;transition:all .15s;}
+.wk-del:hover{background:rgba(255,68,68,.2);}
+.train-empty{text-align:center;padding:64px 24px;color:var(--muted);}
+.train-empty .ei{font-size:56px;margin-bottom:16px;}
+.train-empty h3{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--text);margin-bottom:8px;}
+.train-empty p{font-size:14px;max-width:340px;margin:0 auto 24px;line-height:1.7;}
+.train-lock{text-align:center;padding:80px 24px;color:var(--muted);}
+.train-lock .tli{font-size:52px;margin-bottom:16px;}
+.train-lock h3{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--text);margin-bottom:8px;}
+
+/* ── WORKOUT DETAIL MODAL ── */
+.wk-detail-map{height:300px;border-radius:8px;overflow:hidden;margin-bottom:18px;}
+.wk-metrics{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px;margin-bottom:18px;}
+.wm{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;}
+.wm .wml{font-size:9px;font-family:'Space Mono',monospace;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:3px;}
+.wm .wmv{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--accent);letter-spacing:1px;line-height:1;}
+.wm .wmu{font-size:10px;color:var(--muted);}
+.elev-chart{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:18px;}
+.elev-chart canvas{width:100%!important;height:120px!important;}
+.hr-chart{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:18px;}
+.hr-chart canvas{width:100%!important;height:100px!important;}
+@media(max-width:640px){
+  .main-tabs{padding:0 16px;}
+  .train-wrap{padding:16px 16px 56px;}
+  .train-grid{grid-template-columns:1fr;}
+}
+.leaflet-container{background:var(--surface3)!important;}
+
+/* ── MIS INSCRIPCIONES ── */
+.insc-wrap{padding:24px 32px 56px;}
+.insc-toolbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px;}
+.btn-new-insc{display:flex;align-items:center;gap:8px;padding:10px 20px;background:var(--accent);color:#0c0c0a;border:none;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif;}
+.btn-new-insc:hover{background:#d4eb2e;transform:translateY(-1px);}
+.insc-summary{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:24px;}
+.insc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;}
+.insc-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;transition:transform .18s,border-color .18s,box-shadow .18s;}
+.insc-card:hover{transform:translateY(-3px);border-color:rgba(232,255,71,.3);box-shadow:0 10px 36px rgba(0,0,0,.4);}
+.insc-card-head{padding:14px 16px 10px;display:flex;align-items:flex-start;justify-content:space-between;gap:8px;}
+.insc-card-name{font-weight:700;font-size:15px;line-height:1.3;flex:1;}
+.insc-card-type{flex-shrink:0;}
+.insc-card-meta{padding:0 16px 10px;display:flex;flex-direction:column;gap:5px;}
+.insc-meta-row{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);}
+.insc-meta-row strong{color:var(--text);}
+.insc-card-pills{padding:0 16px 12px;display:flex;gap:6px;flex-wrap:wrap;}
+.insc-pill{padding:3px 10px;border-radius:100px;font-size:10px;font-weight:700;font-family:'Space Mono',monospace;background:var(--surface3);border:1px solid var(--border);color:var(--text);}
+.insc-pill-acc{background:rgba(232,255,71,.1);border-color:rgba(232,255,71,.3);color:var(--accent);}
+.insc-card-foot{padding:10px 16px 14px;display:flex;gap:7px;border-top:1px solid var(--border);}
+.insc-btn-pri{flex:1;background:var(--accent);color:#0c0c0a;border:none;border-radius:6px;padding:8px;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;}
+.insc-btn-pri:hover{background:#d4eb2e;}
+.insc-btn-del{background:rgba(255,68,68,.08);border:1px solid rgba(255,68,68,.2);color:#ff6b6b;border-radius:6px;padding:8px 12px;font-size:12px;cursor:pointer;transition:all .15s;}
+.insc-btn-del:hover{background:rgba(255,68,68,.2);}
+.insc-lock{text-align:center;padding:80px 24px;color:var(--muted);}
+.insc-lock .ili{font-size:52px;margin-bottom:16px;}
+.insc-lock h3{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--text);margin-bottom:8px;}
+.insc-empty{text-align:center;padding:64px 24px;color:var(--muted);}
+.insc-empty .ei{font-size:52px;margin-bottom:16px;}
+.insc-empty h3{font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--text);margin-bottom:8px;}
+.insc-detail-row{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);}
+.insc-detail-row:last-child{border-bottom:none;}
+.insc-detail-icon{font-size:20px;flex-shrink:0;width:28px;text-align:center;}
+.insc-detail-info .lbl{font-size:10px;font-family:'Space Mono',monospace;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-bottom:2px;}
+.insc-detail-info .val{font-size:14px;color:var(--text);}
+.insc-pdf-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;font-size:12px;color:var(--muted);transition:all .15s;cursor:pointer;text-decoration:none;}
+.insc-pdf-btn:hover{border-color:var(--accent);color:var(--accent);}
+@media(max-width:640px){
+  .insc-wrap{padding:16px 16px 56px;}
+  .insc-grid{grid-template-columns:1fr;}
+}
+
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<nav class="topbar">
+  <div class="logo"><em>RUN &amp; TRAIL</em> <span style="color:var(--text)">VM</span><span class="logo-badge">ARG</span></div>
+  <div class="nav-right" id="navRight">
+    <button class="btn btn-ghost" onclick="openLogin()">Ingresar</button>
+    <button class="btn btn-accent" onclick="openLogin()">Registrarse</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div>
+    <div class="hero-title">RUN &amp;<br><em>TRAIL VM</em></div>
+    <div class="hero-sub">// CALENDARIO ARGENTINA · RUNNING & TRAIL</div>
+  </div>
+  <div class="hero-stats">
+    <div class="hero-stat"><div class="val" id="sTotal">0</div><div class="lbl">CARRERAS</div></div>
+    <div class="hero-stat"><div class="val" id="sProvs">0</div><div class="lbl">PROVINCIAS</div></div>
+    <div class="hero-stat"><div class="val" id="sParts">0</div><div class="lbl">REGISTROS</div></div>
+  </div>
+</section>
+
+<!-- MAIN TABS -->
+<nav class="main-tabs">
+  <button class="tab-btn active" id="tab-calendar" onclick="switchTab('calendar')">🗓 CALENDARIO</button>
+  <button class="tab-btn" id="tab-inscripciones" onclick="switchTab('inscripciones')">
+    🎫 MIS INSCRIPCIONES
+    <span class="tbadge" id="inscBadge" style="display:none">0</span>
+  </button>
+  <button class="tab-btn" id="tab-training" onclick="switchTab('training')">
+    🏃 MIS ENTRENAMIENTOS
+    <span class="tbadge" id="trainBadge" style="display:none">0</span>
+  </button>
+</nav>
+
+<!-- TAB: CALENDARIO -->
+<div class="tab-panel active" id="panel-calendar">
+
+<!-- FEATURED -->
+<section class="featured-wrap" id="featWrap">
+  <div class="feat-label">PRÓXIMAS DESTACADAS</div>
+  <div class="feat-row" id="featRow"></div>
+</section>
+
+<!-- FILTERS -->
+<section class="filter-wrap">
+  <div class="filter-bar">
+    <div class="fg">
+      <span class="fl">Tipo</span>
+      <select class="fsel" id="fTipo">
+        <option value="">Todos</option>
+        <option value="trail">🏔 Trail</option>
+        <option value="road">🏙 Road</option>
+        <option value="ultra">⚡ Ultra</option>
+        <option value="mixed">🔀 Mixto</option>
+      </select>
+    </div>
+    <div class="fg">
+      <span class="fl">Provincia</span>
+      <select class="fsel" id="fProv">
+        <option value="">Todas</option>
+        <option>Buenos Aires</option><option>CABA</option><option>Córdoba</option>
+        <option>Mendoza</option><option>Santa Fe</option><option>Tucumán</option>
+        <option>Salta</option><option>Jujuy</option><option>Neuquén</option>
+        <option>Río Negro</option><option>Chubut</option><option>Santa Cruz</option>
+        <option>Tierra del Fuego</option><option>Entre Ríos</option><option>Misiones</option>
+        <option>Corrientes</option><option>Chaco</option><option>Formosa</option>
+        <option>San Luis</option><option>San Juan</option><option>La Rioja</option>
+        <option>Catamarca</option><option>Santiago del Estero</option><option>La Pampa</option>
+      </select>
+    </div>
+    <div class="fg">
+      <span class="fl">Desde</span>
+      <input class="finp" type="date" id="fDesde">
+    </div>
+    <div class="fg">
+      <span class="fl">Hasta</span>
+      <input class="finp" type="date" id="fHasta">
+    </div>
+    <div class="fbtn-row">
+      <button class="btn-fil" onclick="applyFilters()">FILTRAR</button>
+      <button class="btn-clr" onclick="clearFilters()">✕</button>
+    </div>
+  </div>
+  <div class="active-chips" id="activeChips"></div>
+</section>
+
+<!-- RESULTS -->
+<div class="res-bar">
+  <div class="res-count" id="resCount">Cargando...</div>
+  <select class="sort-sel" id="sortSel" onchange="applyFilters()">
+    <option value="date-asc">Fecha ↑ (próximas)</option>
+    <option value="date-desc">Fecha ↓</option>
+    <option value="name-asc">Nombre A→Z</option>
+  </select>
+</div>
+
+<!-- CARDS -->
+<section class="cards-wrap">
+  <div class="cards-grid" id="cardsGrid"></div>
+</section>
+
+</div><!-- /panel-calendar -->
+
+<!-- TAB: MIS INSCRIPCIONES -->
+<div class="tab-panel" id="panel-inscripciones">
+<div class="insc-wrap">
+
+  <!-- LOCK -->
+  <div id="inscLock" class="insc-lock" style="display:none">
+    <div class="ili">🎫</div>
+    <h3>INICIÁ SESIÓN</h3>
+    <p style="font-size:14px;max-width:320px;margin:0 auto 24px;line-height:1.6">Guardá tus inscripciones, dorsales y comprobantes de pago.</p>
+    <button class="btn btn-accent" onclick="openLogin()">Ingresar con Google</button>
+  </div>
+
+  <!-- CONTENT -->
+  <div id="inscContent" style="display:none">
+    <div class="insc-toolbar">
+      <div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--text)">MIS INSCRIPCIONES</div>
+        <div style="font-size:11px;color:var(--muted);font-family:'Space Mono',monospace;margin-top:2px">Dorsales, comprobantes y deslindes</div>
+      </div>
+      <button class="btn-new-insc" onclick="openAddInsc()">＋ NUEVA INSCRIPCIÓN</button>
+    </div>
+
+    <!-- SUMMARY -->
+    <div class="insc-summary">
+      <div class="tscard"><div class="tsl">Inscripciones</div><div class="tsv" id="inscSumTotal">0</div></div>
+      <div class="tscard"><div class="tsl">Con comprobante</div><div class="tsv" id="inscSumPago">0</div></div>
+      <div class="tscard"><div class="tsl">Con deslinde</div><div class="tsv" id="inscSumDeslinde">0</div></div>
+    </div>
+
+    <!-- GRID -->
+    <div class="insc-grid" id="inscGrid"></div>
+  </div>
+
+</div>
+</div><!-- /panel-inscripciones -->
+
+<!-- TAB: MIS ENTRENAMIENTOS -->
+<div class="tab-panel" id="panel-training">
+<div class="train-wrap">
+
+  <!-- LOCK (no logueado) -->
+  <div id="trainLock" class="train-lock" style="display:none">
+    <div class="tli">🔐</div>
+    <h3>INICIÁ SESIÓN</h3>
+    <p>Tus entrenamientos son privados. Ingresá con tu cuenta de Google para ver y cargar actividades.</p>
+    <button class="btn btn-accent" onclick="openLogin()">Ingresar con Google</button>
+  </div>
+
+  <!-- CONTENT (logueado) -->
+  <div id="trainContent" style="display:none">
+
+    <!-- TOOLBAR -->
+    <div class="train-toolbar">
+      <div class="train-toolbar-left">
+        <!-- Strava Connect -->
+        <div id="stravaDisconnected">
+          <button class="strava-btn" onclick="connectStrava()">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.172"/></svg>
+            Conectar Strava
+          </button>
+        </div>
+        <div id="stravaConnected" style="display:none">
+          <div class="strava-connected">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.172"/></svg>
+            Strava conectado ✓
+            <button onclick="disconnectStrava()" style="background:none;border:none;color:#fc4c02;cursor:pointer;font-size:11px;margin-left:4px;">Desconectar</button>
+          </div>
+        </div>
+
+        <!-- GPX/FIT Upload -->
+        <label class="gpx-upload-btn">
+          <input type="file" accept=".gpx,.fit,.tcx" multiple onchange="handleGpxUpload(event)" style="display:none">
+          📂 Subir GPX / FIT
+        </label>
+        <button class="btn btn-ghost btn-sm" onclick="syncStrava()" id="syncStravaBtn" style="display:none">
+          <span class="spin" style="display:none" id="syncSpin"></span>
+          🔄 Sincronizar Strava
+        </button>
+      </div>
+      <div style="font-size:11px;color:var(--muted);font-family:'Space Mono',monospace">
+        📌 Desde Garmin Connect: Actividades → exportar GPX → subir aquí
+      </div>
+    </div>
+
+    <!-- SUMMARY STATS -->
+    <div class="train-summary">
+      <div class="tscard"><div class="tsl">Actividades</div><div class="tsv" id="tsSumAct">0</div></div>
+      <div class="tscard"><div class="tsl">Distancia total</div><div class="tsv" id="tsSumDist">0</div><div class="tsu">km</div></div>
+      <div class="tscard"><div class="tsl">Tiempo total</div><div class="tsv" id="tsSumTime">0</div><div class="tsu">hs</div></div>
+      <div class="tscard"><div class="tsl">Desnivel +</div><div class="tsv" id="tsSumElev">0</div><div class="tsu">m</div></div>
+    </div>
+
+    <!-- WORKOUT CARDS -->
+    <div class="train-grid" id="trainGrid">
+      <div class="train-empty">
+        <div class="ei">🏃</div>
+        <h3>SIN ENTRENAMIENTOS AÚN</h3>
+        <p>Subí un archivo GPX o FIT desde Garmin Connect, o conectá tu cuenta de Strava para sincronizar automáticamente.</p>
+      </div>
+    </div>
+
+  </div><!-- /trainContent -->
+</div>
+</div><!-- /panel-training -->
+
+<!-- WORKOUT DETAIL MODAL -->
+<div class="overlay" id="wkDetailOv" onclick="coo(event,'wkDetailOv')">
+  <div class="modal modal-wide" onclick="event.stopPropagation()">
+    <div class="mh">
+      <div><div class="mt" id="wkDetailName">—</div><div class="ms" id="wkDetailSub">—</div></div>
+      <button class="xbtn" onclick="cm('wkDetailOv')">×</button>
+    </div>
+    <div class="mb" id="wkDetailBody"></div>
+  </div>
+</div>
+
+<!-- LINK WORKOUT TO RACE MODAL -->
+<div class="overlay" id="linkRaceOv" onclick="coo(event,'linkRaceOv')">
+  <div class="modal" style="max-width:480px" onclick="event.stopPropagation()">
+    <div class="mh">
+      <div><div class="mt">VINCULAR A CARRERA</div><div class="ms" id="linkWkName">—</div></div>
+      <button class="xbtn" onclick="cm('linkRaceOv')">×</button>
+    </div>
+    <div class="mb">
+      <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Seleccioná la carrera a la que pertenece este entrenamiento/competencia:</p>
+      <div id="linkRaceList" style="display:flex;flex-direction:column;gap:8px;max-height:360px;overflow-y:auto"></div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-ghost" onclick="cm('linkRaceOv')">Cancelar</button>
+    </div>
+  </div>
+</div>
+<button class="admin-fab" id="adminFab" onclick="openAddRace()">＋ AGREGAR CARRERA</button>
+
+<!-- =============== MODALS =============== -->
+
+<!-- LOGIN -->
+<div class="overlay" id="loginOv" onclick="coo(event,'loginOv')">
+  <div class="modal" style="max-width:420px" onclick="event.stopPropagation()">
+    <div class="mh"><div><div class="mt">INGRESAR</div></div><button class="xbtn" onclick="cm('loginOv')">×</button></div>
+    <div class="mb">
+      <div class="lcenter">
+        <div class="li">🏔</div>
+        <h2>UNITE A RUN & TRAIL VM</h2>
+        <p>Guardá tus tiempos, fotos, sensaciones<br>y entrenamientos. 100% gratis.</p>
+        <button class="gbtn" onclick="loginWithGoogle()">
+          <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+          Continuar con Google
+        </button>
+        <div style="font-size:11px;color:var(--muted);margin-top:18px;font-family:'Space Mono',monospace;">Al ingresar aceptás los términos de uso.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD/EDIT RACE -->
+<div class="overlay" id="addRaceOv" onclick="coo(event,'addRaceOv')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="mh">
+      <div><div class="mt" id="arTitle">NUEVA CARRERA</div><div class="ms">Solo administradores</div></div>
+      <button class="xbtn" onclick="cm('addRaceOv')">×</button>
+    </div>
+    <div class="mb">
+      <div class="fr full" style="margin-bottom:18px">
+        <div class="photo-up" onclick="document.getElementById('rpInput').click()">
+          <input type="file" id="rpInput" accept="image/*" style="display:none" onchange="prevRacePhoto(event)">
+          <div id="rpPrev"><div class="ui">📷</div><p>Click para subir foto de portada</p></div>
+        </div>
+      </div>
+      <div class="fr">
+        <div class="fg2"><label>Nombre *</label><input id="rName" type="text" placeholder="ej. Ultra Trail Aconcagua"></div>
+        <div class="fg2"><label>Tipo *</label>
+          <select id="rType">
+            <option value="trail">🏔 Trail</option><option value="road">🏙 Road</option>
+            <option value="ultra">⚡ Ultra</option><option value="mixed">🔀 Mixto</option>
+          </select>
+        </div>
+      </div>
+      <div class="fr three">
+        <div class="fg2"><label>Fecha *</label><input id="rDate" type="date"></div>
+        <div class="fg2"><label>Provincia</label>
+          <select id="rProv">
+            <option value="">Seleccionar...</option>
+            <option>Buenos Aires</option><option>CABA</option><option>Córdoba</option>
+            <option>Mendoza</option><option>Santa Fe</option><option>Tucumán</option>
+            <option>Salta</option><option>Jujuy</option><option>Neuquén</option>
+            <option>Río Negro</option><option>Chubut</option><option>Santa Cruz</option>
+            <option>Tierra del Fuego</option><option>Entre Ríos</option><option>Misiones</option>
+            <option>Corrientes</option><option>Chaco</option><option>Formosa</option>
+            <option>San Luis</option><option>San Juan</option><option>La Rioja</option>
+            <option>Catamarca</option><option>Santiago del Estero</option><option>La Pampa</option>
+          </select>
+        </div>
+        <div class="fg2"><label>Ciudad / Lugar</label><input id="rCity" type="text" placeholder="ej. Villa Carlos Paz"></div>
+      </div>
+      <div class="fr full">
+        <div class="fg2">
+          <label>Distancias disponibles</label>
+          <div class="dist-tags" id="dtCont">
+            <button class="dtag" onclick="togDist(this,'5K')">5K</button>
+            <button class="dtag" onclick="togDist(this,'10K')">10K</button>
+            <button class="dtag" onclick="togDist(this,'21K')">21K</button>
+            <button class="dtag" onclick="togDist(this,'42K')">42K</button>
+            <button class="dtag" onclick="togDist(this,'50K')">50K</button>
+            <button class="dtag" onclick="togDist(this,'75K')">75K</button>
+            <button class="dtag" onclick="togDist(this,'100K')">100K</button>
+            <button class="dtag" onclick="togDist(this,'100M')">100M</button>
+          </div>
+          <input id="cdist" type="text" placeholder="Otra distancia (Enter para agregar)" style="margin-top:8px" onkeydown="addCD(event)">
+        </div>
+      </div>
+      <div class="fr">
+        <div class="fg2"><label>Link oficial</label><input id="rUrl" type="url" placeholder="https://..."></div>
+        <div class="fg2">
+          <label>Geolocalización</label>
+          <div class="mapbox" id="mapBox" onclick="getGPS()">
+            <div class="mapgrid"></div>
+            <div class="mpin">📍</div>
+            <div class="mtxt" id="mapTxt">Click para obtener GPS</div>
+            <div class="mcoords" id="mapCoords"></div>
+          </div>
+        </div>
+      </div>
+      <div class="fr">
+        <div class="fg2">
+          <label>Ciudad para clima</label>
+          <div style="display:flex;gap:8px">
+            <input id="wCity" type="text" placeholder="ej. Mendoza" style="flex:1">
+            <button class="wfbtn" onclick="fetchW()">🌡 FETCH</button>
+          </div>
+          <div id="wbox" class="wbox" style="display:none">
+            <div class="wi" id="wicon">☀️</div>
+            <div><div class="wt" id="wtemp">—</div><div class="wd" id="wdesc">—</div></div>
+          </div>
+        </div>
+        <div class="fg2">
+          <label>Descripción</label>
+          <textarea id="rDesc" placeholder="Terreno, desnivel, circuito..."></textarea>
+        </div>
+      </div>
+      <div class="fr full">
+        <div class="fg2" style="flex-direction:row;align-items:center;gap:10px">
+          <input type="checkbox" id="rFeatured" style="width:16px;height:16px;accent-color:var(--accent)">
+          <label for="rFeatured" style="text-transform:none;font-size:13px;letter-spacing:0;color:var(--text);cursor:pointer">Marcar como destacada (aparece en el banner superior)</label>
+        </div>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-ghost" onclick="cm('addRaceOv')">Cancelar</button>
+      <button class="btn btn-accent" onclick="saveRace()">GUARDAR CARRERA</button>
+    </div>
+  </div>
+</div>
+
+<!-- DETAIL -->
+<div class="overlay" id="detailOv" onclick="coo(event,'detailOv')">
+  <div class="modal modal-wide" onclick="event.stopPropagation()">
+    <div class="mh">
+      <div><div class="mt" id="dName">—</div><div class="ms" id="dSub">—</div></div>
+      <button class="xbtn" onclick="cm('detailOv')">×</button>
+    </div>
+    <div class="mb" id="dBody"></div>
+  </div>
+</div>
+
+<!-- PARTICIPATION -->
+<div class="overlay" id="partOv" onclick="coo(event,'partOv')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="mh">
+      <div><div class="mt">MIS TIEMPOS</div><div class="ms" id="pRaceLabel">—</div></div>
+      <button class="xbtn" onclick="cm('partOv')">×</button>
+    </div>
+    <div class="mb">
+      <div class="fr three">
+        <div class="fg2"><label>Tiempo (hh:mm:ss)</label><input id="pTime" type="text" placeholder="03:42:15"></div>
+        <div class="fg2"><label>Distancia corrida</label><select id="pDist"><option>—</option></select></div>
+        <div class="fg2"><label>Posición general</label><input id="pPos" type="number" placeholder="ej. 42"></div>
+      </div>
+      <div class="fr full">
+        <div class="fg2">
+          <label>Estado de ánimo</label>
+          <div class="mood-row">
+            <div><button class="mbtn" data-mood="1" onclick="selMood(1)">😵</button><div class="mlbl">Duro</div></div>
+            <div><button class="mbtn" data-mood="2" onclick="selMood(2)">😓</button><div class="mlbl">Cansado</div></div>
+            <div><button class="mbtn" data-mood="3" onclick="selMood(3)">😊</button><div class="mlbl">Bien</div></div>
+            <div><button class="mbtn" data-mood="4" onclick="selMood(4)">😄</button><div class="mlbl">Genial</div></div>
+            <div><button class="mbtn" data-mood="5" onclick="selMood(5)">🤩</button><div class="mlbl">Épico</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="fr full">
+        <div class="fg2"><label>Comentarios y sensaciones</label><textarea id="pComment" placeholder="¿Cómo fue? ¿El terreno, el clima...?"></textarea></div>
+      </div>
+      <div class="fr full">
+        <div class="fg2">
+          <label>Fotos de la carrera</label>
+          <div class="photo-up" onclick="document.getElementById('ppInput').click()">
+            <input type="file" id="ppInput" accept="image/*" multiple style="display:none" onchange="prevPartPhotos(event)">
+            <div id="ppPrev"><div class="ui">📸</div><p>Click para subir fotos (múltiples)</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-ghost" onclick="cm('partOv')">Cancelar</button>
+      <button class="btn btn-accent" onclick="savePart()">GUARDAR MIS TIEMPOS</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: NUEVA INSCRIPCIÓN -->
+<div class="overlay" id="addInscOv" onclick="coo(event,'addInscOv')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="mh">
+      <div><div class="mt" id="inscModalTitle">NUEVA INSCRIPCIÓN</div><div class="ms">Guardá tu dorsal y comprobantes</div></div>
+      <button class="xbtn" onclick="cm('addInscOv')">×</button>
+    </div>
+    <div class="mb">
+      <div class="fr full">
+        <div class="fg2">
+          <label>Carrera *</label>
+          <select id="inscRaceSel" onchange="inscRaceChanged()">
+            <option value="">Seleccioná una carrera...</option>
+          </select>
+        </div>
+      </div>
+      <div class="fr">
+        <div class="fg2"><label>🎫 Número de inscripción / Dorsal</label><input id="inscDorsal" type="text" placeholder="ej. 1042"></div>
+        <div class="fg2"><label>📏 Distancia inscripta</label><select id="inscDist"><option value="">—</option></select></div>
+      </div>
+      <div class="fr">
+        <div class="fg2"><label>🏷 Categoría</label><input id="inscCat" type="text" placeholder="ej. Master A, Absoluto, Sub-23..."></div>
+        <div class="fg2"><label>📅 Fecha límite de retiro de kit</label><input id="inscKitDate" type="date"></div>
+      </div>
+      <div class="fr full">
+        <div class="fg2">
+          <label>📄 Comprobante de pago (PDF o imagen)</label>
+          <div class="photo-up" onclick="document.getElementById('inscPagoInput').click()" id="inscPagoBox">
+            <input type="file" id="inscPagoInput" accept=".pdf,image/*" style="display:none" onchange="prevInscFile(event,'pago')">
+            <div id="inscPagoPrev"><div class="ui">📄</div><p>Click para subir PDF o imagen</p></div>
+          </div>
+        </div>
+      </div>
+      <div class="fr full">
+        <div class="fg2">
+          <label>📋 Deslinde / Término de responsabilidad</label>
+          <div class="photo-up" onclick="document.getElementById('inscDeslindeInput').click()" id="inscDeslindeBox">
+            <input type="file" id="inscDeslindeInput" accept=".pdf,image/*" style="display:none" onchange="prevInscFile(event,'deslinde')">
+            <div id="inscDeslindePrev"><div class="ui">📋</div><p>Click para subir PDF o imagen</p></div>
+          </div>
+        </div>
+      </div>
+      <div class="fr full">
+        <div class="fg2"><label>📝 Notas personales</label><textarea id="inscNotas" placeholder="Observaciones, recordatorios, link de seguimiento..."></textarea></div>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-ghost" onclick="cm('addInscOv')">Cancelar</button>
+      <button class="btn btn-accent" id="inscSaveBtn" onclick="saveInsc()">GUARDAR INSCRIPCIÓN</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: DETALLE INSCRIPCIÓN -->
+<div class="overlay" id="inscDetailOv" onclick="coo(event,'inscDetailOv')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="mh">
+      <div><div class="mt" id="inscDetTitle">—</div><div class="ms" id="inscDetSub">—</div></div>
+      <button class="xbtn" onclick="cm('inscDetailOv')">×</button>
+    </div>
+    <div class="mb" id="inscDetBody"></div>
+    <div class="mf">
+      <button class="btn btn-ghost" onclick="cm('inscDetailOv')">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"><span id="tIcon">✅</span><span id="tMsg">OK</span></div>
+
+<!-- Firebase SDK -->
+<script type="module">
+import { initializeApp }            from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import { getFirestore, collection, doc, onSnapshot,
+         setDoc, deleteDoc, updateDoc, arrayUnion,
+         query, orderBy, serverTimestamp }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+import { getStorage, ref, uploadString, getDownloadURL, deleteObject }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js';
+import { getAuth, GoogleAuthProvider, signInWithPopup,
+         signOut, onAuthStateChanged }
+  from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+
+/* ══════════════════════════════════════════
+   FIREBASE CONFIG — pegá tus credenciales aquí
+   (Firebase Console → Proyecto → Configuración → SDK web)
+══════════════════════════════════════════ */
+const firebaseConfig = {
+  apiKey: "AIzaSyDMGO_vhg8iduBl76CHpv7lmN69C74EOUk",
+  authDomain: "run-trail-vm.firebaseapp.com",
+  projectId: "run-trail-vm",
+  storageBucket: "run-trail-vm.firebasestorage.app",
+  messagingSenderId: "547743990222",
+  appId: "1:547743990222:web:bdfb0eda352bbcfb2aeb9f",
+  measurementId: "G-MFRN4QJPP3"
+};
+
+/* ══════════════════════════════════════════
+   TU EMAIL DE ADMIN (el que usás para loguearte con Google)
+══════════════════════════════════════════ */
+const ADMIN_EMAIL = 'arielsavini@gmail.com'; // ← cambiá por tu Gmail
+
+const fbApp   = initializeApp(firebaseConfig);
+const db      = getFirestore(fbApp);
+const storage = getStorage(fbApp);
+const auth    = getAuth(fbApp);
+const googleProvider = new GoogleAuthProvider();
+
+/* ══════════════════════════════════════════
+   STATE
+══════════════════════════════════════════ */
+let currentUser = null;
+let races = [], filtered = [];
+let selDists = [], curMood = null, editId = null, partRaceId = null;
+let partPhotos = [], racePhotoFile = null, racePhotoURL = null, geoC = null, wData = null;
+
+const MS = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+const TL = {trail:'Trail 🏔', road:'Road 🏙', ultra:'Ultra ⚡', mixed:'Mixto 🔀'};
+const TI = {trail:'🏔', road:'🏙', ultra:'⚡', mixed:'🔀'};
+
+const FB_READY = firebaseConfig.apiKey !== 'TU_API_KEY';
+
+/* ══════════════════════════════════════════
+   INIT
+══════════════════════════════════════════ */
+async function init() {
+  showPageLoader(true);
+
+  if (FB_READY) {
+    // Escuchar cambios de sesión de Firebase Auth en tiempo real
+    onAuthStateChanged(auth, fbUser => {
+      if (fbUser) {
+        currentUser = {
+          id:      fbUser.uid,
+          name:    fbUser.displayName || fbUser.email,
+          email:   fbUser.email,
+          picture: fbUser.photoURL,
+          isAdmin: fbUser.email === ADMIN_EMAIL
+        };
+      } else {
+        currentUser = null;
+      }
+      updateNav();
+      renderCards();       // re-render para mostrar/ocultar botones admin
+      if (activeTab === 'training') renderTrainingTab();
+    });
+    subscribeRaces();
+  } else {
+    // Sin Firebase: modo demo
+    races = demoRaces();
+    filtered = [...races];
+    renderAll();
+    showPageLoader(false);
+    showFirebaseWarning();
+  }
+}
+
+function renderAll() {
+  filtered = applyCurrentFilters();
+  renderFeatured();
+  renderCards();
+  updateStats();
+}
+
+/* ══════════════════════════════════════════
+   FIREBASE — TIEMPO REAL
+══════════════════════════════════════════ */
+function subscribeRaces() {
+  const q = query(collection(db, 'races'), orderBy('date', 'asc'));
+  onSnapshot(q, snap => {
+    races = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    filtered = applyCurrentFilters();
+    renderAll();
+    showPageLoader(false);
+  }, err => {
+    console.error('Firestore:', err);
+    races = demoRaces();
+    renderAll();
+    showPageLoader(false);
+    toast('⚠️', 'Error al conectar con la base de datos');
+  });
+}
+
+/* ══════════════════════════════════════════
+   FIREBASE — GUARDAR / EDITAR CARRERA
+══════════════════════════════════════════ */
+async function fbSaveRace(race) {
+  const { id, ...data } = race;
+  data.updatedAt = serverTimestamp();
+  await setDoc(doc(db, 'races', id), data);
+}
+
+async function fbDeleteRace(id) {
+  // Borrar foto de Storage si existe
+  const r = races.find(x => x.id === id);
+  if (r?.photoPath) {
+    try { await deleteObject(ref(storage, r.photoPath)); } catch(e) {}
+  }
+  await deleteDoc(doc(db, 'races', id));
+}
+
+async function fbAddParticipation(raceId, part) {
+  await updateDoc(doc(db, 'races', raceId), {
+    participations: arrayUnion(part)
+  });
+}
+
+/* ══════════════════════════════════════════
+   FIREBASE — SUBIR FOTO
+══════════════════════════════════════════ */
+async function uploadPhoto(file, path) {
+  if (!file) return null;
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = async ev => {
+      try {
+        const storRef = ref(storage, path);
+        await uploadString(storRef, ev.target.result, 'data_url');
+        const url = await getDownloadURL(storRef);
+        resolve({ url, path });
+      } catch(e) { reject(e); }
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function uploadPartPhoto(file, path) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = async ev => {
+      try {
+        const storRef = ref(storage, path);
+        await uploadString(storRef, ev.target.result, 'data_url');
+        const url = await getDownloadURL(storRef);
+        resolve(url);
+      } catch(e) { reject(e); }
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+/* ══════════════════════════════════════════
+   FIREBASE AUTH — LOGIN / LOGOUT
+══════════════════════════════════════════ */
+async function loginWithGoogle() {
+  if (!FB_READY) {
+    // Modo demo sin Firebase: simular login para probar la UI
+    currentUser = { id:'demo_user', name:'Usuario Demo', email:'demo@demo.com', picture:null, isAdmin:false };
+    updateNav(); renderCards(); updateStats();
+    cm('loginOv');
+    toast('👟', '¡Bienvenido en modo demo! Configurá Firebase para el login real.', 'ok');
+    return;
+  }
+  try {
+    googleProvider.setCustomParameters({ prompt: 'select_account' });
+    await signInWithPopup(auth, googleProvider);
+    cm('loginOv');
+    toast('👟', `¡Bienvenido!`, 'ok');
+  } catch(e) {
+    if (e.code === 'auth/popup-blocked') {
+      toast('⚠️', 'El popup fue bloqueado. Permití popups para este sitio en tu navegador.');
+    } else if (e.code === 'auth/cancelled-popup-request') {
+      // usuario cerró el popup, no mostrar error
+    } else {
+      toast('❌', 'Error al iniciar sesión: ' + e.message);
+      console.error(e);
+    }
+  }
+}
+
+async function logout() {
+  if (!confirm('¿Cerrar sesión?')) return;
+  if (FB_READY) {
+    await signOut(auth);
+  } else {
+    currentUser = null;
+    updateNav(); renderCards(); updateStats();
+  }
+  toast('👋', 'Sesión cerrada');
+}
+
+function openLogin() { oo('loginOv'); }
+
+/* ══════════════════════════════════════════
+   NAV
+══════════════════════════════════════════ */
+function updateNav() {
+  const nav = document.getElementById('navRight'), fab = document.getElementById('adminFab');
+  if (currentUser) {
+    const av = currentUser.picture
+      ? `<div class="avatar" onclick="logout()" title="Cerrar sesión"><img src="${currentUser.picture}"></div>`
+      : `<div class="avatar" onclick="logout()" title="Cerrar sesión">${currentUser.name[0].toUpperCase()}</div>`;
+    nav.innerHTML = `<span class="user-chip"><span class="dot"></span>${currentUser.name.split(' ')[0]}</span>${currentUser.isAdmin ? '<span class="admin-badge">ADMIN</span>' : ''}${av}`;
+    if (currentUser.isAdmin) fab.classList.add('on'); else fab.classList.remove('on');
+  } else {
+    nav.innerHTML = `<button class="btn btn-ghost" onclick="openLogin()">Ingresar</button><button class="btn btn-accent" onclick="openLogin()">Registrarse</button>`;
+    fab.classList.remove('on');
+  }
+}
+
+/* ══════════════════════════════════════════
+   STATS
+══════════════════════════════════════════ */
+function updateStats() {
+  document.getElementById('sTotal').textContent = races.length;
+  document.getElementById('sProvs').textContent = new Set(races.map(r => r.provincia).filter(Boolean)).size;
+  document.getElementById('sParts').textContent = races.reduce((a, r) => a + (r.participations || []).length, 0);
+}
+
+/* ══════════════════════════════════════════
+   FEATURED
+══════════════════════════════════════════ */
+function renderFeatured() {
+  const row = document.getElementById('featRow'), wrap = document.getElementById('featWrap');
+  const feat = races.filter(r => r.featured).slice(0, 3);
+  if (!feat.length) { wrap.style.display = 'none'; return; }
+  wrap.style.display = 'block';
+  row.innerHTML = feat.map(r => {
+    const [y, mo, d] = r.date.split('-');
+    return `<div class="feat-card" onclick="openDetail('${r.id}')">
+      <div class="fbg">${r.photo ? `<img src="${r.photo}">` : (TI[r.type] || '🏃')}</div>
+      <div class="fov"></div>
+      <div class="finfo">
+        <div class="fname">${r.name}</div>
+        <div class="fmeta">${d}/${mo}/${y}${r.provincia ? ' · ' + r.provincia : ''}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ══════════════════════════════════════════
+   FILTERS
+══════════════════════════════════════════ */
+function applyCurrentFilters() {
+  const tipo  = document.getElementById('fTipo')?.value  || '';
+  const prov  = document.getElementById('fProv')?.value  || '';
+  const desde = document.getElementById('fDesde')?.value || '';
+  const hasta = document.getElementById('fHasta')?.value || '';
+  const sort  = document.getElementById('sortSel')?.value || 'date-asc';
+  let out = races.filter(r => {
+    if (tipo  && r.type      !== tipo) return false;
+    if (prov  && r.provincia !== prov) return false;
+    if (desde && r.date      <  desde) return false;
+    if (hasta && r.date      >  hasta) return false;
+    return true;
+  });
+  out.sort((a, b) => {
+    if (sort === 'date-asc')  return a.date.localeCompare(b.date);
+    if (sort === 'date-desc') return b.date.localeCompare(a.date);
+    return a.name.localeCompare(b.name);
+  });
+  return out;
+}
+
+function applyFilters() {
+  const tipo  = document.getElementById('fTipo').value;
+  const prov  = document.getElementById('fProv').value;
+  const desde = document.getElementById('fDesde').value;
+  const hasta = document.getElementById('fHasta').value;
+  filtered = applyCurrentFilters();
+  renderChips(tipo, prov, desde, hasta);
+  renderCards();
+}
+
+function clearFilters() {
+  ['fTipo','fProv','fDesde','fHasta'].forEach(id => document.getElementById(id).value = '');
+  filtered = [...races]; renderChips('','','',''); renderCards();
+}
+
+function renderChips(tipo, prov, desde, hasta) {
+  const c = document.getElementById('activeChips');
+  const chips = [];
+  if (tipo)  chips.push([`Tipo: ${TL[tipo]}`,  () => { document.getElementById('fTipo').value  = ''; applyFilters(); }]);
+  if (prov)  chips.push([`Provincia: ${prov}`, () => { document.getElementById('fProv').value  = ''; applyFilters(); }]);
+  if (desde) chips.push([`Desde: ${fd(desde)}`,() => { document.getElementById('fDesde').value = ''; applyFilters(); }]);
+  if (hasta) chips.push([`Hasta: ${fd(hasta)}`,() => { document.getElementById('fHasta').value = ''; applyFilters(); }]);
+  window._cc = chips.map(ch => ch[1]);
+  c.innerHTML = chips.map((_, i) => `<span class="chip">${chips[i][0]} <button onclick="window._cc[${i}]()">×</button></span>`).join('');
+}
+
+/* ══════════════════════════════════════════
+   CARDS
+══════════════════════════════════════════ */
+function renderCards() {
+  const grid = document.getElementById('cardsGrid'), rc = document.getElementById('resCount');
+  if (!filtered.length) {
+    grid.innerHTML = `<div class="empty"><div class="empty-icon">🔍</div><div class="empty-title">SIN RESULTADOS</div><div class="empty-sub">Probá cambiando los filtros.</div><button class="btn btn-accent" onclick="clearFilters()">Ver todas</button></div>`;
+    rc.innerHTML = 'Sin resultados'; return;
+  }
+  rc.innerHTML = `Mostrando <strong>${filtered.length}</strong> de <strong>${races.length}</strong> carreras`;
+  grid.innerHTML = filtered.map(r => buildCard(r)).join('');
+}
+
+function buildCard(r) {
+  const [y, mo, d] = r.date.split('-');
+  const pc = (r.participations || []).length;
+  const imgH = r.photo ? `<img src="${r.photo}" alt="${r.name}" loading="lazy">` : `<div class="c-img-ph">${TI[r.type] || '🏃'}</div>`;
+  const wH = r.weather ? `<div class="c-weather">${r.weather.icon} <span class="wt">${r.weather.temp}°C</span> ${r.weather.desc}</div>` : '';
+  const adm = currentUser?.isAdmin ? `<button class="cb-adm" onclick="event.stopPropagation();editRace('${r.id}')" title="Editar">✏</button><button class="cb-adm" onclick="event.stopPropagation();delRace('${r.id}')" title="Eliminar">🗑</button>` : '';
+  const userPart = currentUser ? (r.participations || []).find(p => p.userId === currentUser.id) : null;
+  const timesBtn = currentUser
+    ? `<button class="cb-pri" onclick="event.stopPropagation();openPart('${r.id}')">${userPart ? '✏ Mi información' : '⏱ Mis tiempos'}</button>`
+    : `<button class="cb-pri" onclick="event.stopPropagation();openLogin()">⏱ Mis tiempos</button>`;
+  return `<div class="race-card" onclick="openDetail('${r.id}')">
+    <div class="c-img">
+      ${imgH}<div class="c-ov"></div>
+      <div class="c-badges">
+        <span class="bdg bdg-${r.type}">${TL[r.type] || r.type}</span>
+        ${r.distances?.[0] ? `<span class="bdg bdg-dark">${r.distances[0]}</span>` : ''}
+      </div>
+      ${pc > 0 ? `<div class="c-part-count">⏱ ${pc}</div>` : ''}
+      <div class="c-date"><div class="day">${d}</div><div class="mon">${MS[parseInt(mo)-1]} ${y}</div></div>
+    </div>
+    <div class="c-body">
+      <div class="c-name">${r.name}</div>
+      ${r.provincia ? `<div class="c-loc"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>${r.city ? r.city + ', ' : ''}${r.provincia}</div>` : ''}
+      ${r.distances?.length ? `<div class="c-dists">${r.distances.map(x => `<span class="dpill">${x}</span>`).join('')}</div>` : ''}
+      ${wH}
+    </div>
+    <div class="c-foot">${timesBtn}<button class="cb-sec" onclick="event.stopPropagation();openDetail('${r.id}')">Ver más</button>${adm}</div>
+  </div>`;
+}
+
+/* ══════════════════════════════════════════
+   DETAIL
+══════════════════════════════════════════ */
+function openDetail(id) {
+  const r = races.find(x => x.id === id); if (!r) return;
+  document.getElementById('dName').textContent = r.name;
+  document.getElementById('dSub').textContent  = `${fd(r.date)}${r.provincia ? ' · ' + r.provincia : ''}${r.city ? ' · ' + r.city : ''}`;
+  const partsH = (r.participations || []).map(p => {
+    const moods = ['','😵','😓','😊','😄','🤩'];
+    const avH = p.userPic ? `<div class="pav"><img src="${p.userPic}"></div>` : `<div class="pav">${(p.userName||'?')[0].toUpperCase()}</div>`;
+    const picsH = (p.photos || []).map(ph => `<img src="${ph}" onclick="bigImg('${ph}')">`).join('');
+    return `<div class="pcard">
+      <div class="ptop"><div class="puser">${avH}<div><div class="pname">${p.userName||'Corredor'}</div><div class="pwhen">${p.createdAt ? fd(p.createdAt.split('T')[0]) : ''}</div></div></div><div style="font-size:22px">${moods[p.mood]||''}</div></div>
+      <div class="pstats">
+        ${p.time     ? `<div class="pst"><div class="lbl">TIEMPO</div><div class="val">${p.time}</div></div>` : ''}
+        ${p.distance ? `<div class="pst"><div class="lbl">DISTANCIA</div><div class="val sm">${p.distance}</div></div>` : ''}
+        ${p.position ? `<div class="pst"><div class="lbl">POSICIÓN</div><div class="val sm">#${p.position}</div></div>` : ''}
+      </div>
+      ${p.comment ? `<div class="pcomment">"${p.comment}"</div>` : ''}
+      ${picsH ? `<div class="pphotos">${picsH}</div>` : ''}
+    </div>`;
+  }).join('');
+  document.getElementById('dBody').innerHTML = `
+    ${r.photo ? `<img src="${r.photo}" class="dhero">` : `<div class="dhero-ph">${TI[r.type]||'🏃'}</div>`}
+    <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px">
+      <span class="bdg bdg-${r.type}">${TL[r.type]}</span>
+      ${(r.distances||[]).map(x => `<span class="bdg bdg-dark">${x}</span>`).join('')}
+    </div>
+    <div class="meta-grid">
+      <div class="mc"><div class="ml">Fecha</div><div class="mv">${fd(r.date)}</div></div>
+      ${r.provincia ? `<div class="mc"><div class="ml">Provincia</div><div class="mv" style="font-size:13px">${r.provincia}</div></div>` : ''}
+      ${r.city      ? `<div class="mc"><div class="ml">Ciudad</div><div class="mv" style="font-size:13px">${r.city}</div></div>` : ''}
+      ${r.weather   ? `<div class="mc"><div class="ml">Clima</div><div class="mv">${r.weather.icon} ${r.weather.temp}°C</div><div style="font-size:11px;color:var(--muted)">${r.weather.desc}</div></div>` : ''}
+      ${r.coords    ? `<div class="mc"><div class="ml">GPS</div><div class="mv" style="font-size:12px;font-family:'Space Mono',monospace">${r.coords.lat}, ${r.coords.lng}</div></div>` : ''}
+    </div>
+    ${r.description ? `<p style="color:var(--muted);font-size:13px;line-height:1.7;margin-bottom:16px">${r.description}</p>` : ''}
+    <div class="act-row">
+      ${r.url    ? `<a class="act-btn" href="${r.url}" target="_blank">🔗 Página oficial</a>` : ''}
+      ${r.coords ? `<a class="act-btn" href="https://www.google.com/maps?q=${r.coords.lat},${r.coords.lng}" target="_blank">🗺 Google Maps</a>` : ''}
+      <button class="act-btn" onclick="cm('detailOv');openPart('${r.id}')">${currentUser ? ((r.participations||[]).find(p=>p.userId===currentUser.id) ? '✏ Mi información' : '⏱ Registrar mis tiempos') : '🔐 Iniciá sesión para registrar'}</button>
+      ${currentUser?.isAdmin ? `<button class="act-btn" style="color:#ff6b6b;border-color:rgba(255,68,68,.3)" onclick="cm('detailOv');delRace('${r.id}')">🗑 Eliminar</button><button class="act-btn" onclick="cm('detailOv');editRace('${r.id}')">✏ Editar</button>` : ''}
+    </div>
+    <div class="sdiv"></div>
+    <div class="stitle">RESULTADOS Y EXPERIENCIAS</div>
+    ${partsH || `<div class="empty" style="padding:32px"><div class="empty-icon">⏱</div><div class="empty-title" style="font-size:20px">SIN REGISTROS AÚN</div><div class="empty-sub">¡Sé el primero en cargar tus tiempos!</div></div>`}
+  `;
+  oo('detailOv');
+}
+function bigImg(src) { const w = window.open(); w.document.write(`<body style="margin:0;background:#000;display:flex;align-items:center;justify-content:center;min-height:100vh"><img src="${src}" style="max-width:100%;max-height:100vh"></body>`); }
+
+/* ══════════════════════════════════════════
+   ADD / EDIT RACE (solo admin)
+══════════════════════════════════════════ */
+function openAddRace() {
+  if (!currentUser?.isAdmin) { toast('🔒', 'Solo el administrador puede agregar carreras'); return; }
+  editId = null; selDists = []; racePhotoFile = null; racePhotoURL = null; geoC = null; wData = null;
+  document.getElementById('arTitle').textContent = 'NUEVA CARRERA';
+  ['rName','rCity','rUrl','rDesc','wCity'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('rDate').value = '';
+  document.getElementById('rProv').value = '';
+  document.getElementById('rFeatured').checked = false;
+  document.getElementById('wbox').style.display = 'none';
+  document.getElementById('mapCoords').textContent = '';
+  document.getElementById('mapTxt').textContent = 'Click para obtener GPS';
+  document.getElementById('rpPrev').innerHTML = '<div class="ui">📷</div><p>Click para subir foto de portada</p>';
+  document.querySelectorAll('.dtag').forEach(t => t.classList.remove('sel'));
+  oo('addRaceOv');
+}
+
+function editRace(id) {
+  if (!currentUser?.isAdmin) return;
+  const r = races.find(x => x.id === id); if (!r) return;
+  openAddRace(); editId = id;
+  document.getElementById('arTitle').textContent = 'EDITAR CARRERA';
+  document.getElementById('rName').value = r.name || '';
+  document.getElementById('rType').value = r.type || 'trail';
+  document.getElementById('rDate').value = r.date || '';
+  document.getElementById('rProv').value = r.provincia || '';
+  document.getElementById('rCity').value = r.city || '';
+  document.getElementById('rUrl').value  = r.url  || '';
+  document.getElementById('rDesc').value = r.description || '';
+  document.getElementById('rFeatured').checked = r.featured || false;
+  selDists = [...(r.distances || [])];
+  document.querySelectorAll('.dtag').forEach(t => { if (selDists.includes(t.textContent.trim())) t.classList.add('sel'); });
+  if (r.photo) { racePhotoURL = r.photo; document.getElementById('rpPrev').innerHTML = `<img src="${r.photo}" class="prev">`; }
+  if (r.weather) { wData = r.weather; document.getElementById('wicon').textContent = r.weather.icon; document.getElementById('wtemp').textContent = `${r.weather.temp}°C`; document.getElementById('wdesc').textContent = r.weather.desc; document.getElementById('wbox').style.display = 'flex'; }
+  if (r.coords)  { geoC = r.coords; document.getElementById('mapCoords').textContent = `${r.coords.lat}, ${r.coords.lng}`; document.getElementById('mapTxt').textContent = '✅ Ubicación guardada'; }
+}
+
+function prevRacePhoto(e) {
+  const f = e.target.files[0]; if (!f) return;
+  racePhotoFile = f;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    racePhotoURL = ev.target.result;
+    document.getElementById('rpPrev').innerHTML = `<img src="${racePhotoURL}" class="prev">`;
+  };
+  reader.readAsDataURL(f);
+}
+
+function togDist(btn, val) {
+  if (selDists.includes(val)) { selDists = selDists.filter(d => d !== val); btn.classList.remove('sel'); }
+  else { selDists.push(val); btn.classList.add('sel'); }
+}
+
+function addCD(e) {
+  if (e.key !== 'Enter') return;
+  const val = e.target.value.trim().toUpperCase(); if (!val) return;
+  if (!selDists.includes(val)) {
+    selDists.push(val);
+    const b = document.createElement('button'); b.className = 'dtag sel'; b.textContent = val;
+    b.onclick = () => togDist(b, val);
+    document.getElementById('dtCont').appendChild(b);
+  }
+  e.target.value = '';
+}
+
+function getGPS() {
+  document.getElementById('mapTxt').innerHTML = '<span class="spin"></span> Obteniendo...';
+  if (!navigator.geolocation) { document.getElementById('mapTxt').textContent = 'GPS no disponible'; return; }
+  navigator.geolocation.getCurrentPosition(pos => {
+    geoC = { lat: pos.coords.latitude.toFixed(5), lng: pos.coords.longitude.toFixed(5) };
+    document.getElementById('mapTxt').textContent = '✅ Ubicación obtenida';
+    document.getElementById('mapCoords').textContent = `${geoC.lat}, ${geoC.lng}`;
+    toast('📍', 'Ubicación GPS capturada', 'ok');
+  }, () => { document.getElementById('mapTxt').textContent = 'No se pudo obtener GPS'; });
+}
+
+async function fetchW() {
+  const city = document.getElementById('wCity').value.trim(); if (!city) { toast('⚠️', 'Ingresá el nombre de la ciudad'); return; }
+  const btn = document.querySelector('.wfbtn'); btn.innerHTML = '<span class="spin"></span>';
+  try {
+    const res = await fetch(`https://wttr.in/${encodeURIComponent(city)}?format=j1`);
+    const data = await res.json(); const cur = data.current_condition[0];
+    const desc = cur.weatherDesc[0].value;
+    const im = {'Sunny':'☀️','Clear':'☀️','Partly':'⛅','Cloud':'☁️','Overcast':'☁️','Mist':'🌫','Rain':'🌧','Snow':'❄️','Thunder':'⛈','Blizzard':'🌨'};
+    let icon = '🌡'; for (const [k,v] of Object.entries(im)) { if (desc.includes(k)) { icon = v; break; } }
+    wData = { temp: cur.temp_C, desc, icon };
+    document.getElementById('wicon').textContent = icon;
+    document.getElementById('wtemp').textContent = `${cur.temp_C}°C`;
+    document.getElementById('wdesc').textContent = desc;
+    document.getElementById('wbox').style.display = 'flex';
+    toast('🌡', `${city}: ${cur.temp_C}°C, ${desc}`, 'ok');
+  } catch(e) { toast('⚠️', 'No se pudo obtener el clima'); }
+  btn.textContent = '🌡 FETCH';
+}
+
+async function saveRace() {
+  if (!currentUser?.isAdmin) return;
+  const name = document.getElementById('rName').value.trim();
+  const date = document.getElementById('rDate').value;
+  if (!name || !date) { toast('⚠️', 'Nombre y fecha son requeridos'); return; }
+
+  const saveBtn = document.querySelector('#addRaceOv .btn-accent');
+  saveBtn.innerHTML = '<span class="spin"></span> Guardando...'; saveBtn.disabled = true;
+
+  try {
+    const raceId = editId || 'r_' + Date.now();
+    let photoURL = racePhotoURL, photoPath = null;
+
+    // Si hay un archivo nuevo, subirlo a Storage
+    if (racePhotoFile && FB_READY) {
+      toast('📤', 'Subiendo foto...', 'ok');
+      photoPath = `races/${raceId}/cover_${Date.now()}`;
+      const result = await uploadPhoto(racePhotoFile, photoPath);
+      photoURL = result.url;
+      photoPath = result.path;
+    }
+
+    const existingRace = races.find(r => r.id === editId);
+    const race = {
+      id: raceId, name, date,
+      type:        document.getElementById('rType').value,
+      provincia:   document.getElementById('rProv').value,
+      city:        document.getElementById('rCity').value.trim(),
+      distances:   [...selDists],
+      url:         document.getElementById('rUrl').value.trim(),
+      description: document.getElementById('rDesc').value.trim(),
+      photo:       photoURL || null,
+      photoPath:   photoPath || (existingRace?.photoPath || null),
+      coords:      geoC,
+      weather:     wData,
+      featured:    document.getElementById('rFeatured').checked,
+      participations: existingRace?.participations || []
+    };
+
+    if (FB_READY) {
+      await fbSaveRace(race);
+    } else {
+      if (editId) { races = races.map(r => r.id === editId ? race : r); }
+      else { races.push(race); }
+      filtered = [...races]; renderAll();
+    }
+
+    cm('addRaceOv');
+    toast('🏔', `"${name}" guardada y visible para todos`, 'ok');
+  } catch(e) {
+    console.error(e);
+    toast('❌', 'Error al guardar. Revisá la consola.');
+  }
+
+  saveBtn.innerHTML = 'GUARDAR CARRERA'; saveBtn.disabled = false;
+}
+
+async function delRace(id) {
+  if (!currentUser?.isAdmin) return;
+  const r = races.find(x => x.id === id);
+  if (!r || !confirm(`¿Eliminar "${r.name}"? Esta acción no se puede deshacer.`)) return;
+  try {
+    if (FB_READY) { await fbDeleteRace(id); }
+    else { races = races.filter(x => x.id !== id); filtered = filtered.filter(x => x.id !== id); renderAll(); }
+    toast('🗑', 'Carrera eliminada');
+  } catch(e) { toast('❌', 'Error al eliminar'); }
+}
+
+/* ══════════════════════════════════════════
+   PARTICIPATION
+══════════════════════════════════════════ */
+function openPart(raceId) {
+  if (!currentUser) { openLogin(); return; }
+  partRaceId = raceId; partPhotos = []; curMood = null;
+  const r = races.find(x => x.id === raceId);
+  document.getElementById('pRaceLabel').textContent = r?.name || '—';
+  document.getElementById('pDist').innerHTML = (r?.distances || ['—']).map(d => `<option>${d}</option>`).join('');
+
+  // Buscar registro existente del usuario
+  const existing = (r?.participations || []).find(p => p.userId === currentUser.id);
+
+  // Cambiar título y botón según si ya hay datos
+  document.querySelector('#partOv .mt').textContent = existing ? 'MI INFORMACIÓN' : 'MIS TIEMPOS';
+  document.querySelector('#partOv .btn-accent').textContent = existing ? 'ACTUALIZAR MIS TIEMPOS' : 'GUARDAR MIS TIEMPOS';
+
+  if (existing) {
+    document.getElementById('pTime').value    = existing.time     || '';
+    document.getElementById('pPos').value     = existing.position || '';
+    document.getElementById('pComment').value = existing.comment  || '';
+    const distSel = document.getElementById('pDist');
+    for (let i = 0; i < distSel.options.length; i++) {
+      if (distSel.options[i].value === existing.distance) { distSel.selectedIndex = i; break; }
+    }
+    if (existing.mood) { curMood = existing.mood; document.querySelector(`.mbtn[data-mood="${existing.mood}"]`)?.classList.add('sel'); }
+    if (existing.photos?.length) {
+      document.getElementById('ppPrev').innerHTML = `<div style="display:flex;gap:6px;flex-wrap:wrap">${existing.photos.map(ph => `<img src="${ph}" style="width:66px;height:66px;object-fit:cover;border-radius:6px">`).join('')}</div><p style="font-size:11px;color:var(--muted);margin-top:6px">Agregá más fotos abajo (se suman a las existentes)</p>`;
+    } else {
+      document.getElementById('ppPrev').innerHTML = '<div class="ui">📸</div><p>Click para subir fotos</p>';
+    }
+  } else {
+    ['pTime','pPos','pComment'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('ppPrev').innerHTML = '<div class="ui">📸</div><p>Click para subir fotos</p>';
+    document.querySelectorAll('.mbtn').forEach(b => b.classList.remove('sel'));
+  }
+  oo('partOv');
+}
+
+function selMood(m) {
+  curMood = m;
+  document.querySelectorAll('.mbtn').forEach(b => b.classList.remove('sel'));
+  document.querySelector(`.mbtn[data-mood="${m}"]`).classList.add('sel');
+}
+
+// partPhotos ahora guarda { file, previewUrl } para subir al guardar
+function prevPartPhotos(e) {
+  partPhotos = [];
+  const files = [...e.target.files]; if (!files.length) return;
+  const prev = document.getElementById('ppPrev'); prev.innerHTML = '';
+  files.forEach(f => {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      partPhotos.push({ file: f, url: ev.target.result });
+      prev.innerHTML = `<div style="display:flex;gap:6px;flex-wrap:wrap">${partPhotos.map(p => `<img src="${p.url}" style="width:66px;height:66px;object-fit:cover;border-radius:6px">`).join('')}</div>`;
+    };
+    reader.readAsDataURL(f);
+  });
+}
+
+async function savePart() {
+  const r = races.find(x => x.id === partRaceId); if (!r) return;
+  const saveBtn = document.querySelector('#partOv .btn-accent');
+  saveBtn.innerHTML = '<span class="spin"></span> Guardando...'; saveBtn.disabled = true;
+
+  try {
+    // Subir fotos nuevas
+    const newPhotoURLs = [];
+    if (FB_READY && partPhotos.length) {
+      toast('📤', `Subiendo ${partPhotos.length} foto(s)...`, 'ok');
+      for (let i = 0; i < partPhotos.length; i++) {
+        const path = `participations/${partRaceId}/${currentUser.id}_${Date.now()}_${i}`;
+        const url = await uploadPartPhoto(partPhotos[i].file, path);
+        newPhotoURLs.push(url);
+      }
+    } else {
+      partPhotos.forEach(p => newPhotoURLs.push(p.url));
+    }
+
+    // Buscar registro existente
+    const existingIdx = (r.participations || []).findIndex(p => p.userId === currentUser.id);
+    const existing    = existingIdx >= 0 ? r.participations[existingIdx] : null;
+
+    // Combinar fotos existentes con nuevas
+    const allPhotos = [...(existing?.photos || []), ...newPhotoURLs];
+
+    const part = {
+      id:        existing?.id || 'p_' + Date.now(),
+      userId:    currentUser.id,
+      userName:  currentUser.name,
+      userPic:   currentUser.picture || null,
+      time:      document.getElementById('pTime').value.trim(),
+      distance:  document.getElementById('pDist').value,
+      position:  document.getElementById('pPos').value,
+      mood:      curMood,
+      comment:   document.getElementById('pComment').value.trim(),
+      photos:    allPhotos,
+      createdAt: existing?.createdAt || new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    if (FB_READY) {
+      const updatedParts = [...(r.participations || [])];
+      if (existingIdx >= 0) { updatedParts[existingIdx] = part; }
+      else { updatedParts.push(part); }
+      const { doc: d2, updateDoc: ud } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      await ud(d2(db, 'races', partRaceId), { participations: updatedParts });
+    } else {
+      r.participations = r.participations || [];
+      if (existingIdx >= 0) { r.participations[existingIdx] = part; }
+      else { r.participations.push(part); }
+      renderCards(); updateStats();
+    }
+
+    cm('partOv');
+    toast('⏱', existing ? '¡Tus tiempos fueron actualizados!' : '¡Tus tiempos están visibles para todos!', 'ok');
+    setTimeout(() => openDetail(partRaceId), 400);
+  } catch(e) {
+    console.error(e);
+    toast('❌', 'Error al guardar tus tiempos');
+  }
+
+  const isEdit = document.querySelector('#partOv .mt').textContent === 'MI INFORMACIÓN';
+  saveBtn.innerHTML = isEdit ? 'ACTUALIZAR MIS TIEMPOS' : 'GUARDAR MIS TIEMPOS';
+  saveBtn.disabled = false;
+}
+
+/* ══════════════════════════════════════════
+   PAGE LOADER
+══════════════════════════════════════════ */
+function showPageLoader(show) {
+  let el = document.getElementById('pageLoader');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'pageLoader';
+    el.style.cssText = 'position:fixed;inset:0;z-index:9998;background:var(--bg);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;transition:opacity .4s';
+    el.innerHTML = '<div style="font-family:Bebas Neue,sans-serif;font-size:48px;color:var(--accent);letter-spacing:4px">RUN & TRAIL VM</div><div class="spin" style="width:24px;height:24px;border-width:3px"></div>';
+    document.body.appendChild(el);
+  }
+  if (!show) { el.style.opacity = '0'; setTimeout(() => el.remove(), 450); }
+}
+
+function showFirebaseWarning() {
+  const w = document.createElement('div');
+  w.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(232,255,71,.1);border:1px solid rgba(232,255,71,.3);border-radius:8px;padding:10px 18px;font-size:12px;color:var(--accent);font-family:Space Mono,monospace;z-index:300;text-align:center;max-width:420px;line-height:1.6';
+  w.innerHTML = '⚙ Firebase no configurado — modo demo activo.<br>Completá las credenciales en el código para activar login con Google y sincronización en la nube.';
+  document.body.appendChild(w);
+  setTimeout(() => w.remove(), 8000);
+}
+
+/* ══════════════════════════════════════════
+   DEMO RACES (sin Firebase)
+══════════════════════════════════════════ */
+function demoRaces() {
+  const now = new Date(), y = now.getFullYear(), m = now.getMonth(), nd = now.getDate();
+  const dd = p => new Date(y, m, nd+p).toISOString().split('T')[0];
+  return [
+    {id:'d1',name:'Ultra Trail Aconcagua',type:'ultra',date:dd(5),provincia:'Mendoza',city:'Las Heras',distances:['50K','100K'],url:'https://example.com',description:'Icónica carrera en la Cordillera de los Andes. Desnivel positivo +4.200m.',photo:null,coords:{lat:'-32.6532',lng:'-70.0112'},weather:{temp:8,desc:'Soleado',icon:'☀️'},participations:[],featured:true},
+    {id:'d2',name:'Maratón de Buenos Aires',type:'road',date:dd(12),provincia:'CABA',city:'Buenos Aires',distances:['10K','21K','42K'],url:'https://example.com',description:'La maratón más importante de Argentina por las avenidas porteñas.',photo:null,coords:{lat:'-34.6037',lng:'-58.3816'},weather:{temp:19,desc:'Nublado',icon:'☁️'},participations:[],featured:true},
+    {id:'d3',name:'Trail Sierras de Córdoba',type:'trail',date:dd(19),provincia:'Córdoba',city:'Villa Carlos Paz',distances:['21K','42K'],url:'https://example.com',description:'Trail por las sierras cordobesas. Desnivel +1.800m.',photo:null,coords:{lat:'-31.4135',lng:'-64.5009'},weather:{temp:14,desc:'Despejado',icon:'☀️'},participations:[],featured:true},
+    {id:'d4',name:'Cross Country Salta',type:'trail',date:dd(28),provincia:'Salta',city:'Salta Capital',distances:['10K','21K'],url:'',description:'Carrera de montaña por los cerros del norte argentino.',photo:null,coords:null,weather:null,participations:[],featured:false},
+    {id:'d5',name:'Maratón de Rosario',type:'road',date:dd(34),provincia:'Santa Fe',city:'Rosario',distances:['5K','10K','21K','42K'],url:'',description:'Maratón plana y veloz sobre el costanero del Paraná.',photo:null,coords:null,weather:{temp:22,desc:'Soleado',icon:'☀️'},participations:[],featured:false},
+    {id:'d6',name:'100K del Desierto',type:'ultra',date:dd(42),provincia:'San Luis',city:'San Luis',distances:['50K','100K'],url:'',description:'Ultra por el desierto puntano.',photo:null,coords:null,weather:null,participations:[],featured:false},
+  ];
+}
+
+/* ══════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════ */
+function fd(s) { if(!s) return '—'; const[y,m,d]=s.split('-'); return `${d}/${m}/${y}`; }
+function oo(id) { document.getElementById(id).classList.add('open'); }
+function cm(id) { document.getElementById(id).classList.remove('open'); }
+function coo(e, id) { if (e.target.id === id) cm(id); }
+
+let _tt;
+function toast(icon, msg, type='') {
+  clearTimeout(_tt);
+  const t = document.getElementById('toast');
+  document.getElementById('tIcon').textContent = icon;
+  document.getElementById('tMsg').textContent  = msg;
+  t.className = `toast show ${type}`;
+  _tt = setTimeout(() => t.classList.remove('show'), 3400);
+}
+
+/* ══════════════════════════════════════════
+   TABS
+══════════════════════════════════════════ */
+let activeTab = 'calendar';
+function switchTab(tab) {
+  activeTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  document.getElementById('panel-' + tab).classList.add('active');
+  if (tab === 'training')       renderTrainingTab();
+  if (tab === 'inscripciones')  renderInscripcionesTab();
+}
+
+/* ══════════════════════════════════════════
+   STRAVA CONFIG
+   Registrate gratis en https://www.strava.com/settings/api
+══════════════════════════════════════════ */
+const STRAVA_CLIENT_ID     = '213897';           // ← tu Client ID de Strava (strava.com/settings/api)
+const FUNCTIONS_BASE_URL   = 'https://us-central1-run-trail-vm.cloudfunctions.net'; // Firebase Cloud Functions (stravaActivities, stravaStreams)
+const STRAVA_AUTH_URL      = 'https://strava-auth.runandtrailvm.workers.dev';        // Cloudflare Worker (token exchange)
+const STRAVA_REDIRECT      = window.location.origin + window.location.pathname;
+
+/* ══════════════════════════════════════════
+   WORKOUTS STATE
+══════════════════════════════════════════ */
+let workouts        = [];   // array de entrenamientos del usuario actual
+let stravaToken     = null;
+let linkingWkId     = null;
+let wkDetailMapInst = null;
+
+/* ══════════════════════════════════════════
+   TRAINING TAB RENDER
+══════════════════════════════════════════ */
+let _workoutsListenerActive = false;
+
+function renderTrainingTab() {
+  const lock    = document.getElementById('trainLock');
+  const content = document.getElementById('trainContent');
+
+  console.log('[tab training] currentUser:', currentUser?.id || 'NULL', '| FB_READY:', FB_READY, '| listener:', _workoutsListenerActive);
+
+  if (!currentUser) {
+    lock.style.display = 'block'; content.style.display = 'none';
+    console.warn('[tab training] NO HAY USUARIO LOGUEADO — mostrando lock screen');
+    return;
+  }
+  lock.style.display = 'none'; content.style.display = 'block';
+
+  // Cargar workouts solo la primera vez (evitar listeners duplicados)
+  if (FB_READY && !_workoutsListenerActive) {
+    _workoutsListenerActive = true;
+    loadWorkoutsFromFirestore();
+  } else if (FB_READY) {
+    // Ya hay listener activo, solo re-render con datos actuales
+    renderWorkouts();
+  } else {
+    // Demo workouts locales
+    workouts = loadLocalWorkouts();
+    renderWorkouts();
+  }
+
+  // Strava token check
+  const st = sessionStorage.getItem('strava_token');
+  if (st) {
+    stravaToken = JSON.parse(st);
+    document.getElementById('stravaDisconnected').style.display = 'none';
+    document.getElementById('stravaConnected').style.display    = 'flex';
+    document.getElementById('syncStravaBtn').style.display      = 'flex';
+  }
+
+  // Handle Strava OAuth callback
+  const params = new URLSearchParams(window.location.hash.replace('#','?') || window.location.search);
+  if (params.get('strava_code') || new URLSearchParams(window.location.search).get('code') && sessionStorage.getItem('strava_pending')) {
+    handleStravaCallback();
+  }
+}
+
+function loadLocalWorkouts() {
+  try { return JSON.parse(localStorage.getItem('tg_workouts_' + currentUser?.id) || '[]'); } catch(e) { return []; }
+}
+function saveLocalWorkouts() {
+  try { localStorage.setItem('tg_workouts_' + currentUser?.id, JSON.stringify(workouts)); } catch(e) {}
+}
+
+async function loadWorkoutsFromFirestore() {
+  try {
+    const { collection: col, query: q2, where, getDocs, onSnapshot: ons } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    const wkQuery = q2(col(db, 'workouts'), where('userId','==', currentUser.id));
+
+    // Fetch inmediato para mostrar datos enseguida
+    const snap = await getDocs(wkQuery);
+    workouts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    workouts.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+    renderWorkouts();
+
+    if (snap.empty) {
+      console.log('[workouts] Firestore query returned 0 docs. userId:', currentUser.id);
+    } else {
+      console.log('[workouts] Loaded', snap.docs.length, 'workouts from Firestore');
+    }
+
+    // Listener en tiempo real para actualizaciones (sync posterior)
+    ons(wkQuery,
+      s => {
+        workouts = s.docs.map(d => ({ id: d.id, ...d.data() }));
+        workouts.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+        renderWorkouts();
+      },
+      err => {
+        console.warn('[workouts] Firestore listener error:', err.code, err.message);
+        toast('⚠️', 'Error Firestore: ' + err.code);
+      }
+    );
+  } catch(e) {
+    console.error('[workouts] loadWorkoutsFromFirestore error:', e.code || e.message);
+    toast('⚠️', 'Error cargando entrenamientos: ' + (e.code || e.message));
+    workouts = loadLocalWorkouts();
+    renderWorkouts();
+  }
+}
+
+async function saveWorkoutToFirestore(wk) {
+  try {
+    const { doc: d2, setDoc: sd } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    const { id, ...data } = wk;
+    await sd(d2(db, 'workouts', id), data);
+  } catch(e) {
+    workouts.push(wk); saveLocalWorkouts();
+  }
+}
+
+async function deleteWorkoutFromFirestore(id) {
+  try {
+    const { doc: d2, deleteDoc: dd } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    await dd(d2(db, 'workouts', id));
+  } catch(e) {
+    workouts = workouts.filter(w => w.id !== id); saveLocalWorkouts();
+  }
+}
+
+/* ══════════════════════════════════════════
+   RENDER WORKOUT CARDS
+══════════════════════════════════════════ */
+const WK_TYPE_ICONS = { run:'🏃', trail:'🏔', cycling:'🚴', swimming:'🏊', other:'⚡' };
+const WK_TYPE_LABELS = { run:'Running', trail:'Trail Run', cycling:'Ciclismo', swimming:'Natación', other:'Otro' };
+
+function renderWorkouts() {
+  const grid  = document.getElementById('trainGrid');
+  const badge = document.getElementById('trainBadge');
+
+  // update badge
+  badge.textContent = workouts.length;
+  badge.style.display = workouts.length ? 'inline' : 'none';
+
+  // update summary
+  updateTrainSummary();
+
+  if (!workouts.length) {
+    grid.innerHTML = `<div class="train-empty">
+      <div class="ei">🏃</div>
+      <h3>SIN ENTRENAMIENTOS AÚN</h3>
+      <p>Subí un archivo <strong>GPX</strong> o <strong>FIT</strong> desde Garmin Connect,<br>o conectá tu cuenta de <strong>Strava</strong> para sincronizar.</p>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = workouts.map(w => buildWkCard(w)).join('');
+
+  // Render mini-maps after DOM update
+  workouts.forEach(w => { if (w.track && w.track.length) renderMiniMap(w.id, w.track); });
+}
+
+function buildWkCard(w) {
+  const typeIcon  = WK_TYPE_ICONS[w.type]  || '🏃';
+  const typeLbl   = WK_TYPE_LABELS[w.type] || w.type;
+  const dist      = w.distance ? (w.distance / 1000).toFixed(2) : '—';
+  const timeStr   = w.movingTime ? formatDuration(w.movingTime) : '—';
+  const pace      = w.distance && w.movingTime ? formatPace(w.movingTime / (w.distance / 1000)) : '—';
+  const elev      = w.totalElevGain ? Math.round(w.totalElevGain) + 'm' : '—';
+  const linked    = w.linkedRaceId ? races.find(r => r.id === w.linkedRaceId) : null;
+
+  return `<div class="wk-card" id="wkcard-${w.id}">
+    <div class="wk-map" onclick="openWkDetail('${w.id}')">
+      ${w.track && w.track.length
+        ? `<div class="wk-map-inner" id="minimap-${w.id}"></div>`
+        : `<div class="wk-map-ph">${typeIcon}</div>`}
+      <div class="wk-type-badge">
+        <span class="bdg bdg-${w.type === 'trail' ? 'trail' : w.type === 'cycling' ? 'ultra' : 'road'}">${typeIcon} ${typeLbl}</span>
+      </div>
+      ${w.source === 'strava' ? '<span style="position:absolute;top:8px;right:8px;background:#fc4c02;color:#fff;font-size:9px;font-weight:700;padding:2px 7px;border-radius:100px;font-family:Space Mono,monospace">STRAVA</span>' : ''}
+      ${w.source === 'gpx'    ? '<span style="position:absolute;top:8px;right:8px;background:var(--accent);color:#0c0c0a;font-size:9px;font-weight:700;padding:2px 7px;border-radius:100px;font-family:Space Mono,monospace">GPX</span>' : ''}
+    </div>
+    <div class="wk-body" onclick="openWkDetail('${w.id}')">
+      <div class="wk-name">${w.name || 'Entrenamiento'}</div>
+      <div class="wk-date">${fdLong(w.date)}${linked ? ' · 🏆 '+linked.name : ''}</div>
+      <div class="wk-stats">
+        <div class="wk-stat"><div class="wsl">Dist</div><div class="wsv">${dist} km</div></div>
+        <div class="wk-stat"><div class="wsl">Tiempo</div><div class="wsv">${timeStr}</div></div>
+        <div class="wk-stat"><div class="wsl">Ritmo</div><div class="wsv">${pace}</div></div>
+        <div class="wk-stat"><div class="wsl">Desnivel</div><div class="wsv">${elev}</div></div>
+      </div>
+    </div>
+    <div class="wk-foot">
+      <button class="wk-link-race" onclick="openLinkRace('${w.id}')">🏆 ${linked ? 'Carrera vinculada' : 'Vincular carrera'}</button>
+      <button class="wk-del" onclick="deleteWorkout('${w.id}')">🗑</button>
+    </div>
+  </div>`;
+}
+
+function updateTrainSummary() {
+  const totalDist  = workouts.reduce((a, w) => a + (w.distance || 0), 0) / 1000;
+  const totalTime  = workouts.reduce((a, w) => a + (w.movingTime || 0), 0) / 3600;
+  const totalElev  = workouts.reduce((a, w) => a + (w.totalElevGain || 0), 0);
+  document.getElementById('tsSumAct').textContent  = workouts.length;
+  document.getElementById('tsSumDist').textContent = totalDist.toFixed(1);
+  document.getElementById('tsSumTime').textContent = totalTime.toFixed(1);
+  document.getElementById('tsSumElev').textContent = Math.round(totalElev);
+}
+
+/* ══════════════════════════════════════════
+   MINI-MAP (Leaflet)
+══════════════════════════════════════════ */
+const miniMaps = {};
+function renderMiniMap(wkId, track) {
+  const el = document.getElementById('minimap-' + wkId);
+  if (!el || miniMaps[wkId]) return;
+  try {
+    const map = L.map(el, { zoomControl:false, dragging:false, scrollWheelZoom:false, attributionControl:false });
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(map);
+    const latlngs = track.map(p => [p.lat, p.lng]);
+    const poly = L.polyline(latlngs, { color:'#e8ff47', weight:2.5, opacity:.9 }).addTo(map);
+    map.fitBounds(poly.getBounds(), { padding:[8,8] });
+    // Start/end markers
+    if (latlngs.length) {
+      L.circleMarker(latlngs[0],  { radius:5, color:'#3ecf7a', fillColor:'#3ecf7a', fillOpacity:1, weight:2 }).addTo(map);
+      L.circleMarker(latlngs[latlngs.length-1], { radius:5, color:'#ff6b35', fillColor:'#ff6b35', fillOpacity:1, weight:2 }).addTo(map);
+    }
+    miniMaps[wkId] = map;
+  } catch(e) {}
+}
+
+/* ══════════════════════════════════════════
+   WORKOUT DETAIL MODAL
+══════════════════════════════════════════ */
+function openWkDetail(id) {
+  const w = workouts.find(x => x.id === id); if (!w) return;
+  document.getElementById('wkDetailName').textContent = w.name || 'Entrenamiento';
+  document.getElementById('wkDetailSub').textContent  = fdLong(w.date) + (w.source === 'strava' ? ' · Strava' : w.source === 'gpx' ? ' · GPX/FIT' : '');
+  const dist    = w.distance   ? (w.distance / 1000).toFixed(2) : null;
+  const pace    = dist && w.movingTime ? formatPace(w.movingTime / parseFloat(dist)) : null;
+  const speedKh = w.distance && w.movingTime ? ((w.distance / w.movingTime) * 3.6).toFixed(1) : null;
+
+  document.getElementById('wkDetailBody').innerHTML = `
+    ${w.track && w.track.length ? `<div class="wk-detail-map" id="wkDetailMap"></div>` : ''}
+    <div class="wk-metrics">
+      ${dist          ? `<div class="wm"><div class="wml">Distancia</div><div class="wmv">${dist}</div><div class="wmu">km</div></div>` : ''}
+      ${w.movingTime  ? `<div class="wm"><div class="wml">Tiempo</div><div class="wmv">${formatDuration(w.movingTime)}</div></div>` : ''}
+      ${pace          ? `<div class="wm"><div class="wml">Ritmo</div><div class="wmv">${pace}</div><div class="wmu">min/km</div></div>` : ''}
+      ${speedKh       ? `<div class="wm"><div class="wml">Velocidad</div><div class="wmv">${speedKh}</div><div class="wmu">km/h</div></div>` : ''}
+      ${w.totalElevGain ? `<div class="wm"><div class="wml">Desnivel +</div><div class="wmv">${Math.round(w.totalElevGain)}</div><div class="wmu">m</div></div>` : ''}
+      ${w.avgHeartrate  ? `<div class="wm"><div class="wml">FC media</div><div class="wmv">${Math.round(w.avgHeartrate)}</div><div class="wmu">bpm</div></div>` : ''}
+      ${w.maxHeartrate  ? `<div class="wm"><div class="wml">FC máxima</div><div class="wmv">${w.maxHeartrate}</div><div class="wmu">bpm</div></div>` : ''}
+      ${w.avgCadence    ? `<div class="wm"><div class="wml">Cadencia</div><div class="wmv">${Math.round(w.avgCadence * 2)}</div><div class="wmu">ppm</div></div>` : ''}
+      ${w.calories      ? `<div class="wm"><div class="wml">Calorías</div><div class="wmv">${w.calories}</div><div class="wmu">kcal</div></div>` : ''}
+    </div>
+    ${w.elevProfile && w.elevProfile.length ? `
+      <div class="elev-chart">
+        <div style="font-size:10px;font-family:'Space Mono',monospace;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px">Perfil de elevación</div>
+        <canvas id="elevCanvas"></canvas>
+      </div>` : ''}
+    ${w.hrStream && w.hrStream.length ? `
+      <div class="hr-chart">
+        <div style="font-size:10px;font-family:'Space Mono',monospace;color:var(--muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px">Frecuencia cardíaca</div>
+        <canvas id="hrCanvas"></canvas>
+      </div>` : ''}
+    <div class="act-row" style="margin-top:8px">
+      <button class="act-btn" onclick="openLinkRace('${w.id}')">🏆 Vincular a carrera</button>
+      ${w.stravaUrl ? `<a class="act-btn" href="${w.stravaUrl}" target="_blank">🔗 Ver en Strava</a>` : ''}
+      <button class="act-btn" style="color:#ff6b6b;border-color:rgba(255,68,68,.3)" onclick="cm('wkDetailOv');deleteWorkout('${w.id}')">🗑 Eliminar</button>
+    </div>
+  `;
+  oo('wkDetailOv');
+
+  // Render detail map
+  if (w.track && w.track.length) {
+    setTimeout(() => {
+      if (wkDetailMapInst) { wkDetailMapInst.remove(); wkDetailMapInst = null; }
+      const mapEl = document.getElementById('wkDetailMap');
+      if (!mapEl) return;
+      wkDetailMapInst = L.map(mapEl, { attributionControl:false });
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png').addTo(wkDetailMapInst);
+      const latlngs = w.track.map(p => [p.lat, p.lng]);
+      const poly = L.polyline(latlngs, { color:'#e8ff47', weight:3, opacity:1 }).addTo(wkDetailMapInst);
+      wkDetailMapInst.fitBounds(poly.getBounds(), { padding:[20,20] });
+      L.circleMarker(latlngs[0],  { radius:7, color:'#3ecf7a', fillColor:'#3ecf7a', fillOpacity:1, weight:2 }).bindPopup('Inicio').addTo(wkDetailMapInst);
+      L.circleMarker(latlngs[latlngs.length-1], { radius:7, color:'#ff6b35', fillColor:'#ff6b35', fillOpacity:1, weight:2 }).bindPopup('Fin').addTo(wkDetailMapInst);
+    }, 100);
+  }
+
+  // Elevation chart
+  if (w.elevProfile && w.elevProfile.length) {
+    setTimeout(() => {
+      const ctx = document.getElementById('elevCanvas');
+      if (!ctx) return;
+      drawSimpleChart(ctx, w.elevProfile, '#e8ff47', 'rgba(232,255,71,0.15)');
+    }, 150);
+  }
+
+  // HR chart
+  if (w.hrStream && w.hrStream.length) {
+    setTimeout(() => {
+      const ctx = document.getElementById('hrCanvas');
+      if (!ctx) return;
+      drawSimpleChart(ctx, w.hrStream, '#ff6b35', 'rgba(255,107,53,0.15)');
+    }, 150);
+  }
+}
+
+function drawSimpleChart(canvas, data, lineColor, fillColor) {
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  const w = rect.width || canvas.offsetWidth || 600;
+  const h = parseInt(canvas.style.height || canvas.height || 120);
+  canvas.width  = w * dpr;
+  canvas.height = h * dpr;
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  const min = Math.min(...data), max = Math.max(...data), range = max - min || 1;
+  const step = w / (data.length - 1);
+  ctx.beginPath();
+  data.forEach((v, i) => {
+    const x = i * step;
+    const y = h - ((v - min) / range) * (h - 12) - 4;
+    i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  });
+  const grad = ctx.createLinearGradient(0,0,0,h);
+  grad.addColorStop(0, fillColor);
+  grad.addColorStop(1, 'transparent');
+  ctx.strokeStyle = lineColor;
+  ctx.lineWidth   = 2;
+  ctx.stroke();
+  ctx.lineTo(w, h); ctx.lineTo(0, h); ctx.closePath();
+  ctx.fillStyle = grad; ctx.fill();
+}
+
+/* ══════════════════════════════════════════
+   GPX / TCX PARSER
+══════════════════════════════════════════ */
+async function handleGpxUpload(event) {
+  const files = [...event.target.files]; if (!files.length) return;
+  toast('📂', `Procesando ${files.length} archivo(s)...`, 'ok');
+  for (const file of files) {
+    try {
+      const text = await file.text();
+      let wk;
+      if (file.name.toLowerCase().endsWith('.gpx') || file.name.toLowerCase().endsWith('.tcx')) {
+        wk = parseGPX(text, file.name);
+      } else if (file.name.toLowerCase().endsWith('.fit')) {
+        wk = parseFITFallback(file.name); // FIT necesita librería extra — fallback manual
+      }
+      if (wk) {
+        wk.userId = currentUser.id;
+        if (FB_READY) { await saveWorkoutToFirestore(wk); }
+        else { workouts.unshift(wk); saveLocalWorkouts(); renderWorkouts(); }
+        toast('✅', `"${wk.name}" importado`, 'ok');
+      }
+    } catch(e) {
+      console.error(e);
+      toast('⚠️', `Error al procesar ${file.name}`);
+    }
+  }
+  event.target.value = '';
+}
+
+function parseGPX(xmlText, filename) {
+  const parser = new DOMParser();
+  const xml    = parser.parseFromString(xmlText, 'text/xml');
+  const ns     = xml.documentElement.tagName === 'gpx' ? '' : '';
+  const isTCX  = filename.toLowerCase().endsWith('.tcx');
+
+  // GPX
+  const trkpts = [...xml.querySelectorAll('trkpt')];
+  let track = [], elevProfile = [], hrStream = [], cadStream = [];
+
+  if (trkpts.length) {
+    trkpts.forEach(pt => {
+      const lat  = parseFloat(pt.getAttribute('lat'));
+      const lng  = parseFloat(pt.getAttribute('lon'));
+      const ele  = parseFloat(pt.querySelector('ele')?.textContent || '0');
+      const hr   = parseInt(pt.querySelector('hr, heartrate, HeartRateBpm value')?.textContent || '0');
+      const cad  = parseInt(pt.querySelector('cad, cadence')?.textContent || '0');
+      track.push({ lat, lng });
+      elevProfile.push(ele);
+      if (hr)  hrStream.push(hr);
+      if (cad) cadStream.push(cad);
+    });
+  }
+
+  // TCX
+  const tcxPts = [...xml.querySelectorAll('Trackpoint')];
+  if (tcxPts.length && !trkpts.length) {
+    tcxPts.forEach(pt => {
+      const lat = parseFloat(pt.querySelector('LatitudeDegrees')?.textContent || '0');
+      const lng = parseFloat(pt.querySelector('LongitudeDegrees')?.textContent || '0');
+      const ele = parseFloat(pt.querySelector('AltitudeMeters')?.textContent   || '0');
+      const hr  = parseInt(pt.querySelector('HeartRateBpm Value')?.textContent || '0');
+      const cad = parseInt(pt.querySelector('RunCadence, Cadence')?.textContent || '0');
+      if (lat && lng) { track.push({ lat, lng }); elevProfile.push(ele); }
+      if (hr)  hrStream.push(hr);
+      if (cad) cadStream.push(cad);
+    });
+  }
+
+  // Metrics from GPX metadata
+  const nameEl = xml.querySelector('name, trk > name');
+  const timeEl = xml.querySelector('time, metadata time');
+  const dist   = calcTrackDistance(track);
+  const elevGain = calcElevGain(elevProfile);
+  const timeSpan = calcTimeSpan(xml);
+
+  // Decimate track for storage (max 500 points)
+  const decimated = decimateTrack(track, 500);
+  const elevDec   = decimateArray(elevProfile, 200);
+  const hrDec     = decimateArray(hrStream, 200);
+
+  return {
+    id:            'wk_' + Date.now() + '_' + Math.random().toString(36).slice(2,6),
+    name:          nameEl?.textContent?.trim() || filename.replace(/\.(gpx|tcx|fit)$/i,''),
+    date:          timeEl?.textContent?.split('T')[0] || new Date().toISOString().split('T')[0],
+    type:          guessType(nameEl?.textContent || filename, dist),
+    source:        'gpx',
+    distance:      dist,
+    movingTime:    timeSpan,
+    totalElevGain: elevGain,
+    avgHeartrate:  hrDec.length ? Math.round(hrDec.reduce((a,v)=>a+v,0)/hrDec.length) : null,
+    maxHeartrate:  hrDec.length ? Math.max(...hrDec) : null,
+    avgCadence:    cadStream.length ? Math.round(cadStream.reduce((a,v)=>a+v,0)/cadStream.length) : null,
+    track:         decimated,
+    elevProfile:   elevDec,
+    hrStream:      hrDec,
+    linkedRaceId:  null
+  };
+}
+
+function parseFITFallback(filename) {
+  // FIT es formato binario — mostrar instrucciones
+  toast('ℹ️', 'Los archivos .FIT requieren conversión. En Garmin Connect: Actividad → ··· → Exportar GPX');
+  return null;
+}
+
+function calcTrackDistance(track) {
+  let total = 0;
+  for (let i = 1; i < track.length; i++) {
+    total += haversine(track[i-1].lat, track[i-1].lng, track[i].lat, track[i].lng);
+  }
+  return total; // metros
+}
+
+function haversine(lat1, lng1, lat2, lng2) {
+  const R = 6371000, dLat = (lat2-lat1)*Math.PI/180, dLng = (lng2-lng1)*Math.PI/180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function calcElevGain(elev) {
+  let gain = 0;
+  for (let i = 1; i < elev.length; i++) { const d = elev[i]-elev[i-1]; if (d > 0) gain += d; }
+  return gain;
+}
+
+function calcTimeSpan(xml) {
+  const times = [...xml.querySelectorAll('time, Time')].map(t => new Date(t.textContent).getTime()).filter(Boolean);
+  if (times.length < 2) return null;
+  return Math.round((Math.max(...times) - Math.min(...times)) / 1000);
+}
+
+function decimateTrack(track, maxPts) {
+  if (track.length <= maxPts) return track;
+  const step = Math.ceil(track.length / maxPts);
+  return track.filter((_, i) => i % step === 0);
+}
+
+function decimateArray(arr, maxPts) {
+  if (arr.length <= maxPts) return arr;
+  const step = Math.ceil(arr.length / maxPts);
+  return arr.filter((_, i) => i % step === 0);
+}
+
+function guessType(name, dist) {
+  const n = (name || '').toLowerCase();
+  if (n.includes('trail') || n.includes('mountain') || n.includes('monte')) return 'trail';
+  if (n.includes('cycling') || n.includes('bici') || n.includes('ciclismo')) return 'cycling';
+  if (n.includes('swim') || n.includes('natación')) return 'swimming';
+  if (dist > 5000) return 'run';
+  return 'run';
+}
+
+/* ══════════════════════════════════════════
+   STRAVA OAUTH (Authorization Code Flow)
+══════════════════════════════════════════ */
+function connectStrava() {
+  if (STRAVA_CLIENT_ID === 'TU_STRAVA_CLIENT_ID') {
+    toast('⚙️', 'Configurá STRAVA_CLIENT_ID en el código. Registrate gratis en strava.com/settings/api');
+    return;
+  }
+  sessionStorage.setItem('strava_pending', '1');
+  const scope = 'activity:read_all';
+  const url = `https://www.strava.com/oauth/authorize?client_id=${STRAVA_CLIENT_ID}&redirect_uri=${encodeURIComponent(STRAVA_REDIRECT)}&response_type=code&scope=${scope}`;
+  window.location.href = url;
+}
+
+async function handleStravaCallback() {
+  sessionStorage.removeItem('strava_pending');
+  const code = new URLSearchParams(window.location.search).get('code');
+  if (!code) return;
+  window.history.replaceState({}, document.title, window.location.pathname);
+  toast('⏳', 'Conectando con Strava...');
+  // El intercambio code → token se hace en el Cloudflare Worker para no exponer el client_secret
+  if (STRAVA_AUTH_URL.includes('TU_SUBDOMINIO')) {
+    toast('⚙️', 'Configurá STRAVA_AUTH_URL con la URL de tu Cloudflare Worker.');
+    return;
+  }
+  try {
+    const res = await fetch(STRAVA_AUTH_URL, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ code, grant_type:'authorization_code' })
+    });
+    const data = await res.json();
+    if (data.access_token) {
+      stravaToken = data;
+      sessionStorage.setItem('strava_token', JSON.stringify(data));
+      document.getElementById('stravaDisconnected').style.display = 'none';
+      document.getElementById('stravaConnected').style.display    = 'flex';
+      document.getElementById('syncStravaBtn').style.display      = 'flex';
+      toast('🟠', '¡Strava conectado! Sincronizando actividades...', 'ok');
+      await syncStrava();
+    } else {
+      toast('⚠️', 'Error al conectar Strava. Verificá las credenciales.');
+    }
+  } catch(e) {
+    toast('⚠️', 'Error de conexión con Strava.');
+  }
+}
+
+function disconnectStrava() {
+  stravaToken = null;
+  sessionStorage.removeItem('strava_token');
+  document.getElementById('stravaDisconnected').style.display = 'flex';
+  document.getElementById('stravaConnected').style.display    = 'none';
+  document.getElementById('syncStravaBtn').style.display      = 'none';
+  toast('👋', 'Strava desconectado');
+}
+
+async function syncStrava() {
+  if (!stravaToken) return;
+  const spin = document.getElementById('syncSpin');
+  spin.style.display = 'inline-block';
+  toast('🔄', 'Sincronizando actividades de Strava...', 'ok');
+  try {
+    const res = await fetch(`${FUNCTIONS_BASE_URL}/stravaActivities?token=${stravaToken.access_token}`);
+    const activities = await res.json();
+    if (!Array.isArray(activities)) { toast('⚠️','Token expirado. Reconectá Strava.'); spin.style.display='none'; return; }
+
+    let newCount = 0;
+    for (const a of activities) {
+      const exists = workouts.find(w => w.stravaId === a.id);
+      if (exists) continue;
+      // Fetch streams via Cloud Function proxy
+      let track = [], elevProfile = [], hrStream = [];
+      try {
+        const streamRes = await fetch(`${FUNCTIONS_BASE_URL}/stravaStreams?activityId=${a.id}&token=${stravaToken.access_token}`);
+        const streams = await streamRes.json();
+        if (streams.latlng?.data)    track        = streams.latlng.data.map(([lat,lng]) => ({lat,lng}));
+        if (streams.altitude?.data)  elevProfile  = decimateArray(streams.altitude.data, 200);
+        if (streams.heartrate?.data) hrStream     = decimateArray(streams.heartrate.data, 200);
+      } catch(e) {}
+
+      const wk = {
+        id:            'strava_' + a.id,
+        stravaId:      a.id,
+        name:          a.name,
+        date:          a.start_date_local?.split('T')[0],
+        type:          mapStravaType(a.sport_type || a.type),
+        source:        'strava',
+        distance:      a.distance,
+        movingTime:    a.moving_time,
+        totalElevGain: a.total_elevation_gain,
+        avgHeartrate:  a.average_heartrate,
+        maxHeartrate:  a.max_heartrate,
+        avgCadence:    a.average_cadence,
+        calories:      a.calories,
+        stravaUrl:     `https://www.strava.com/activities/${a.id}`,
+        track:         decimateTrack(track, 500),
+        elevProfile, hrStream,
+        userId:        currentUser.id,
+        linkedRaceId:  null
+      };
+      if (FB_READY) { await saveWorkoutToFirestore(wk); }
+      workouts.unshift(wk);
+      newCount++;
+    }
+    workouts.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+    if (!FB_READY) saveLocalWorkouts();
+    renderWorkouts();
+    toast('✅', `${newCount} actividades nuevas de Strava`, 'ok');
+  } catch(e) {
+    toast('⚠️', 'Error al sincronizar Strava');
+  }
+  spin.style.display = 'none';
+}
+
+function mapStravaType(t) {
+  const m = { Run:'run', TrailRun:'trail', VirtualRun:'run', Ride:'cycling', VirtualRide:'cycling', Swim:'swimming', Walk:'run', Hike:'trail' };
+  return m[t] || 'run';
+}
+
+/* ══════════════════════════════════════════
+   LINK WORKOUT TO RACE
+══════════════════════════════════════════ */
+function openLinkRace(wkId) {
+  linkingWkId = wkId;
+  const w = workouts.find(x => x.id === wkId);
+  document.getElementById('linkWkName').textContent = w?.name || '—';
+  const list = document.getElementById('linkRaceList');
+  if (!races.length) {
+    list.innerHTML = '<p style="color:var(--muted);font-size:13px">No hay carreras en el calendario aún.</p>';
+  } else {
+    list.innerHTML = races.map(r => `
+      <button onclick="linkWkToRace('${r.id}')" style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;text-align:left;cursor:pointer;transition:border-color .15s;width:100%" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+        <div style="font-size:20px">${WK_TYPE_ICONS['run']}</div>
+        <div>
+          <div style="font-weight:700;font-size:13px;color:var(--text)">${r.name}</div>
+          <div style="font-size:11px;color:var(--muted);font-family:'Space Mono',monospace">${fd(r.date)} · ${r.provincia||''}</div>
+        </div>
+        ${w?.linkedRaceId === r.id ? '<span style="margin-left:auto;color:var(--accent);font-size:12px">✓ Vinculada</span>' : ''}
+      </button>`).join('');
+  }
+  oo('linkRaceOv');
+}
+
+async function linkWkToRace(raceId) {
+  const wk = workouts.find(x => x.id === linkingWkId); if (!wk) return;
+  wk.linkedRaceId = raceId;
+  if (FB_READY) {
+    try {
+      const { doc: d2, updateDoc: ud } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      await ud(d2(db, 'workouts', wk.id), { linkedRaceId: raceId });
+    } catch(e) { saveLocalWorkouts(); }
+  } else { saveLocalWorkouts(); }
+  renderWorkouts();
+  cm('linkRaceOv');
+  const race = races.find(r => r.id === raceId);
+  toast('🏆', `Vinculado a "${race?.name}"`, 'ok');
+}
+
+async function deleteWorkout(id) {
+  if (!confirm('¿Eliminar este entrenamiento?')) return;
+  if (FB_READY) { await deleteWorkoutFromFirestore(id); }
+  else { workouts = workouts.filter(w => w.id !== id); saveLocalWorkouts(); renderWorkouts(); }
+  toast('🗑', 'Entrenamiento eliminado');
+}
+
+/* ══════════════════════════════════════════
+   FORMAT HELPERS
+══════════════════════════════════════════ */
+function formatDuration(secs) {
+  if (!secs) return '—';
+  const h = Math.floor(secs / 3600), m = Math.floor((secs % 3600) / 60), s = secs % 60;
+  return h > 0 ? `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}` : `${m}:${String(s).padStart(2,'0')}`;
+}
+function formatPace(secsPerKm) {
+  if (!secsPerKm || !isFinite(secsPerKm)) return '—';
+  const m = Math.floor(secsPerKm / 60), s = Math.round(secsPerKm % 60);
+  return `${m}:${String(s).padStart(2,'0')}`;
+}
+function fdLong(s) {
+  if (!s) return '—';
+  const [y,m,d] = s.split('-');
+  const mNames = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  return `${parseInt(d)} ${mNames[parseInt(m)-1]} ${y}`;
+}
+
+/* ══════════════════════════════════════════
+   MIS INSCRIPCIONES
+══════════════════════════════════════════ */
+let inscripciones  = [];
+let inscEditId     = null;
+let inscPagoFile   = null;
+let inscDeslindeFile = null;
+
+function renderInscripcionesTab() {
+  const lock    = document.getElementById('inscLock');
+  const content = document.getElementById('inscContent');
+  if (!currentUser) {
+    lock.style.display = 'block'; content.style.display = 'none'; return;
+  }
+  lock.style.display = 'none'; content.style.display = 'block';
+  if (FB_READY) {
+    loadInscripcionesFromFirestore();
+  } else {
+    renderInscripciones();
+  }
+}
+
+function renderInscripciones() {
+  const grid = document.getElementById('inscGrid');
+  // summary
+  document.getElementById('inscSumTotal').textContent    = inscripciones.length;
+  document.getElementById('inscSumPago').textContent     = inscripciones.filter(i => i.pagoURL).length;
+  document.getElementById('inscSumDeslinde').textContent = inscripciones.filter(i => i.deslindeURL).length;
+  // badge
+  const badge = document.getElementById('inscBadge');
+  badge.textContent = inscripciones.length;
+  badge.style.display = inscripciones.length ? 'inline' : 'none';
+
+  if (!inscripciones.length) {
+    grid.innerHTML = `<div class="insc-empty" style="grid-column:1/-1">
+      <div class="ei">🎫</div>
+      <h3>SIN INSCRIPCIONES AÚN</h3>
+      <p style="font-size:14px;max-width:320px;margin:0 auto;line-height:1.6">Agregá tu primera inscripción con el botón de arriba.</p>
+    </div>`; return;
+  }
+  grid.innerHTML = inscripciones.map(ins => buildInscCard(ins)).join('');
+}
+
+function buildInscCard(ins) {
+  const race = races.find(r => r.id === ins.raceId);
+  const [y, mo, d] = (ins.raceDate || '----').split('-');
+  const typeEmoji = TI[ins.raceType] || '🏃';
+  return `<div class="insc-card">
+    <div class="insc-card-head">
+      <div class="insc-card-name">${ins.raceName || 'Carrera'}</div>
+      <span class="bdg bdg-${ins.raceType||'road'}">${typeEmoji}</span>
+    </div>
+    <div class="insc-card-meta">
+      <div class="insc-meta-row">📅 <strong>${d && d!='--' ? d+'/'+mo+'/'+y : '—'}</strong>${ins.raceProvince ? ' · '+ins.raceProvince : ''}</div>
+      ${ins.dorsal    ? `<div class="insc-meta-row">🎫 Dorsal: <strong>${ins.dorsal}</strong></div>` : ''}
+      ${ins.distancia ? `<div class="insc-meta-row">📏 Distancia: <strong>${ins.distancia}</strong></div>` : ''}
+      ${ins.categoria ? `<div class="insc-meta-row">🏷 Categoría: <strong>${ins.categoria}</strong></div>` : ''}
+    </div>
+    <div class="insc-card-pills">
+      ${ins.pagoURL     ? '<span class="insc-pill insc-pill-acc">✓ Comprobante</span>' : '<span class="insc-pill">Sin comprobante</span>'}
+      ${ins.deslindeURL ? '<span class="insc-pill insc-pill-acc">✓ Deslinde</span>'    : '<span class="insc-pill">Sin deslinde</span>'}
+    </div>
+    <div class="insc-card-foot">
+      <button class="insc-btn-pri" onclick="openInscDetail('${ins.id}')">Ver detalles</button>
+      <button class="insc-btn-del" onclick="deleteInsc('${ins.id}')">🗑</button>
+    </div>
+  </div>`;
+}
+
+function openAddInsc() {
+  if (!currentUser) { openLogin(); return; }
+  inscEditId = null; inscPagoFile = null; inscDeslindeFile = null;
+  document.getElementById('inscModalTitle').textContent = 'NUEVA INSCRIPCIÓN';
+  document.getElementById('inscSaveBtn').textContent    = 'GUARDAR INSCRIPCIÓN';
+  ['inscDorsal','inscCat','inscNotas'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('inscKitDate').value = '';
+  document.getElementById('inscPagoPrev').innerHTML     = '<div class="ui">📄</div><p>Click para subir PDF o imagen</p>';
+  document.getElementById('inscDeslindePrev').innerHTML = '<div class="ui">📋</div><p>Click para subir PDF o imagen</p>';
+  // Cargar carreras
+  const sel = document.getElementById('inscRaceSel');
+  sel.innerHTML = '<option value="">Seleccioná una carrera...</option>' +
+    races.sort((a,b)=>a.date>b.date?1:-1).map(r => `<option value="${r.id}">${r.name} — ${fd(r.date)}</option>`).join('');
+  document.getElementById('inscDist').innerHTML = '<option value="">—</option>';
+  oo('addInscOv');
+}
+
+function inscRaceChanged() {
+  const raceId = document.getElementById('inscRaceSel').value;
+  const race   = races.find(r => r.id === raceId);
+  const sel    = document.getElementById('inscDist');
+  sel.innerHTML = '<option value="">—</option>' +
+    (race?.distances || []).map(d => `<option>${d}</option>`).join('');
+}
+
+function prevInscFile(e, tipo) {
+  const f = e.target.files[0]; if (!f) return;
+  if (tipo === 'pago') {
+    inscPagoFile = f;
+    document.getElementById('inscPagoPrev').innerHTML = `<div style="display:flex;align-items:center;gap:8px;padding:4px"><span style="font-size:20px">${f.type.includes('pdf') ? '📄' : '🖼'}</span><span style="font-size:12px;color:var(--text)">${f.name}</span></div>`;
+  } else {
+    inscDeslindeFile = f;
+    document.getElementById('inscDeslindePrev').innerHTML = `<div style="display:flex;align-items:center;gap:8px;padding:4px"><span style="font-size:20px">${f.type.includes('pdf') ? '📄' : '🖼'}</span><span style="font-size:12px;color:var(--text)">${f.name}</span></div>`;
+  }
+}
+
+async function uploadInscFile(file, path) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = async ev => {
+      try {
+        const storRef = ref(storage, path);
+        await uploadString(storRef, ev.target.result, 'data_url');
+        const url = await getDownloadURL(storRef);
+        resolve({ url, path });
+      } catch(e) { reject(e); }
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+async function saveInsc() {
+  const raceId = document.getElementById('inscRaceSel').value;
+  if (!raceId) { toast('⚠️', 'Seleccioná una carrera'); return; }
+  const race = races.find(r => r.id === raceId);
+  const btn  = document.getElementById('inscSaveBtn');
+  btn.innerHTML = '<span class="spin"></span> Guardando...'; btn.disabled = true;
+
+  try {
+    const id = inscEditId || 'ins_' + Date.now();
+    let pagoURL = null, pagoPath = null, deslindeURL = null, deslindePath = null;
+
+    if (FB_READY && inscPagoFile) {
+      toast('📤', 'Subiendo comprobante...', 'ok');
+      const res = await uploadInscFile(inscPagoFile, `inscripciones/${currentUser.id}/${id}_pago`);
+      pagoURL = res.url; pagoPath = res.path;
+    }
+    if (FB_READY && inscDeslindeFile) {
+      toast('📤', 'Subiendo deslinde...', 'ok');
+      const res = await uploadInscFile(inscDeslindeFile, `inscripciones/${currentUser.id}/${id}_deslinde`);
+      deslindeURL = res.url; deslindePath = res.path;
+    }
+
+    const ins = {
+      id,
+      userId:       currentUser.id,
+      raceId,
+      raceName:     race.name,
+      raceDate:     race.date,
+      raceProvince: race.provincia || '',
+      raceType:     race.type || 'road',
+      dorsal:       document.getElementById('inscDorsal').value.trim(),
+      distancia:    document.getElementById('inscDist').value,
+      categoria:    document.getElementById('inscCat').value.trim(),
+      kitDate:      document.getElementById('inscKitDate').value,
+      notas:        document.getElementById('inscNotas').value.trim(),
+      pagoURL:      pagoURL || (inscEditId ? (inscripciones.find(i=>i.id===inscEditId)?.pagoURL||null) : null),
+      pagoPath:     pagoPath || null,
+      deslindeURL:  deslindeURL || (inscEditId ? (inscripciones.find(i=>i.id===inscEditId)?.deslindeURL||null) : null),
+      deslindePath: deslindePath || null,
+      createdAt:    new Date().toISOString()
+    };
+
+    if (FB_READY) {
+      const { doc: d2, setDoc: sd } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      await sd(d2(db, 'inscripciones', id), ins);
+    } else {
+      const idx = inscripciones.findIndex(i => i.id === id);
+      if (idx >= 0) inscripciones[idx] = ins; else inscripciones.push(ins);
+      renderInscripciones();
+    }
+
+    cm('addInscOv');
+    toast('🎫', '¡Inscripción guardada!', 'ok');
+  } catch(e) {
+    console.error(e);
+    toast('❌', 'Error al guardar la inscripción');
+  }
+  btn.innerHTML = inscEditId ? 'ACTUALIZAR' : 'GUARDAR INSCRIPCIÓN'; btn.disabled = false;
+}
+
+function openInscDetail(id) {
+  const ins = inscripciones.find(i => i.id === id); if (!ins) return;
+  document.getElementById('inscDetTitle').textContent = ins.raceName || '—';
+  document.getElementById('inscDetSub').textContent   = `${fd(ins.raceDate)}${ins.raceProvince ? ' · '+ins.raceProvince : ''}`;
+  const rows = [
+    ins.dorsal    ? { icon:'🎫', lbl:'Dorsal / N° inscripción', val: ins.dorsal } : null,
+    ins.distancia ? { icon:'📏', lbl:'Distancia inscripta',     val: ins.distancia } : null,
+    ins.categoria ? { icon:'🏷', lbl:'Categoría',               val: ins.categoria } : null,
+    ins.kitDate   ? { icon:'📅', lbl:'Retiro de kit',           val: fd(ins.kitDate) } : null,
+    ins.notas     ? { icon:'📝', lbl:'Notas',                   val: ins.notas } : null,
+  ].filter(Boolean);
+
+  document.getElementById('inscDetBody').innerHTML = `
+    ${rows.map(row => `
+      <div class="insc-detail-row">
+        <div class="insc-detail-icon">${row.icon}</div>
+        <div class="insc-detail-info"><div class="lbl">${row.lbl}</div><div class="val">${row.val}</div></div>
+      </div>`).join('')}
+    <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
+      ${ins.pagoURL
+        ? `<a class="insc-pdf-btn" href="${ins.pagoURL}" target="_blank">📄 Ver comprobante de pago</a>`
+        : `<span class="insc-pdf-btn" style="opacity:.5;cursor:default">📄 Sin comprobante</span>`}
+      ${ins.deslindeURL
+        ? `<a class="insc-pdf-btn" href="${ins.deslindeURL}" target="_blank">📋 Ver deslinde firmado</a>`
+        : `<span class="insc-pdf-btn" style="opacity:.5;cursor:default">📋 Sin deslinde</span>`}
+    </div>`;
+  oo('inscDetailOv');
+}
+
+async function deleteInsc(id) {
+  if (!confirm('¿Eliminar esta inscripción?')) return;
+  if (FB_READY) {
+    try {
+      const { doc: d2, deleteDoc: dd } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      await dd(d2(db, 'inscripciones', id));
+    } catch(e) { inscripciones = inscripciones.filter(i => i.id !== id); renderInscripciones(); }
+  } else {
+    inscripciones = inscripciones.filter(i => i.id !== id); renderInscripciones();
+  }
+  toast('🗑', 'Inscripción eliminada');
+}
+
+async function loadInscripcionesFromFirestore() {
+  try {
+    const { collection: col, query: q2, where, onSnapshot: ons } =
+      await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+    const q = q2(col(db, 'inscripciones'), where('userId','==', currentUser.id));
+    ons(q, snap => {
+      inscripciones = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      inscripciones.sort((a,b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+      renderInscripciones();
+    }, err => {
+      console.error('Error inscripciones:', err);
+      toast('❌', 'Error al cargar inscripciones: ' + err.message);
+    });
+  } catch(e) { console.error('Error cargando inscripciones:', e); }
+}
+
+// Exponer funciones al HTML (necesario con type="module")
+Object.assign(window, {
+  openLogin, logout, loginWithGoogle,
+  openAddRace, editRace, delRace, saveRace,
+  openDetail, openPart, savePart,
+  applyFilters, clearFilters,
+  togDist, addCD, getGPS, fetchW,
+  prevRacePhoto, prevPartPhotos,
+  selMood, bigImg, coo, cm, oo,
+  switchTab, handleGpxUpload,
+  connectStrava, disconnectStrava, syncStrava,
+  openWkDetail, openLinkRace, linkWkToRace, deleteWorkout,
+  openAddInsc, inscRaceChanged, prevInscFile, saveInsc, openInscDetail, deleteInsc
+});
+
+init();
+</script>
+</body>
+</html>
