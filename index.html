@@ -285,9 +285,14 @@ textarea{resize:vertical;min-height:70px;}
 /* RESPONSIVE */
 @media(max-width:900px){.filter-bar{grid-template-columns:1fr 1fr;}.feat-row{grid-template-columns:1fr 1fr;}}
 @media(max-width:640px){
-  .topbar{padding:10px 16px;}
+  .topbar{padding:10px 14px;}
+  .logo{font-size:19px;letter-spacing:2px;gap:6px;}
+  .logo-badge{display:none;}
   .nav-right{gap:6px;}
-  .nav-right .btn{padding:6px 10px;font-size:12px;}
+  .nav-right .btn-ghost{display:none;}
+  .nav-right .btn-accent{padding:7px 14px;font-size:12px;}
+  .user-chip{display:none;}
+  .admin-badge{display:none;}
   .hero,.featured-wrap,.filter-wrap,.res-bar,.cards-wrap{padding-left:16px;padding-right:16px;}
   .feat-row{grid-template-columns:1fr;}
   .filter-bar{grid-template-columns:1fr;}
@@ -308,8 +313,8 @@ textarea{resize:vertical;min-height:70px;}
 .tab-panel{display:none;}
 .tab-panel.active{display:block;}
 @media(max-width:640px){
-  .main-tabs{padding:0 8px;top:53px;}
-  .tab-btn{padding:10px 14px;font-size:14px;letter-spacing:1px;}
+  .main-tabs{padding:0 6px;top:50px;}
+  .tab-btn{padding:9px 12px;font-size:13px;letter-spacing:.5px;gap:5px;}
 }
 
 /* ── TRAINING SECTION ── */
