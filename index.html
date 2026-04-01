@@ -4133,6 +4133,138 @@ function pwaDismiss() {
   sessionStorage.setItem('pwa_dismissed', '1');
 }
 
+/* ============================================================
+   THEME SWITCHER — solo para pruebas visuales
+   ============================================================ */
+(function() {
+  const THEMES = [
+    {
+      id: 'verde',
+      label: '🌿 Verde',
+      swatch: '#0c8233',
+      vars: {
+        '--bg':'#0c8233','--surface':'#0a6e2b','--surface2':'#085c24','--surface3':'#074f1f',
+        '--border':'#1a9945','--muted':'#a8d8b5','--topbar':'rgba(10,110,43,.96)'
+      }
+    },
+    {
+      id: 'negro',
+      label: '⬛ Negro',
+      swatch: '#0d0d0d',
+      vars: {
+        '--bg':'#0d0d0d','--surface':'#161616','--surface2':'#1c1c1c','--surface3':'#222222',
+        '--border':'#333333','--muted':'#888888','--topbar':'rgba(13,13,13,.96)'
+      }
+    },
+    {
+      id: 'azul',
+      label: '🌊 Azul marino',
+      swatch: '#0a1628',
+      vars: {
+        '--bg':'#0a1628','--surface':'#0d1f3c','--surface2':'#0f2547','--surface3':'#112b52',
+        '--border':'#1e3a5f','--muted':'#7ba7c8','--topbar':'rgba(10,22,40,.96)'
+      }
+    },
+    {
+      id: 'slate',
+      label: '🟣 Pizarra oscura',
+      swatch: '#1a1a2e',
+      vars: {
+        '--bg':'#1a1a2e','--surface':'#16213e','--surface2':'#0f3460','--surface3':'#0a2040',
+        '--border':'#2a2a5e','--muted':'#9191bb','--topbar':'rgba(26,26,46,.96)'
+      }
+    },
+    {
+      id: 'carbon',
+      label: '🩶 Carbón',
+      swatch: '#1c1c1e',
+      vars: {
+        '--bg':'#1c1c1e','--surface':'#2c2c2e','--surface2':'#3a3a3c','--surface3':'#48484a',
+        '--border':'#48484a','--muted':'#aeaeb2','--topbar':'rgba(28,28,30,.96)'
+      }
+    },
+    {
+      id: 'rojo',
+      label: '🔴 Rojo trail',
+      swatch: '#1a0a0a',
+      vars: {
+        '--bg':'#1a0a0a','--surface':'#2a0e0e','--surface2':'#3a1212','--surface3':'#4a1515',
+        '--border':'#6b2020','--muted':'#c08080','--topbar':'rgba(26,10,10,.96)'
+      }
+    }
+  ];
+
+  // Guardar tema activo en localStorage
+  const savedTheme = localStorage.getItem('_devTheme') || 'verde';
+
+  function applyTheme(id) {
+    const t = THEMES.find(x => x.id === id) || THEMES[0];
+    const root = document.documentElement;
+    Object.entries(t.vars).forEach(([k, v]) => root.style.setProperty(k, v));
+    // topbar
+    const topbar = document.querySelector('.topbar');
+    if (topbar) topbar.style.background = t.vars['--topbar'];
+    localStorage.setItem('_devTheme', id);
+    document.querySelectorAll('.tp-btn').forEach(b => {
+      b.classList.toggle('tp-active', b.dataset.theme === id);
+    });
+  }
+
+  function buildPanel() {
+    const style = document.createElement('style');
+    style.textContent = `
+      #theme-panel{position:fixed;bottom:80px;right:18px;z-index:99999;display:flex;flex-direction:column;align-items:flex-end;gap:6px;font-family:'DM Sans',sans-serif;}
+      #tp-toggle{width:42px;height:42px;border-radius:50%;border:2px solid rgba(255,255,255,.25);background:rgba(0,0,0,.7);backdrop-filter:blur(12px);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:transform .2s;box-shadow:0 4px 16px rgba(0,0,0,.4);}
+      #tp-toggle:hover{transform:scale(1.1);}
+      #tp-menu{display:none;flex-direction:column;gap:6px;align-items:flex-end;}
+      #tp-menu.open{display:flex;}
+      .tp-btn{display:flex;align-items:center;gap:8px;padding:7px 12px;border-radius:8px;border:1.5px solid rgba(255,255,255,.15);background:rgba(0,0,0,.75);backdrop-filter:blur(12px);color:#fff;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;white-space:nowrap;box-shadow:0 2px 10px rgba(0,0,0,.35);}
+      .tp-btn:hover{border-color:rgba(255,255,255,.4);transform:translateX(-3px);}
+      .tp-btn.tp-active{border-color:#e8ff47;color:#e8ff47;}
+      .tp-swatch{width:12px;height:12px;border-radius:50%;flex-shrink:0;border:1.5px solid rgba(255,255,255,.3);}
+      #tp-label{font-size:10px;color:rgba(255,255,255,.5);font-family:'Space Mono',monospace;letter-spacing:1px;text-align:right;padding-right:4px;}
+    `;
+    document.head.appendChild(style);
+
+    const panel = document.createElement('div');
+    panel.id = 'theme-panel';
+
+    const label = document.createElement('div');
+    label.id = 'tp-label';
+    label.textContent = 'TEMAS DEV';
+
+    const menu = document.createElement('div');
+    menu.id = 'tp-menu';
+
+    THEMES.forEach(t => {
+      const btn = document.createElement('button');
+      btn.className = 'tp-btn';
+      btn.dataset.theme = t.id;
+      btn.innerHTML = `<span class="tp-swatch" style="background:${t.swatch}"></span>${t.label}`;
+      btn.addEventListener('click', () => applyTheme(t.id));
+      menu.appendChild(btn);
+    });
+
+    const toggle = document.createElement('button');
+    toggle.id = 'tp-toggle';
+    toggle.title = 'Cambiar tema';
+    toggle.textContent = '🎨';
+    toggle.addEventListener('click', () => menu.classList.toggle('open'));
+
+    panel.appendChild(label);
+    panel.appendChild(menu);
+    panel.appendChild(toggle);
+    document.body.appendChild(panel);
+
+    applyTheme(savedTheme);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', buildPanel);
+  } else {
+    buildPanel();
+  }
+})();
 </script>
 </body>
 </html>
