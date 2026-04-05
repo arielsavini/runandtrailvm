@@ -1227,7 +1227,35 @@ textarea{resize:vertical;min-height:70px;}
         </div>
       </div>
       <div class="fr full">
-        <div class="fg2"><label>📝 Notas personales</label><textarea id="inscNotas" placeholder="Observaciones, recordatorios, link de seguimiento..."></textarea></div>
+        <div class="fg2"><label>� Link de ruta en Strava (opcional)</label><input id="inscStravaUrl" type="url" placeholder="https://www.strava.com/routes/..."></div>
+      </div>
+      <div class="fr">
+        <div class="fg2">
+          <label>📍 Archivo GPX de la ruta</label>
+          <div class="photo-up" onclick="document.getElementById('inscGpxInput').click()" id="inscGpxBox">
+            <input type="file" id="inscGpxInput" accept=".gpx" style="display:none" onchange="prevInscFile(event,'gpx')">
+            <div id="inscGpxPrev"><div class="ui">📍</div><p>Click para subir .gpx</p></div>
+          </div>
+        </div>
+        <div class="fg2">
+          <label>🗺 Imagen del mapa / ruta</label>
+          <div class="photo-up" onclick="document.getElementById('inscRutaImgInput').click()" id="inscRutaImgBox">
+            <input type="file" id="inscRutaImgInput" accept="image/*" style="display:none" onchange="prevInscFile(event,'rutaimg')">
+            <div id="inscRutaImgPrev"><div class="ui">🗺</div><p>Click para subir imagen de ruta</p></div>
+          </div>
+        </div>
+      </div>
+      <div class="fr full">
+        <div class="fg2">
+          <label>📈 Imagen del perfil de altitud</label>
+          <div class="photo-up" onclick="document.getElementById('inscAltImgInput').click()" id="inscAltImgBox">
+            <input type="file" id="inscAltImgInput" accept="image/*" style="display:none" onchange="prevInscFile(event,'altimg')">
+            <div id="inscAltImgPrev"><div class="ui">📈</div><p>Click para subir imagen de altitud</p></div>
+          </div>
+        </div>
+      </div>
+      <div class="fr full">
+        <div class="fg2"><label>�📝 Notas personales</label><textarea id="inscNotas" placeholder="Observaciones, recordatorios, link de seguimiento..."></textarea></div>
       </div>
     </div>
     <div class="mf">
@@ -3150,9 +3178,12 @@ function fdLong(s) {
    MIS INSCRIPCIONES
 ══════════════════════════════════════════ */
 let inscripciones  = [];
-let inscEditId     = null;
-let inscPagoFile   = null;
+let inscEditId       = null;
+let inscPagoFile     = null;
 let inscDeslindeFile = null;
+let inscGpxFile      = null;
+let inscRutaImgFile  = null;
+let inscAltImgFile   = null;
 
 function renderInscripcionesTab() {
   const lock    = document.getElementById('inscLock');
@@ -3209,6 +3240,10 @@ function buildInscCard(ins) {
     <div class="insc-card-pills">
       ${ins.pagoURL     ? '<span class="insc-pill insc-pill-acc">✓ Comprobante</span>' : '<span class="insc-pill">Sin comprobante</span>'}
       ${ins.deslindeURL ? '<span class="insc-pill insc-pill-acc">✓ Deslinde</span>'    : '<span class="insc-pill">Sin deslinde</span>'}
+      ${ins.gpxURL      ? '<span class="insc-pill insc-pill-acc">✓ GPX</span>'         : ''}
+      ${ins.stravaUrl   ? '<span class="insc-pill insc-pill-acc">✓ Strava</span>'      : ''}
+      ${ins.rutaImgURL  ? '<span class="insc-pill insc-pill-acc">✓ Mapa</span>'        : ''}
+      ${ins.altImgURL   ? '<span class="insc-pill insc-pill-acc">✓ Altitud</span>'     : ''}
     </div>
     <div class="insc-card-foot">
       <button class="insc-btn-pri" onclick="openInscDetail('${ins.id}')">Ver detalles</button>
@@ -3221,12 +3256,16 @@ function buildInscCard(ins) {
 function openAddInsc() {
   if (!currentUser) { openLogin(); return; }
   inscEditId = null; inscPagoFile = null; inscDeslindeFile = null;
+  inscGpxFile = null; inscRutaImgFile = null; inscAltImgFile = null;
   document.getElementById('inscModalTitle').textContent = 'NUEVA INSCRIPCIÓN';
   document.getElementById('inscSaveBtn').textContent    = 'GUARDAR INSCRIPCIÓN';
-  ['inscDorsal','inscCat','inscNotas'].forEach(id => document.getElementById(id).value = '');
+  ['inscDorsal','inscCat','inscNotas','inscStravaUrl'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('inscKitDate').value = '';
   document.getElementById('inscPagoPrev').innerHTML     = '<div class="ui">📄</div><p>Click para subir PDF o imagen</p>';
   document.getElementById('inscDeslindePrev').innerHTML = '<div class="ui">📋</div><p>Click para subir PDF o imagen</p>';
+  document.getElementById('inscGpxPrev').innerHTML      = '<div class="ui">📍</div><p>Click para subir .gpx</p>';
+  document.getElementById('inscRutaImgPrev').innerHTML  = '<div class="ui">🗺</div><p>Click para subir imagen de ruta</p>';
+  document.getElementById('inscAltImgPrev').innerHTML   = '<div class="ui">📈</div><p>Click para subir imagen de altitud</p>';
   // Cargar carreras
   const sel = document.getElementById('inscRaceSel');
   sel.innerHTML = '<option value="">Seleccioná una carrera...</option>' +
@@ -3245,12 +3284,24 @@ function inscRaceChanged() {
 
 function prevInscFile(e, tipo) {
   const f = e.target.files[0]; if (!f) return;
+  const isImg = f.type.startsWith('image/');
+  const isPdf = f.type.includes('pdf');
+  const preview = `<div style="display:flex;align-items:center;gap:8px;padding:4px"><span style="font-size:20px">${isPdf ? '📄' : isImg ? '🖼' : '📎'}</span><span style="font-size:12px;color:var(--text)">${f.name}</span></div>`;
   if (tipo === 'pago') {
     inscPagoFile = f;
-    document.getElementById('inscPagoPrev').innerHTML = `<div style="display:flex;align-items:center;gap:8px;padding:4px"><span style="font-size:20px">${f.type.includes('pdf') ? '📄' : '🖼'}</span><span style="font-size:12px;color:var(--text)">${f.name}</span></div>`;
-  } else {
+    document.getElementById('inscPagoPrev').innerHTML = preview;
+  } else if (tipo === 'deslinde') {
     inscDeslindeFile = f;
-    document.getElementById('inscDeslindePrev').innerHTML = `<div style="display:flex;align-items:center;gap:8px;padding:4px"><span style="font-size:20px">${f.type.includes('pdf') ? '📄' : '🖼'}</span><span style="font-size:12px;color:var(--text)">${f.name}</span></div>`;
+    document.getElementById('inscDeslindePrev').innerHTML = preview;
+  } else if (tipo === 'gpx') {
+    inscGpxFile = f;
+    document.getElementById('inscGpxPrev').innerHTML = `<div style="display:flex;align-items:center;gap:8px;padding:4px"><span style="font-size:20px">📍</span><span style="font-size:12px;color:var(--text)">${f.name}</span></div>`;
+  } else if (tipo === 'rutaimg') {
+    inscRutaImgFile = f;
+    document.getElementById('inscRutaImgPrev').innerHTML = `<div style="display:flex;align-items:center;gap:8px;padding:4px"><span style="font-size:20px">🗺</span><span style="font-size:12px;color:var(--text)">${f.name}</span></div>`;
+  } else if (tipo === 'altimg') {
+    inscAltImgFile = f;
+    document.getElementById('inscAltImgPrev').innerHTML = `<div style="display:flex;align-items:center;gap:8px;padding:4px"><span style="font-size:20px">📈</span><span style="font-size:12px;color:var(--text)">${f.name}</span></div>`;
   }
 }
 
@@ -3279,6 +3330,7 @@ async function saveInsc() {
   try {
     const id = inscEditId || 'ins_' + Date.now();
     let pagoURL = null, pagoPath = null, deslindeURL = null, deslindePath = null;
+    let gpxURL = null, gpxPath = null, rutaImgURL = null, rutaImgPath = null, altImgURL = null, altImgPath = null;
 
     if (FB_READY && inscPagoFile) {
       toast('📤', 'Subiendo comprobante...', 'ok');
@@ -3289,6 +3341,21 @@ async function saveInsc() {
       toast('📤', 'Subiendo deslinde...', 'ok');
       const res = await uploadInscFile(inscDeslindeFile, `inscripciones/${currentUser.id}/${id}_deslinde`);
       deslindeURL = res.url; deslindePath = res.path;
+    }
+    if (FB_READY && inscGpxFile) {
+      toast('📤', 'Subiendo GPX...', 'ok');
+      const res = await uploadInscFile(inscGpxFile, `inscripciones/${currentUser.id}/${id}_gpx`);
+      gpxURL = res.url; gpxPath = res.path;
+    }
+    if (FB_READY && inscRutaImgFile) {
+      toast('📤', 'Subiendo imagen de ruta...', 'ok');
+      const res = await uploadInscFile(inscRutaImgFile, `inscripciones/${currentUser.id}/${id}_rutaimg`);
+      rutaImgURL = res.url; rutaImgPath = res.path;
+    }
+    if (FB_READY && inscAltImgFile) {
+      toast('📤', 'Subiendo imagen de altitud...', 'ok');
+      const res = await uploadInscFile(inscAltImgFile, `inscripciones/${currentUser.id}/${id}_altimg`);
+      altImgURL = res.url; altImgPath = res.path;
     }
 
     const ins = {
@@ -3304,10 +3371,17 @@ async function saveInsc() {
       categoria:    document.getElementById('inscCat').value.trim(),
       kitDate:      document.getElementById('inscKitDate').value,
       notas:        document.getElementById('inscNotas').value.trim(),
+      stravaUrl:    document.getElementById('inscStravaUrl').value.trim(),
       pagoURL:      pagoURL || (inscEditId ? (inscripciones.find(i=>i.id===inscEditId)?.pagoURL||null) : null),
       pagoPath:     pagoPath || null,
       deslindeURL:  deslindeURL || (inscEditId ? (inscripciones.find(i=>i.id===inscEditId)?.deslindeURL||null) : null),
       deslindePath: deslindePath || null,
+      gpxURL:       gpxURL      || (inscEditId ? (inscripciones.find(i=>i.id===inscEditId)?.gpxURL||null)      : null),
+      gpxPath:      gpxPath     || null,
+      rutaImgURL:   rutaImgURL  || (inscEditId ? (inscripciones.find(i=>i.id===inscEditId)?.rutaImgURL||null)  : null),
+      rutaImgPath:  rutaImgPath || null,
+      altImgURL:    altImgURL   || (inscEditId ? (inscripciones.find(i=>i.id===inscEditId)?.altImgURL||null)   : null),
+      altImgPath:   altImgPath  || null,
       createdAt:    new Date().toISOString()
     };
 
@@ -3354,7 +3428,20 @@ function openInscDetail(id) {
       ${ins.deslindeURL
         ? `<a class="insc-pdf-btn" href="${ins.deslindeURL}" target="_blank">📋 Ver deslinde firmado</a>`
         : `<span class="insc-pdf-btn" style="opacity:.5;cursor:default">📋 Sin deslinde</span>`}
-    </div>`;
+      ${ins.gpxURL
+        ? `<a class="insc-pdf-btn" href="${ins.gpxURL}" target="_blank" download>📍 Descargar GPX</a>` : ''}
+      ${ins.stravaUrl
+        ? `<a class="insc-pdf-btn" href="${ins.stravaUrl}" target="_blank">🔗 Ver en Strava</a>` : ''}
+      ${ins.rutaImgURL
+        ? `<a class="insc-pdf-btn" href="${ins.rutaImgURL}" target="_blank">🗺 Ver mapa de ruta</a>` : ''}
+      ${ins.altImgURL
+        ? `<a class="insc-pdf-btn" href="${ins.altImgURL}" target="_blank">📈 Ver perfil de altitud</a>` : ''}
+    </div>
+    ${ins.rutaImgURL || ins.altImgURL ? `
+    <div style="margin-top:14px;display:flex;gap:12px;flex-wrap:wrap">
+      ${ins.rutaImgURL  ? `<img src="${ins.rutaImgURL}"  style="max-width:100%;border-radius:8px;border:1px solid var(--border)" alt="Mapa de ruta">` : ''}
+      ${ins.altImgURL   ? `<img src="${ins.altImgURL}"   style="max-width:100%;border-radius:8px;border:1px solid var(--border)" alt="Perfil de altitud">` : ''}
+    </div>` : ''}`;
   oo('inscDetailOv');
 }
 
@@ -3393,6 +3480,7 @@ async function loadInscripcionesFromFirestore() {
 function editInsc(id) {
   const ins = inscripciones.find(i => i.id === id); if (!ins) return;
   inscEditId = id; inscPagoFile = null; inscDeslindeFile = null;
+  inscGpxFile = null; inscRutaImgFile = null; inscAltImgFile = null;
   document.getElementById('inscModalTitle').textContent = 'EDITAR INSCRIPCIÓN';
   document.getElementById('inscSaveBtn').textContent    = 'ACTUALIZAR';
 
@@ -3410,10 +3498,11 @@ function editInsc(id) {
     (raceForDist?.distances || []).map(d => `<option${d === ins.distancia ? ' selected' : ''}>${d}</option>`).join('');
 
   // Pre-fill fields
-  document.getElementById('inscDorsal').value  = ins.dorsal    || '';
-  document.getElementById('inscCat').value     = ins.categoria || '';
-  document.getElementById('inscKitDate').value = ins.kitDate   || '';
-  document.getElementById('inscNotas').value   = ins.notas     || '';
+  document.getElementById('inscDorsal').value     = ins.dorsal    || '';
+  document.getElementById('inscCat').value        = ins.categoria || '';
+  document.getElementById('inscKitDate').value    = ins.kitDate   || '';
+  document.getElementById('inscNotas').value      = ins.notas     || '';
+  document.getElementById('inscStravaUrl').value  = ins.stravaUrl || '';
 
   // Show existing file status
   document.getElementById('inscPagoPrev').innerHTML = ins.pagoURL
@@ -3422,6 +3511,15 @@ function editInsc(id) {
   document.getElementById('inscDeslindePrev').innerHTML = ins.deslindeURL
     ? `<div style="display:flex;align-items:center;gap:8px;padding:4px"><span style="font-size:20px">📋</span><span style="font-size:12px;color:var(--accent)">Deslinde ya cargado ✓ <span style="color:var(--muted)">(subí otro para reemplazar)</span></span></div>`
     : '<div class="ui">📋</div><p>Click para subir PDF o imagen</p>';
+  document.getElementById('inscGpxPrev').innerHTML = ins.gpxURL
+    ? `<div style="display:flex;align-items:center;gap:8px;padding:4px"><span style="font-size:20px">📍</span><span style="font-size:12px;color:var(--accent)">GPX ya cargado ✓ <span style="color:var(--muted)">(subí otro para reemplazar)</span></span></div>`
+    : '<div class="ui">📍</div><p>Click para subir .gpx</p>';
+  document.getElementById('inscRutaImgPrev').innerHTML = ins.rutaImgURL
+    ? `<div style="display:flex;align-items:center;gap:8px;padding:4px"><span style="font-size:20px">🗺</span><span style="font-size:12px;color:var(--accent)">Mapa ya cargado ✓ <span style="color:var(--muted)">(subí otro para reemplazar)</span></span></div>`
+    : '<div class="ui">🗺</div><p>Click para subir imagen de ruta</p>';
+  document.getElementById('inscAltImgPrev').innerHTML = ins.altImgURL
+    ? `<div style="display:flex;align-items:center;gap:8px;padding:4px"><span style="font-size:20px">📈</span><span style="font-size:12px;color:var(--accent)">Altitud ya cargada ✓ <span style="color:var(--muted)">(subí otra para reemplazar)</span></span></div>`
+    : '<div class="ui">📈</div><p>Click para subir imagen de altitud</p>';
 
   oo('addInscOv');
 }
