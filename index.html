@@ -25,7 +25,7 @@
   --bg:#0c8233; --surface:#0a6e2b; --surface2:#085c24; --surface3:#074f1f;
   --border:#1a9945; --accent:#e8ff47; --accent2:#ff6b35;
   --text:#f2f1ea; --muted:#a8d8b5;
-  --trail:#6eeaa0; --road:#4fa8e8; --ultra:#c9a0fc; --mixed:#f59e0b;
+  --trail:#6eeaa0; --road:#4fa8e8; --ultra:#c9a0fc; --mixed:#f59e0b; --duatlon:#fb923c; --triatlon:#22d3ee;
   --r:10px;
 }
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
@@ -119,6 +119,8 @@ button{cursor:pointer;font-family:inherit;}
 .bdg-road{background:rgba(79,168,232,.22);color:var(--road);border:1px solid rgba(79,168,232,.45);}
 .bdg-ultra{background:rgba(185,124,248,.22);color:var(--ultra);border:1px solid rgba(185,124,248,.45);}
 .bdg-mixed{background:rgba(245,158,11,.22);color:var(--mixed);border:1px solid rgba(245,158,11,.45);}
+.bdg-duatlon{background:rgba(251,146,60,.22);color:var(--duatlon);border:1px solid rgba(251,146,60,.45);}
+.bdg-triatlon{background:rgba(34,211,238,.22);color:var(--triatlon);border:1px solid rgba(34,211,238,.45);}
 .bdg-dark{background:rgba(0,0,0,.65);color:#fff;border:1px solid rgba(255,255,255,.12);}
 .bdg-acc{background:var(--accent);color:#0c0c0a;border:none;}
 .c-part-count{position:absolute;top:10px;right:10px;background:rgba(232,255,71,.88);color:#0c0c0a;border-radius:100px;font-size:10px;font-weight:700;padding:3px 8px;font-family:'Space Mono',monospace;}
@@ -1012,6 +1014,7 @@ textarea{resize:vertical;min-height:70px;}
           <select id="rType">
             <option value="trail">🏔 Trail</option><option value="road">🏙 Road</option>
             <option value="ultra">⚡ Ultra</option><option value="mixed">🔀 Mixto</option>
+            <option value="duatlon">🚴 Duatlón</option><option value="triatlon">🏊 Triatlón</option>
           </select>
         </div>
       </div>
@@ -1378,8 +1381,8 @@ let partPhotos = [], racePhotoFile = null, racePhotoURL = null, geoC = null, wDa
 let locPickerMap = null, _locSearchResults = [];
 
 const MS = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
-const TL = {trail:'Trail 🏔', road:'Road 🏙', ultra:'Ultra ⚡', mixed:'Mixto 🔀'};
-const TI = {trail:'🏔', road:'🏙', ultra:'⚡', mixed:'🔀'};
+const TL = {trail:'Trail 🏔', road:'Road 🏙', ultra:'Ultra ⚡', mixed:'Mixto 🔀', duatlon:'Duatlón 🚴', triatlon:'Triatlón 🏊'};
+const TI = {trail:'🏔', road:'🏙', ultra:'⚡', mixed:'🔀', duatlon:'🚴', triatlon:'🏊'};
 
 const FB_READY = firebaseConfig.apiKey !== 'TU_API_KEY';
 
@@ -3512,7 +3515,7 @@ function renderMapTab() {
   raceMapMarkers.forEach(m => raceMapInst.removeLayer(m));
   raceMapMarkers = [];
 
-  const typeColors = { trail:'#6eeaa0', road:'#4fa8e8', ultra:'#c9a0fc', mixed:'#f59e0b' };
+  const typeColors = { trail:'#6eeaa0', road:'#4fa8e8', ultra:'#c9a0fc', mixed:'#f59e0b', duatlon:'#fb923c', triatlon:'#22d3ee' };
   const withCoords = races.filter(r => r.coords?.lat && r.coords?.lng);
   const noCoords   = races.length - withCoords.length;
 
@@ -3702,7 +3705,7 @@ function _drawShareCard(canvas, bgImg) {
   const p  = _sharePart || {};
   const [y, mo, d] = (r.date || '----').split('-');
   const mNames = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
-  const typeColors = { trail:'#6eeaa0', road:'#4fa8e8', ultra:'#c9a0fc', mixed:'#f59e0b' };
+  const typeColors = { trail:'#6eeaa0', road:'#4fa8e8', ultra:'#c9a0fc', mixed:'#f59e0b', duatlon:'#fb923c', triatlon:'#22d3ee' };
   const typeColor  = typeColors[r.type] || '#e8ff47';
 
   // ── Logo ──────────────────────────────────────────────
