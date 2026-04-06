@@ -1609,7 +1609,9 @@ function updateNav() {
 function updateStats() {
   document.getElementById('sTotal').textContent = races.length;
   document.getElementById('sProvs').textContent = new Set(races.map(r => r.provincia).filter(Boolean)).size;
-  document.getElementById('sParts').textContent = races.reduce((a, r) => a + (r.participations || []).length, 0);
+  document.getElementById('sParts').textContent = currentUser
+    ? races.filter(r => (r.participations || []).some(p => p.userId === currentUser.id)).length
+    : 0;
 }
 
 /* ══════════════════════════════════════════
@@ -1698,7 +1700,7 @@ function renderCards() {
 
 function buildCard(r) {
   const [y, mo, d] = r.date.split('-');
-  const pc = (r.participations || []).length;
+  const pc = currentUser ? ((r.participations || []).some(p => p.userId === currentUser.id) ? 1 : 0) : 0;
   const imgH = r.photo ? `<img src="${r.photo}" alt="${r.name}" loading="lazy">` : `<div class="c-img-ph">${TI[r.type] || '🏃'}</div>`;
   const wH = r.weather ? `<div class="c-weather">${r.weather.icon} <span class="wt">${r.weather.temp}°C</span> ${r.weather.desc}</div>` : '';
   const adm = currentUser?.isAdmin ? `<button class="cb-adm" onclick="event.stopPropagation();editRace('${r.id}')" title="Editar">✏</button><button class="cb-adm" onclick="event.stopPropagation();delRace('${r.id}')" title="Eliminar">🗑</button>` : '';
@@ -1713,7 +1715,7 @@ function buildCard(r) {
         <span class="bdg bdg-${r.type}">${TL[r.type] || r.type}</span>
         ${r.distances?.[0] ? `<span class="bdg bdg-dark">${r.distances[0]}</span>` : ''}
       </div>
-      ${pc > 0 ? `<div class="c-part-count">⏱ ${pc}</div>` : ''}
+      ${pc > 0 ? `<div class="c-part-count">⏱ Mi tiempo</div>` : ''}
       <div class="c-date"><div class="day">${d}</div><div class="mon">${MS[parseInt(mo)-1]} ${y}</div></div>
     </div>
     <div class="c-body">
@@ -3628,13 +3630,13 @@ function renderMapTab() {
     const color  = typeColors[r.type] || '#e8ff47';
     const [y, mo, d] = (r.date || '----').split('-');
     const mNames = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
-    const pc     = (r.participations || []).length;
+    const pc     = currentUser ? ((r.participations || []).some(p => p.userId === currentUser.id) ? 1 : 0) : 0;
 
     const icon = L.divIcon({
       className: '',
       html: pc > 0
         ? `<div style="display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer" onmouseover="this.querySelector('.map-dot').style.transform='scale(1.5)'" onmouseout="this.querySelector('.map-dot').style.transform=''">
-            <div style="background:#e8ff47;color:#0c0c0a;border-radius:100px;padding:1px 5px;font-size:9px;font-weight:700;font-family:monospace;white-space:nowrap;box-shadow:0 1px 6px rgba(0,0,0,.7);line-height:1.5">⏱ ${pc}</div>
+            <div style="background:#e8ff47;color:#0c0c0a;border-radius:100px;padding:1px 5px;font-size:9px;font-weight:700;font-family:monospace;white-space:nowrap;box-shadow:0 1px 6px rgba(0,0,0,.7);line-height:1.5">⏱ ✓</div>
             <div class="map-dot" style="width:16px;height:16px;border-radius:50%;background:${color};border:2.5px solid rgba(0,0,0,.55);box-shadow:0 2px 10px rgba(0,0,0,.6);transition:transform .15s"></div>
           </div>`
         : `<div class="map-dot" style="width:16px;height:16px;border-radius:50%;background:${color};border:2.5px solid rgba(0,0,0,.55);box-shadow:0 2px 10px rgba(0,0,0,.6);cursor:pointer;transition:transform .15s" onmouseover="this.style.transform='scale(1.6)'" onmouseout="this.style.transform=''"></div>`,
@@ -3653,7 +3655,7 @@ function renderMapTab() {
         <div style="font-weight:700;font-size:14px;line-height:1.3;margin-bottom:4px;color:#f2f1ea">${r.name}</div>
         <div style="font-size:11px;color:#a8d8b5;margin-bottom:8px">${parseInt(d)} ${mNames[parseInt(mo)-1]} ${y}${r.provincia ? ' · ' + r.provincia : ''}</div>
         ${distHtml ? `<div style="margin-bottom:8px">${distHtml}</div>` : ''}
-        ${pc > 0 ? `<div style="font-size:11px;color:#6eeaa0;margin-bottom:8px">⏱ ${pc} registro${pc > 1 ? 's' : ''}</div>` : ''}
+        ${pc > 0 ? `<div style="font-size:11px;color:#6eeaa0;margin-bottom:8px">⏱ Mi tiempo registrado</div>` : ''}
         <button onclick="openDetailFromMap('${r.id}')" style="width:100%;background:#e8ff47;color:#0c0c0a;border:none;border-radius:6px;padding:8px 12px;font-size:12px;font-weight:700;cursor:pointer;margin-top:2px">Ver detalles →</button>
       </div>`;
 
