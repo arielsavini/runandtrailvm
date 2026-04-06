@@ -571,6 +571,55 @@ textarea{resize:vertical;min-height:70px;}
 .tri-type-tab.active{background:rgba(56,189,248,.12);border-color:rgba(56,189,248,.5);color:#38bdf8;}
 @media(max-width:640px){.tri-wrap{padding:16px 16px 56px;}.tri-grid{grid-template-columns:1fr;}.tri-summary{grid-template-columns:1fr 1fr;}}
 
+/* ── PERFIL PÚBLICO ─────────────────────────────── */
+#publicProfilePage{display:none;min-height:100vh;background:var(--bg);}
+.pp-hero{padding:40px 32px 28px;display:flex;align-items:center;gap:24px;flex-wrap:wrap;border-bottom:1px solid var(--border);}
+.pp-avatar{width:80px;height:80px;border-radius:50%;border:3px solid var(--accent);display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:36px;color:#0c0c0a;background:linear-gradient(135deg,var(--accent),var(--accent2));overflow:hidden;flex-shrink:0;}
+.pp-avatar img{width:100%;height:100%;object-fit:cover;}
+.pp-info{flex:1;min-width:160px;}
+.pp-name{font-family:'Bebas Neue',sans-serif;font-size:clamp(28px,5vw,48px);letter-spacing:2px;line-height:1;margin-bottom:6px;}
+.pp-handle{font-family:'Space Mono',monospace;font-size:11px;color:var(--accent);letter-spacing:1.5px;margin-bottom:8px;}
+.pp-bio{font-size:13px;color:var(--muted);max-width:480px;line-height:1.5;}
+.pp-stats{display:flex;gap:24px;flex-wrap:wrap;margin-top:16px;}
+.pp-stat{text-align:center;}
+.pp-stat .v{font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--accent);line-height:1;}
+.pp-stat .l{font-size:9px;font-family:'Space Mono',monospace;color:var(--muted);letter-spacing:1px;}
+.pp-share-btn{background:var(--accent);color:#0c0c0a;border:none;border-radius:7px;padding:9px 18px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .15s;margin-left:auto;}
+.pp-share-btn:hover{background:#d4eb2e;}
+.pp-body{padding:24px 32px 60px;max-width:900px;margin:0 auto;}
+.pp-section-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:var(--accent);margin:28px 0 12px;display:flex;align-items:center;gap:8px;}
+.pp-race-list{display:flex;flex-direction:column;gap:10px;}
+.pp-race-row{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;transition:border-color .15s;}
+.pp-race-row:hover{border-color:var(--accent);}
+.pp-race-date{font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);min-width:60px;}
+.pp-race-name{font-weight:700;font-size:14px;flex:1;}
+.pp-race-meta{font-size:11px;color:var(--muted);}
+.pp-race-dist{font-family:'Space Mono',monospace;font-size:11px;color:var(--accent);}
+.pp-empty{text-align:center;padding:48px 24px;color:var(--muted);}
+.pp-empty .ei{font-size:44px;margin-bottom:12px;}
+.pp-back-btn{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:7px;padding:8px 16px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .15s;margin-bottom:20px;}
+.pp-back-btn:hover{color:var(--text);border-color:var(--muted);}
+.pp-not-found{text-align:center;padding:80px 24px;}
+.pp-not-found .ei{font-size:56px;margin-bottom:16px;}
+.pp-not-found h2{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px;margin-bottom:10px;}
+.pp-map{height:280px;border-radius:var(--r);border:1px solid var(--border);margin-top:8px;}
+@media(max-width:640px){.pp-hero{padding:24px 16px;gap:16px;}.pp-body{padding:16px 16px 60px;}.pp-share-btn{margin:8px 0 0;}}
+
+/* ── MODAL PERFIL CONFIG ────────────────────────── */
+.profile-toggle-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);}
+.profile-toggle-row:last-child{border-bottom:none;}
+.ptoggle-label{font-size:13px;color:var(--text);}
+.ptoggle-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+.toggle-switch{position:relative;width:42px;height:24px;flex-shrink:0;}
+.toggle-switch input{opacity:0;width:0;height:0;}
+.toggle-slider{position:absolute;inset:0;background:var(--surface3);border:1px solid var(--border);border-radius:100px;cursor:pointer;transition:.25s;}
+.toggle-slider:before{content:'';position:absolute;width:18px;height:18px;top:2px;left:2px;border-radius:50%;background:var(--muted);transition:.25s;}
+.toggle-switch input:checked + .toggle-slider{background:rgba(232,255,71,.15);border-color:var(--accent);}
+.toggle-switch input:checked + .toggle-slider:before{transform:translateX(18px);background:var(--accent);}
+.pp-link-box{display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:10px 14px;margin-top:12px;font-family:'Space Mono',monospace;font-size:11px;color:var(--accent);word-break:break-all;}
+.pp-link-copy{background:var(--accent);color:#0c0c0a;border:none;border-radius:5px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;transition:all .15s;}
+.pp-link-copy:hover{background:#d4eb2e;}
+
 </style>
 </head>
 <body>
@@ -1358,6 +1407,67 @@ textarea{resize:vertical;min-height:70px;}
   </div>
 </div>
 
+<!-- MODAL: CONFIGURACIÓN DE PERFIL PÚBLICO -->
+<div class="overlay" id="profileOv" onclick="coo(event,'profileOv')">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="mh">
+      <div><div class="mt">MI PERFIL PÚBLICO</div><div class="ms">Configurá tu perfil para compartir</div></div>
+      <button class="xbtn" onclick="cm('profileOv')">×</button>
+    </div>
+    <div class="mb">
+      <div class="fr full" style="margin-bottom:16px">
+        <div class="fg2"><label>👤 Nombre para mostrar</label><input id="ppDisplayName" type="text" placeholder="ej. Ariel Savini"></div>
+        <div class="fg2"><label>🔗 Nombre de usuario (slug) *</label><input id="ppSlug" type="text" placeholder="ej. ariel (sin espacios ni mayúsculas)" oninput="this.value=this.value.toLowerCase().replace(/[^a-z0-9_-]/g,'');updateProfileLinkPreview()"></div>
+      </div>
+      <div class="fr full" style="margin-bottom:16px">
+        <div class="fg2"><label>🏃 Bio (opcional)</label><textarea id="ppBio" placeholder="Corredor de montaña, San Luis..."></textarea></div>
+      </div>
+      <div class="profile-toggle-row">
+        <div>
+          <div class="ptoggle-label">Perfil público</div>
+          <div class="ptoggle-sub">Cualquiera con el link podrá ver tu historial y estadísticas</div>
+        </div>
+        <label class="toggle-switch"><input type="checkbox" id="ppPublic" onchange="updateProfileLinkPreview()"><span class="toggle-slider"></span></label>
+      </div>
+      <div class="profile-toggle-row">
+        <div>
+          <div class="ptoggle-label">Mostrar inscripciones futuras</div>
+          <div class="ptoggle-sub">Carrereas en las que estás inscripto</div>
+        </div>
+        <label class="toggle-switch"><input type="checkbox" id="ppShowInsc" checked><span class="toggle-slider"></span></label>
+      </div>
+      <div class="profile-toggle-row">
+        <div>
+          <div class="ptoggle-label">Mostrar tiempos</div>
+          <div class="ptoggle-sub">Tus tiempos registrados en cada carrera</div>
+        </div>
+        <label class="toggle-switch"><input type="checkbox" id="ppShowTimes" checked><span class="toggle-slider"></span></label>
+      </div>
+      <div id="ppLinkWrap" style="display:none;margin-top:8px">
+        <div class="pp-link-box">
+          <span id="ppLinkText">—</span>
+          <button class="pp-link-copy" onclick="copyProfileLink()">Copiar</button>
+        </div>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-ghost" onclick="cm('profileOv')">Cancelar</button>
+      <button class="btn btn-accent" onclick="saveProfile()">GUARDAR PERFIL</button>
+    </div>
+  </div>
+</div>
+
+<!-- PÁGINA: PERFIL PÚBLICO -->
+<div id="publicProfilePage">
+  <nav class="topbar">
+    <div class="logo"><em>RUN &amp; TRAIL</em> <span style="color:var(--text)">VM</span><span class="logo-badge">ARG</span></div>
+    <div class="nav-right">
+      <a href="./" class="btn btn-ghost">← Volver al calendario</a>
+    </div>
+  </nav>
+  <div id="publicProfileBody"></div>
+</div>
+
 <!-- TOAST -->
 <div class="toast" id="toast"><span id="tIcon">✅</span><span id="tMsg">OK</span></div>
 
@@ -1595,7 +1705,8 @@ function updateNav() {
     const notifEnabled = localStorage.getItem('push_subscribed') === '1';
     const bellTitle    = notifEnabled ? 'Notificaciones activadas — click para desactivar' : 'Activar notificaciones de carreras';
     const bellBtn      = `<button class="notif-btn${notifEnabled ? ' enabled' : ''}" id="notifBtn" onclick="togglePushNotifications()" title="${bellTitle}">🔔</button>`;
-    nav.innerHTML = `<span class="user-chip"><span class="dot"></span>${currentUser.name.split(' ')[0]}</span>${currentUser.isAdmin ? '<span class="admin-badge">ADMIN</span>' : ''}${bellBtn}${av}`;
+    const profileBtn   = `<button class="btn btn-ghost" onclick="openProfileConfig()" title="Mi perfil público" style="padding:7px 12px;font-size:12px">👤 Mi perfil</button>`;
+    nav.innerHTML = `<span class="user-chip"><span class="dot"></span>${currentUser.name.split(' ')[0]}</span>${currentUser.isAdmin ? '<span class="admin-badge">ADMIN</span>' : ''}${profileBtn}${bellBtn}${av}`;
     if (currentUser.isAdmin) fab.classList.add('on'); else fab.classList.remove('on');
   } else {
     nav.innerHTML = `<button class="btn btn-ghost" onclick="openLogin()">Ingresar</button><button class="btn btn-accent" onclick="openLogin()">Registrarse</button>`;
@@ -4173,6 +4284,235 @@ async function deleteTriConfirm(id) {
   }
 }
 
+    toast('❌', 'Error: ' + e.message);
+  }
+}
+
+/* ══════════════════════════════════════════
+   PERFIL PÚBLICO
+══════════════════════════════════════════ */
+let _userProfile = null;
+
+async function openProfileConfig() {
+  if (!currentUser) { openLogin(); return; }
+  // Cargar perfil guardado
+  if (FB_READY) {
+    try {
+      const { doc: d2, getDoc } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      const snap = await getDoc(d2(db, 'profiles', currentUser.id));
+      if (snap.exists()) _userProfile = snap.data();
+    } catch(e) { console.error(e); }
+  }
+  const p = _userProfile || {};
+  document.getElementById('ppDisplayName').value = p.displayName || currentUser.name || '';
+  document.getElementById('ppSlug').value        = p.slug        || '';
+  document.getElementById('ppBio').value         = p.bio         || '';
+  document.getElementById('ppPublic').checked    = !!p.isPublic;
+  document.getElementById('ppShowInsc').checked  = p.showInsc  !== false;
+  document.getElementById('ppShowTimes').checked = p.showTimes !== false;
+  updateProfileLinkPreview();
+  oo('profileOv');
+}
+
+function updateProfileLinkPreview() {
+  const slug = document.getElementById('ppSlug')?.value.trim();
+  const wrap = document.getElementById('ppLinkWrap');
+  const txt  = document.getElementById('ppLinkText');
+  const base = window.location.origin + window.location.pathname;
+  if (slug && document.getElementById('ppPublic')?.checked) {
+    wrap.style.display = 'block';
+    txt.textContent = `${base}?corredor=${slug}`;
+  } else {
+    wrap.style.display = 'none';
+  }
+}
+
+async function saveProfile() {
+  if (!currentUser) return;
+  const slug = document.getElementById('ppSlug').value.trim();
+  if (!slug) { toast('⚠️', 'El nombre de usuario es obligatorio'); return; }
+  if (!/^[a-z0-9_-]+$/.test(slug)) { toast('⚠️', 'Solo letras minúsculas, números, guiones y guiones bajos'); return; }
+
+  const profile = {
+    userId:      currentUser.id,
+    displayName: document.getElementById('ppDisplayName').value.trim() || currentUser.name,
+    slug,
+    bio:         document.getElementById('ppBio').value.trim(),
+    isPublic:    document.getElementById('ppPublic').checked,
+    showInsc:    document.getElementById('ppShowInsc').checked,
+    showTimes:   document.getElementById('ppShowTimes').checked,
+    picture:     currentUser.picture || null,
+    updatedAt:   new Date().toISOString()
+  };
+
+  if (FB_READY) {
+    try {
+      const { doc: d2, setDoc: sd, collection: col, query: q2, where, getDocs } =
+        await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+      // Verificar que el slug no esté tomado por otro usuario
+      const existing = await getDocs(q2(col(db, 'profiles'), where('slug','==', slug)));
+      const taken = existing.docs.find(d => d.id !== currentUser.id);
+      if (taken) { toast('⚠️', `El usuario "${slug}" ya está en uso`); return; }
+      await sd(d2(db, 'profiles', currentUser.id), profile);
+    } catch(e) { toast('❌', 'Error al guardar: ' + e.message); return; }
+  }
+  _userProfile = profile;
+  updateProfileLinkPreview();
+  toast('👤', '¡Perfil guardado!', 'ok');
+  if (profile.isPublic) {
+    cm('profileOv');
+    const link = `${window.location.origin}${window.location.pathname}?corredor=${slug}`;
+    toast('🔗', 'Perfil público activo: ' + link, 'ok');
+  } else {
+    cm('profileOv');
+  }
+}
+
+function copyProfileLink() {
+  const txt = document.getElementById('ppLinkText')?.textContent;
+  if (!txt) return;
+  navigator.clipboard.writeText(txt).then(() => toast('📋', '¡Link copiado!', 'ok'));
+}
+
+async function checkPublicProfileRoute() {
+  const params = new URLSearchParams(window.location.search);
+  const slug   = params.get('corredor');
+  if (!slug) return;
+
+  // Ocultar app principal, mostrar perfil
+  const appEls = ['hero', 'featured-wrap', 'filter-wrap', 'res-bar', 'cards-wrap'];
+  document.querySelector('.topbar')?.style.setProperty('display','none');
+  document.querySelectorAll('.main-tabs, .tab-dropdown, .tab-panel, .hero, .featured-wrap, .filter-wrap, section, .adm-fab').forEach(el => el.style.display = 'none');
+
+  const pp = document.getElementById('publicProfilePage');
+  pp.style.display = 'block';
+
+  const body = document.getElementById('publicProfileBody');
+  body.innerHTML = `<div class="pp-body"><div style="text-align:center;padding:60px 0;color:var(--muted)"><div style="font-size:40px;margin-bottom:12px">⏳</div><div>Cargando perfil...</div></div></div>`;
+
+  if (!FB_READY) {
+    body.innerHTML = `<div class="pp-not-found"><div class="ei">⚙️</div><h2>FIREBASE NO CONFIGURADO</h2><p>Los perfiles públicos requieren Firebase.</p></div>`;
+    return;
+  }
+
+  try {
+    const { collection: col, query: q2, where, getDocs, doc: d2, getDoc } =
+      await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
+
+    // Buscar perfil por slug
+    const snap = await getDocs(q2(col(db, 'profiles'), where('slug','==', slug)));
+    if (snap.empty || !snap.docs[0].data().isPublic) {
+      body.innerHTML = `<div class="pp-not-found"><div class="ei">👤</div><h2>PERFIL NO ENCONTRADO</h2><p style="color:var(--muted)">El corredor "${slug}" no tiene perfil público activo.</p><a href="./" class="btn btn-accent" style="display:inline-flex;margin-top:20px">Volver al calendario</a></div>`;
+      return;
+    }
+
+    const profile = snap.docs[0].data();
+    const uid     = snap.docs[0].id;
+
+    // Cargar races para mostrar participaciones
+    const racesSnap = await getDocs(col(db, 'races'));
+    const allRaces  = racesSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    // Filtrar carreras donde participó
+    const participatedRaces = allRaces
+      .filter(r => (r.participations || []).some(p => p.userId === uid))
+      .sort((a, b) => b.date.localeCompare(a.date));
+
+    // Cargar inscripciones si showInsc
+    let inscList = [];
+    if (profile.showInsc) {
+      const inscSnap = await getDocs(q2(col(db, 'inscripciones'), where('userId','==', uid)));
+      inscList = inscSnap.docs.map(d => d.data())
+        .filter(i => i.raceDate >= new Date().toISOString().slice(0,10))
+        .sort((a,b) => a.raceDate.localeCompare(b.raceDate));
+    }
+
+    renderPublicProfile(profile, participatedRaces, inscList, allRaces);
+  } catch(e) {
+    console.error(e);
+    body.innerHTML = `<div class="pp-not-found"><div class="ei">❌</div><h2>ERROR</h2><p style="color:var(--muted)">${e.message}</p></div>`;
+  }
+}
+
+function renderPublicProfile(profile, participatedRaces, inscList, allRaces) {
+  const body = document.getElementById('publicProfileBody');
+  const avHtml = profile.picture
+    ? `<div class="pp-avatar"><img src="${profile.picture}" alt="${profile.displayName}"></div>`
+    : `<div class="pp-avatar">${(profile.displayName || '?')[0].toUpperCase()}</div>`;
+
+  const totalKm = participatedRaces.reduce((a, r) => {
+    const part = (r.participations || []).find(p => p.userId === (profile.userId || ''));
+    if (!part) return a;
+    const d = part.distancia || (r.distances || [])[0] || '';
+    const km = parseFloat(d);
+    return isNaN(km) ? a : a + km;
+  }, 0);
+
+  const profileUrl = `${window.location.origin}${window.location.pathname}?corredor=${profile.slug}`;
+
+  const statsHtml = `
+    <div class="pp-stats">
+      <div class="pp-stat"><div class="v">${participatedRaces.length}</div><div class="l">CARRERAS</div></div>
+      ${inscList.length ? `<div class="pp-stat"><div class="v">${inscList.length}</div><div class="l">PRÓXIMAS</div></div>` : ''}
+      ${totalKm > 0 ? `<div class="pp-stat"><div class="v">${totalKm}</div><div class="l">KM TOTAL</div></div>` : ''}
+    </div>`;
+
+  // Historial de carreras
+  const historialHtml = participatedRaces.length
+    ? participatedRaces.map(r => {
+        const part = (r.participations || []).find(p => p.userId === (profile.userId || ''));
+        const [y, mo, d] = (r.date || '----').split('-');
+        const monStr = MS[parseInt(mo)-1] || '';
+        const distStr = part?.distancia || '';
+        const tiempoStr = profile.showTimes && part?.tiempo ? ` · ⏱ ${part.tiempo}` : '';
+        return `<div class="pp-race-row">
+          <div class="pp-race-date">${d}/${monStr}<br>${y}</div>
+          <div style="flex:1">
+            <div class="pp-race-name">${r.name}</div>
+            <div class="pp-race-meta">${r.provincia || ''}${r.city ? ' · ' + r.city : ''}</div>
+          </div>
+          ${distStr ? `<div class="pp-race-dist">${distStr}${tiempoStr}</div>` : ''}
+          <span class="bdg bdg-${r.type}" style="margin-left:8px">${TI[r.type]||'🏃'}</span>
+        </div>`;
+      }).join('')
+    : `<div class="pp-empty"><div class="ei">🏁</div><p>Sin historial de carreras aún</p></div>`;
+
+  // Inscripciones futuras
+  const proxHtml = inscList.length
+    ? inscList.map(ins => {
+        const [y, mo, d] = (ins.raceDate || '----').split('-');
+        return `<div class="pp-race-row">
+          <div class="pp-race-date">${d}/${MS[parseInt(mo)-1]||''}<br>${y}</div>
+          <div style="flex:1">
+            <div class="pp-race-name">${ins.raceName || '—'}</div>
+            <div class="pp-race-meta">${ins.raceProvince || ''}</div>
+          </div>
+          ${ins.distancia ? `<div class="pp-race-dist">${ins.distancia}</div>` : ''}
+          <span class="bdg bdg-${ins.raceType||'road'}" style="margin-left:8px">${TI[ins.raceType]||'🏃'}</span>
+        </div>`;
+      }).join('')
+    : '';
+
+  body.innerHTML = `
+    <div class="pp-hero">
+      ${avHtml}
+      <div class="pp-info">
+        <div class="pp-name">${profile.displayName || 'Corredor'}</div>
+        <div class="pp-handle">@${profile.slug}</div>
+        ${profile.bio ? `<div class="pp-bio">${profile.bio}</div>` : ''}
+        ${statsHtml}
+      </div>
+      <button class="pp-share-btn" onclick="navigator.share ? navigator.share({title:'${profile.displayName}',url:'${profileUrl}'}) : navigator.clipboard.writeText('${profileUrl}').then(()=>alert('Link copiado!'))">
+        📤 Compartir perfil
+      </button>
+    </div>
+    <div class="pp-body">
+      ${inscList.length ? `<div class="pp-section-title">📅 PRÓXIMAS CARRERAS</div><div class="pp-race-list">${proxHtml}</div>` : ''}
+      <div class="pp-section-title">🏁 HISTORIAL</div>
+      <div class="pp-race-list">${historialHtml}</div>
+    </div>`;
+}
+
 // Exponer funciones al HTML (necesario con type="module")
 Object.assign(window, {
   openLogin, logout, loginWithGoogle,
@@ -4190,10 +4530,12 @@ Object.assign(window, {
   togglePushNotifications,
   renderMapTab, openDetailFromMap,
   openShareCard, selectSharePhoto, downloadShareCard, shareToWhatsApp, nativeShare,
-  openAddTri, openEditTri, saveTri, deleteTriConfirm, filterTri
+  openAddTri, openEditTri, saveTri, deleteTriConfirm, filterTri,
+  openProfileConfig, saveProfile, copyProfileLink, updateProfileLinkPreview
 });
 
 init();
+checkPublicProfileRoute();
 </script>
 
 <script>
