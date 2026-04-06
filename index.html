@@ -292,6 +292,7 @@ textarea{resize:vertical;min-height:70px;}
   .logo-badge{display:none;}
   .nav-right{gap:6px;}
   .nav-right .btn-ghost{display:none;}
+  .nav-right .btn-ghost.btn-profile{display:inline-flex;padding:6px 10px;font-size:11px;}
   .nav-right .btn-accent{padding:7px 14px;font-size:12px;}
   .user-chip{display:none;}
   .admin-badge{display:none;}
@@ -1705,7 +1706,7 @@ function updateNav() {
     const notifEnabled = localStorage.getItem('push_subscribed') === '1';
     const bellTitle    = notifEnabled ? 'Notificaciones activadas — click para desactivar' : 'Activar notificaciones de carreras';
     const bellBtn      = `<button class="notif-btn${notifEnabled ? ' enabled' : ''}" id="notifBtn" onclick="togglePushNotifications()" title="${bellTitle}">🔔</button>`;
-    const profileBtn   = `<button class="btn btn-ghost" onclick="openProfileConfig()" title="Mi perfil público" style="padding:7px 12px;font-size:12px">👤 Mi perfil</button>`;
+    const profileBtn   = `<button class="btn btn-ghost btn-profile" onclick="openProfileConfig()" title="Mi perfil público" style="padding:7px 12px;font-size:12px">👤 Mi perfil</button>`;
     nav.innerHTML = `<span class="user-chip"><span class="dot"></span>${currentUser.name.split(' ')[0]}</span>${currentUser.isAdmin ? '<span class="admin-badge">ADMIN</span>' : ''}${profileBtn}${bellBtn}${av}`;
     if (currentUser.isAdmin) fab.classList.add('on'); else fab.classList.remove('on');
   } else {
