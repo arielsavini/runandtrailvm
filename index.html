@@ -3439,8 +3439,8 @@ function openInscDetail(id) {
     </div>
     ${ins.rutaImgURL || ins.altImgURL ? `
     <div style="margin-top:14px;display:flex;gap:12px;flex-wrap:wrap">
-      ${ins.rutaImgURL  ? `<img src="${ins.rutaImgURL}"  style="max-width:100%;border-radius:8px;border:1px solid var(--border)" alt="Mapa de ruta">` : ''}
-      ${ins.altImgURL   ? `<img src="${ins.altImgURL}"   style="max-width:100%;border-radius:8px;border:1px solid var(--border)" alt="Perfil de altitud">` : ''}
+      ${ins.rutaImgURL  ? `<img src="${ins.rutaImgURL}"  onclick="bigImg('${ins.rutaImgURL}')"  style="max-width:100%;border-radius:8px;border:1px solid var(--border);cursor:zoom-in" alt="Mapa de ruta">` : ''}
+      ${ins.altImgURL   ? `<img src="${ins.altImgURL}"   onclick="bigImg('${ins.altImgURL}')"   style="max-width:100%;border-radius:8px;border:1px solid var(--border);cursor:zoom-in" alt="Perfil de altitud">` : ''}
     </div>` : ''}`;
   oo('inscDetailOv');
 }
