@@ -4601,7 +4601,7 @@ window.addEventListener('beforeinstallprompt', e => {
 window.addEventListener('appinstalled', () => {
   document.getElementById('pwaBanner').classList.remove('show');
   _pwaPrompt = null;
-  showToast('✅ App instalada correctamente', 'ok');
+  console.log('[PWA] App instalada correctamente');
 });
 function pwaInstall() {
   if (!_pwaPrompt) return;

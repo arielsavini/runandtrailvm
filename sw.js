@@ -4,7 +4,7 @@
  * Push Notifications: muestra notificaciones y maneja clicks
  */
 
-const CACHE_NAME    = 'run-trail-vm-v5';
+const CACHE_NAME    = 'run-trail-vm-v6';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -18,8 +18,9 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache =>
       Promise.allSettled(STATIC_ASSETS.map(url => cache.add(url).catch(() => {})))
-    ).then(() => self.skipWaiting())
+    )
   );
+  // No llamar skipWaiting() aquí — el usuario controla cuándo aplicar la actualización
 });
 
 // Activar: limpiar caches viejos
