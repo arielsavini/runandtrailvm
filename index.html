@@ -4573,15 +4573,15 @@ if ('serviceWorker' in navigator) {
         });
       });
     }).catch(err => console.warn('[SW] error:', err));
-    // Cuando el SW tome el control, recargar para usar versión nueva
-    let refreshing = false;
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (!refreshing) { refreshing = true; window.location.reload(); }
-    });
   });
 }
 function swApplyUpdate() {
   if (_swReg && _swReg.waiting) {
+    // Escuchar controllerchange UNA SOLA VEZ y recargar
+    navigator.serviceWorker.addEventListener('controllerchange', function onCtrlChange() {
+      navigator.serviceWorker.removeEventListener('controllerchange', onCtrlChange);
+      window.location.reload();
+    });
     _swReg.waiting.postMessage({ type: 'SKIP_WAITING' });
   } else {
     window.location.reload();
