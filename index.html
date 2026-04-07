@@ -626,6 +626,11 @@ textarea{resize:vertical;min-height:70px;}
 .pp-link-box{display:flex;align-items:center;gap:8px;background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:10px 14px;margin-top:12px;font-family:'Space Mono',monospace;font-size:11px;color:var(--accent);word-break:break-all;}
 .pp-link-copy{background:var(--accent);color:#0c0c0a;border:none;border-radius:5px;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;flex-shrink:0;transition:all .15s;}
 .pp-link-copy:hover{background:#d4eb2e;}
+.pp-club{display:flex;align-items:center;gap:10px;margin:6px 0 10px;}
+.pp-club-logo{width:36px;height:36px;border-radius:6px;object-fit:contain;background:var(--surface2);border:1px solid var(--border);padding:3px;flex-shrink:0;}
+.pp-club-name{font-size:13px;font-weight:600;color:var(--muted);}
+.pp-logo-preview{width:64px;height:64px;border-radius:8px;object-fit:contain;background:var(--surface2);border:1px solid var(--border);padding:4px;display:none;}
+.pp-logo-preview.show{display:block;}
 
 </style>
 </head>
@@ -1435,6 +1440,16 @@ textarea{resize:vertical;min-height:70px;}
       </div>
       <div class="fr full" style="margin-bottom:16px">
         <div class="fg2"><label>🏃 Bio (opcional)</label><textarea id="ppBio" placeholder="Corredor de montaña, San Luis..."></textarea></div>
+      </div>
+      <div class="fr full" style="margin-bottom:16px;align-items:flex-end;gap:16px">
+        <div class="fg2"><label>🏅 Agrupación / Club (opcional)</label><input id="ppClub" type="text" placeholder="ej. Club Atletismo San Luis"></div>
+        <div style="flex-shrink:0">
+          <label style="display:block;margin-bottom:6px">Logo del club</label>
+          <div style="display:flex;align-items:center;gap:10px">
+            <img id="ppLogoPreview" class="pp-logo-preview" src="" alt="Logo">
+            <label class="btn btn-ghost" style="cursor:pointer;padding:7px 14px;font-size:12px">📷 Subir<input type="file" id="ppLogoFile" accept="image/*" style="display:none" onchange="prevProfileLogo(this)"></label>
+          </div>
+        </div>
       </div>
       <div class="profile-toggle-row">
         <div>
@@ -4303,6 +4318,15 @@ async function deleteTriConfirm(id) {
 ══════════════════════════════════════════ */
 let _userProfile = null;
 
+function prevProfileLogo(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const preview = document.getElementById('ppLogoPreview');
+  const reader = new FileReader();
+  reader.onload = e => { preview.src = e.target.result; preview.classList.add('show'); };
+  reader.readAsDataURL(file);
+}
+
 async function openProfileConfig() {
   if (!currentUser) { openLogin(); return; }
   // Cargar perfil guardado
@@ -4317,9 +4341,14 @@ async function openProfileConfig() {
   document.getElementById('ppDisplayName').value = p.displayName || currentUser.name || '';
   document.getElementById('ppSlug').value        = p.slug        || '';
   document.getElementById('ppBio').value         = p.bio         || '';
+  document.getElementById('ppClub').value        = p.club        || '';
   document.getElementById('ppPublic').checked    = !!p.isPublic;
   document.getElementById('ppShowInsc').checked  = p.showInsc  !== false;
   document.getElementById('ppShowTimes').checked = p.showTimes !== false;
+  // Mostrar logo guardado si existe
+  const logoPreview = document.getElementById('ppLogoPreview');
+  if (p.clubLogo) { logoPreview.src = p.clubLogo; logoPreview.classList.add('show'); }
+  else { logoPreview.src = ''; logoPreview.classList.remove('show'); }
   updateProfileLinkPreview();
   oo('profileOv');
 }
@@ -4343,11 +4372,33 @@ async function saveProfile() {
   if (!slug) { toast('⚠️', 'El nombre de usuario es obligatorio'); return; }
   if (!/^[a-z0-9_-]+$/.test(slug)) { toast('⚠️', 'Solo letras minúsculas, números, guiones y guiones bajos'); return; }
 
+  // Subir logo si hay uno nuevo
+  let clubLogoUrl = (_userProfile || {}).clubLogo || null;
+  const logoFileInput = document.getElementById('ppLogoFile');
+  if (FB_READY && logoFileInput.files && logoFileInput.files[0]) {
+    try {
+      const file = logoFileInput.files[0];
+      const reader = new FileReader();
+      clubLogoUrl = await new Promise((res, rej) => {
+        reader.onload = async e => {
+          try {
+            const logoRef = ref(storage, `profiles/${currentUser.id}/club-logo`);
+            await uploadString(logoRef, e.target.result, 'data_url');
+            res(await getDownloadURL(logoRef));
+          } catch(err) { rej(err); }
+        };
+        reader.readAsDataURL(file);
+      });
+    } catch(e) { toast('⚠️', 'No se pudo subir el logo: ' + e.message); }
+  }
+
   const profile = {
     userId:      currentUser.id,
     displayName: document.getElementById('ppDisplayName').value.trim() || currentUser.name,
     slug,
     bio:         document.getElementById('ppBio').value.trim(),
+    club:        document.getElementById('ppClub').value.trim(),
+    clubLogo:    clubLogoUrl,
     isPublic:    document.getElementById('ppPublic').checked,
     showInsc:    document.getElementById('ppShowInsc').checked,
     showTimes:   document.getElementById('ppShowTimes').checked,
@@ -4464,6 +4515,10 @@ function renderPublicProfile(profile, participatedRaces, inscList, allRaces) {
 
   const profileUrl = `${window.location.origin}${window.location.pathname}?corredor=${profile.slug}`;
 
+  const clubHtml = profile.club
+    ? `<div class="pp-club">${profile.clubLogo ? `<img class="pp-club-logo" src="${profile.clubLogo}" alt="${profile.club}">` : ''}<span class="pp-club-name">📍 ${profile.club}</span></div>`
+    : '';
+
   const statsHtml = `
     <div class="pp-stats">
       <div class="pp-stat"><div class="v">${participatedRaces.length}</div><div class="l">CARRERAS</div></div>
@@ -4513,6 +4568,7 @@ function renderPublicProfile(profile, participatedRaces, inscList, allRaces) {
       <div class="pp-info">
         <div class="pp-name">${profile.displayName || 'Corredor'}</div>
         <div class="pp-handle">@${profile.slug}</div>
+        ${clubHtml}
         ${profile.bio ? `<div class="pp-bio">${profile.bio}</div>` : ''}
         ${statsHtml}
       </div>
@@ -4545,7 +4601,7 @@ Object.assign(window, {
   renderMapTab, openDetailFromMap,
   openShareCard, selectSharePhoto, downloadShareCard, shareToWhatsApp, nativeShare,
   openAddTri, openEditTri, saveTri, deleteTriConfirm, filterTri,
-  openProfileConfig, saveProfile, copyProfileLink, updateProfileLinkPreview
+  openProfileConfig, saveProfile, copyProfileLink, updateProfileLinkPreview, prevProfileLogo
 });
 
 init();
