@@ -77,7 +77,7 @@ self.addEventListener('fetch', event => {
   );
 });
 
-// ── SKIP WAITING — permite actualización inmediata desde la app ───────────────
+// ── MENSAJES ─────────────────────────────────────────────────────────────────
 self.addEventListener('message', event => {
   if (event.data?.type === 'SKIP_WAITING') self.skipWaiting();
 });

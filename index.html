@@ -4554,6 +4554,24 @@ checkPublicProfileRoute();
 
 <script>
 // Service Worker — modo offline
+const SW_CACHE_NAME = 'run-trail-vm-v6'; // ← mantener sincronizado con sw.js
+
+// Limpiar automáticamente si hay caches de versiones anteriores (SWs viejos)
+if ('caches' in window && 'serviceWorker' in navigator) {
+  caches.keys().then(keys => {
+    const hasOldCache = keys.some(k => k.startsWith('run-trail-vm-') && k !== SW_CACHE_NAME);
+    if (hasOldCache) {
+      console.log('[SW] caches viejos detectados, limpiando y recargando...');
+      Promise.all([
+        ...keys.map(k => caches.delete(k)),
+        navigator.serviceWorker.getRegistrations().then(regs =>
+          Promise.all(regs.map(r => r.unregister()))
+        )
+      ]).then(() => window.location.reload());
+    }
+  });
+}
+
 let _swReg = null;
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
