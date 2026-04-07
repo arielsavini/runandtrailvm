@@ -4431,10 +4431,14 @@ async function checkPublicProfileRoute() {
     // Cargar inscripciones si showInsc
     let inscList = [];
     if (profile.showInsc) {
-      const inscSnap = await getDocs(q2(col(db, 'inscripciones'), where('userId','==', uid)));
-      inscList = inscSnap.docs.map(d => d.data())
-        .filter(i => i.raceDate >= new Date().toISOString().slice(0,10))
-        .sort((a,b) => a.raceDate.localeCompare(b.raceDate));
+      try {
+        const inscSnap = await getDocs(q2(col(db, 'inscripciones'), where('userId','==', uid)));
+        inscList = inscSnap.docs.map(d => d.data())
+          .filter(i => i.raceDate >= new Date().toISOString().slice(0,10))
+          .sort((a,b) => a.raceDate.localeCompare(b.raceDate));
+      } catch(eInsc) {
+        console.warn('No se pudieron cargar inscripciones públicas:', eInsc.code);
+      }
     }
 
     renderPublicProfile(profile, participatedRaces, inscList, allRaces);
