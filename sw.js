@@ -76,6 +76,11 @@ self.addEventListener('fetch', event => {
   );
 });
 
+// ── SKIP WAITING — permite actualización inmediata desde la app ───────────────
+self.addEventListener('message', event => {
+  if (event.data?.type === 'SKIP_WAITING') self.skipWaiting();
+});
+
 // ── PUSH NOTIFICATIONS ────────────────────────────────────────────────────────
 self.addEventListener('push', event => {
   let data = { title: 'RUN & TRAIL VM', body: '¡Hay novedades!' };
