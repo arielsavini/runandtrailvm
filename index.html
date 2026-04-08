@@ -1079,7 +1079,7 @@ textarea{resize:vertical;min-height:70px;}
       <div class="fr">
         <div class="fg2"><label>Nombre *</label><input id="rName" type="text" placeholder="ej. Ultra Trail Aconcagua"></div>
         <div class="fg2"><label>Tipo *</label>
-          <select id="rType">
+          <select id="rType" onchange="onRaceTypeChange()">
             <option value="trail">🏔 Trail</option><option value="road">🏙 Road</option>
             <option value="ultra">⚡ Ultra</option><option value="mixed">🔀 Mixto</option>
             <option value="duatlon">🚴 Duatlón</option><option value="triatlon">🏊 Triatlón</option>
@@ -1103,7 +1103,7 @@ textarea{resize:vertical;min-height:70px;}
         </div>
         <div class="fg2"><label>Ciudad / Lugar</label><input id="rCity" type="text" placeholder="ej. Villa Carlos Paz"></div>
       </div>
-      <div class="fr full">
+      <div class="fr full" id="distGenWrap">
         <div class="fg2">
           <label>Distancias disponibles</label>
           <div class="dist-tags" id="dtCont">
@@ -1117,6 +1117,28 @@ textarea{resize:vertical;min-height:70px;}
             <button class="dtag" onclick="togDist(this,'100M')">100M</button>
           </div>
           <input id="cdist" type="text" placeholder="Otra distancia (Enter para agregar)" style="margin-top:8px" onkeydown="addCD(event)">
+        </div>
+      </div>
+      <!-- Distancias específicas para Duatlón -->
+      <div class="fr full" id="distDuatlonWrap" style="display:none">
+        <div class="fg2">
+          <label>🚴 Distancias del Duatlón</label>
+          <div class="fr" style="gap:12px;margin-top:4px">
+            <div class="fg2"><label style="font-size:11px;color:var(--muted)">Carrera 1 (⁠km)</label><input id="dDuatCorr1" type="text" placeholder="ej. 10K"></div>
+            <div class="fg2"><label style="font-size:11px;color:var(--muted)">Bicicleta (km)</label><input id="dDuatBici" type="text" placeholder="ej. 40K"></div>
+            <div class="fg2"><label style="font-size:11px;color:var(--muted)">Carrera 2 (km)</label><input id="dDuatCorr2" type="text" placeholder="ej. 5K"></div>
+          </div>
+        </div>
+      </div>
+      <!-- Distancias específicas para Triatlón -->
+      <div class="fr full" id="distTriatlonWrap" style="display:none">
+        <div class="fg2">
+          <label>🏔 Distancias del Triatlón</label>
+          <div class="fr" style="gap:12px;margin-top:4px">
+            <div class="fg2"><label style="font-size:11px;color:var(--muted)">🏔 Natación (m)</label><input id="dTriNat" type="text" placeholder="ej. 1500m"></div>
+            <div class="fg2"><label style="font-size:11px;color:var(--muted)">🚴 Bicicleta (km)</label><input id="dTriBici" type="text" placeholder="ej. 40K"></div>
+            <div class="fg2"><label style="font-size:11px;color:var(--muted)">🏃 Carrera (km)</label><input id="dTriCorr" type="text" placeholder="ej. 10K"></div>
+          </div>
         </div>
       </div>
       <div class="fr">
@@ -1932,15 +1954,26 @@ function bigImg(src) { const w = window.open(); w.document.write(`<body style="m
 /* ══════════════════════════════════════════
    ADD / EDIT RACE (solo admin)
 ══════════════════════════════════════════ */
+function onRaceTypeChange() {
+  const type = document.getElementById('rType').value;
+  const isDuat = type === 'duatlon';
+  const isTri  = type === 'triatlon';
+  document.getElementById('distGenWrap').style.display     = (isDuat || isTri) ? 'none' : '';
+  document.getElementById('distDuatlonWrap').style.display = isDuat ? '' : 'none';
+  document.getElementById('distTriatlonWrap').style.display = isTri  ? '' : 'none';
+}
+
 function openAddRace() {
   if (!currentUser?.isAdmin) { toast('🔒', 'Solo el administrador puede agregar carreras'); return; }
   editId = null; selDists = []; racePhotoFile = null; racePhotoURL = null; geoC = null; wData = null;
   document.getElementById('arTitle').textContent = 'NUEVA CARRERA';
-  ['rName','rCity','rUrl','rDesc','wCity'].forEach(id => document.getElementById(id).value = '');
+  ['rName','rCity','rUrl','rDesc','wCity','dDuatCorr1','dDuatBici','dDuatCorr2','dTriNat','dTriBici','dTriCorr'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('rDate').value = '';
   document.getElementById('rProv').value = '';
+  document.getElementById('rType').value = 'trail';
   document.getElementById('rFeatured').checked = false;
   document.getElementById('wbox').style.display = 'none';
+  onRaceTypeChange();
   clearLocation();
   document.getElementById('rpPrev').innerHTML = '<div class="ui">📷</div><p>Click para subir foto de portada</p>';
   document.querySelectorAll('.dtag').forEach(t => t.classList.remove('sel'));
@@ -1962,6 +1995,18 @@ function editRace(id) {
   document.getElementById('rFeatured').checked = r.featured || false;
   selDists = [...(r.distances || [])];
   document.querySelectorAll('.dtag').forEach(t => { if (selDists.includes(t.textContent.trim())) t.classList.add('sel'); });
+  // Restaurar campos duatlón/triatlón
+  if (r.type === 'duatlon' && r.distDetail) {
+    document.getElementById('dDuatCorr1').value = r.distDetail.corr1 || '';
+    document.getElementById('dDuatBici').value  = r.distDetail.bici  || '';
+    document.getElementById('dDuatCorr2').value = r.distDetail.corr2 || '';
+  }
+  if (r.type === 'triatlon' && r.distDetail) {
+    document.getElementById('dTriNat').value  = r.distDetail.nat  || '';
+    document.getElementById('dTriBici').value = r.distDetail.bici || '';
+    document.getElementById('dTriCorr').value = r.distDetail.corr || '';
+  }
+  onRaceTypeChange();
   if (r.photo) { racePhotoURL = r.photo; document.getElementById('rpPrev').innerHTML = `<img src="${r.photo}" class="prev">`; }
   if (r.weather) { wData = r.weather; document.getElementById('wicon').textContent = r.weather.icon; document.getElementById('wtemp').textContent = `${r.weather.temp}°C`; document.getElementById('wdesc').textContent = r.weather.desc; document.getElementById('wbox').style.display = 'flex'; }
   if (r.coords) { geoC = r.coords; const locLabel = [r.city, r.provincia].filter(Boolean).join(', '); _showLocOnPicker(r.coords.lat, r.coords.lng, locLabel); }
@@ -2100,13 +2145,37 @@ async function saveRace() {
       photoPath = result.path;
     }
 
+    const raceType = document.getElementById('rType').value;
+
+    // Armar distances y distDetail según el tipo
+    let distances = [...selDists];
+    let distDetail = null;
+    if (raceType === 'duatlon') {
+      const c1 = document.getElementById('dDuatCorr1').value.trim();
+      const bi = document.getElementById('dDuatBici').value.trim();
+      const c2 = document.getElementById('dDuatCorr2').value.trim();
+      distDetail = { corr1: c1, bici: bi, corr2: c2 };
+      distances = [c1, bi, c2].filter(Boolean).length
+        ? [`🏃 ${c1 || '?'} / 🚴 ${bi || '?'} / 🏃 ${c2 || '?'}`]
+        : [];
+    } else if (raceType === 'triatlon') {
+      const nat = document.getElementById('dTriNat').value.trim();
+      const bi  = document.getElementById('dTriBici').value.trim();
+      const cor = document.getElementById('dTriCorr').value.trim();
+      distDetail = { nat, bici: bi, corr: cor };
+      distances = [nat, bi, cor].filter(Boolean).length
+        ? [`🏊 ${nat || '?'} / 🚴 ${bi || '?'} / 🏃 ${cor || '?'}`]
+        : [];
+    }
+
     const existingRace = races.find(r => r.id === editId);
     const race = {
       id: raceId, name, date,
-      type:        document.getElementById('rType').value,
+      type:        raceType,
       provincia:   document.getElementById('rProv').value,
       city:        document.getElementById('rCity').value.trim(),
-      distances:   [...selDists],
+      distances,
+      distDetail,
       url:         document.getElementById('rUrl').value.trim(),
       description: document.getElementById('rDesc').value.trim(),
       photo:       photoURL || null,
@@ -4586,7 +4655,7 @@ function renderPublicProfile(profile, participatedRaces, inscList, allRaces) {
 // Exponer funciones al HTML (necesario con type="module")
 Object.assign(window, {
   openLogin, logout, loginWithGoogle,
-  openAddRace, editRace, delRace, saveRace,
+  openAddRace, editRace, delRace, saveRace, onRaceTypeChange,
   openDetail, openPart, savePart,
   applyFilters, clearFilters,
   togDist, addCD, searchLocation, selectLocation, clearLocation, fetchW,
