@@ -1071,8 +1071,8 @@ textarea{resize:vertical;min-height:70px;}
     </div>
     <div class="mb">
       <div class="fr full" style="margin-bottom:18px">
-        <div class="photo-up" onclick="document.getElementById('rpInput').click()">
-          <input type="file" id="rpInput" accept="image/*" style="display:none" onchange="prevRacePhoto(event)">
+        <div class="photo-up">
+          <input type="file" id="rpInput" accept="image/*" onchange="prevRacePhoto(event)">
           <div id="rpPrev"><div class="ui">📷</div><p>Click para subir foto de portada</p></div>
         </div>
       </div>
@@ -1232,8 +1232,8 @@ textarea{resize:vertical;min-height:70px;}
       <div class="fr full">
         <div class="fg2">
           <label>Fotos de la carrera</label>
-          <div class="photo-up" onclick="document.getElementById('ppInput').click()">
-            <input type="file" id="ppInput" accept="image/*" multiple style="display:none" onchange="prevPartPhotos(event)">
+          <div class="photo-up">
+            <input type="file" id="ppInput" accept="image/*" multiple onchange="prevPartPhotos(event)">
             <div id="ppPrev"><div class="ui">📸</div><p>Click para subir fotos (múltiples)</p></div>
           </div>
         </div>
@@ -1301,8 +1301,8 @@ textarea{resize:vertical;min-height:70px;}
       <div class="fr full">
         <div class="fg2">
           <label>📄 Comprobante de pago (PDF o imagen)</label>
-          <div class="photo-up" onclick="document.getElementById('inscPagoInput').click()" id="inscPagoBox">
-            <input type="file" id="inscPagoInput" accept=".pdf,image/*" style="display:none" onchange="prevInscFile(event,'pago')">
+          <div class="photo-up" id="inscPagoBox">
+            <input type="file" id="inscPagoInput" accept=".pdf,image/*" onchange="prevInscFile(event,'pago')">
             <div id="inscPagoPrev"><div class="ui">📄</div><p>Click para subir PDF o imagen</p></div>
           </div>
         </div>
@@ -1310,8 +1310,8 @@ textarea{resize:vertical;min-height:70px;}
       <div class="fr full">
         <div class="fg2">
           <label>📋 Deslinde / Término de responsabilidad</label>
-          <div class="photo-up" onclick="document.getElementById('inscDeslindeInput').click()" id="inscDeslindeBox">
-            <input type="file" id="inscDeslindeInput" accept=".pdf,image/*" style="display:none" onchange="prevInscFile(event,'deslinde')">
+          <div class="photo-up" id="inscDeslindeBox">
+            <input type="file" id="inscDeslindeInput" accept=".pdf,image/*" onchange="prevInscFile(event,'deslinde')">
             <div id="inscDeslindePrev"><div class="ui">📋</div><p>Click para subir PDF o imagen</p></div>
           </div>
         </div>
@@ -1322,15 +1322,15 @@ textarea{resize:vertical;min-height:70px;}
       <div class="fr">
         <div class="fg2">
           <label>📍 Archivo GPX de la ruta</label>
-          <div class="photo-up" onclick="document.getElementById('inscGpxInput').click()" id="inscGpxBox">
-            <input type="file" id="inscGpxInput" accept=".gpx" style="display:none" onchange="prevInscFile(event,'gpx')">
+          <div class="photo-up" id="inscGpxBox">
+            <input type="file" id="inscGpxInput" accept=".gpx" onchange="prevInscFile(event,'gpx')">
             <div id="inscGpxPrev"><div class="ui">📍</div><p>Click para subir .gpx</p></div>
           </div>
         </div>
         <div class="fg2">
           <label>🗺 Imagen del mapa / ruta</label>
-          <div class="photo-up" onclick="document.getElementById('inscRutaImgInput').click()" id="inscRutaImgBox">
-            <input type="file" id="inscRutaImgInput" accept="image/*" style="display:none" onchange="prevInscFile(event,'rutaimg')">
+          <div class="photo-up" id="inscRutaImgBox">
+            <input type="file" id="inscRutaImgInput" accept="image/*" onchange="prevInscFile(event,'rutaimg')">
             <div id="inscRutaImgPrev"><div class="ui">🗺</div><p>Click para subir imagen de ruta</p></div>
           </div>
         </div>
@@ -1338,8 +1338,8 @@ textarea{resize:vertical;min-height:70px;}
       <div class="fr full">
         <div class="fg2">
           <label>📈 Imagen del perfil de altitud</label>
-          <div class="photo-up" onclick="document.getElementById('inscAltImgInput').click()" id="inscAltImgBox">
-            <input type="file" id="inscAltImgInput" accept="image/*" style="display:none" onchange="prevInscFile(event,'altimg')">
+          <div class="photo-up" id="inscAltImgBox">
+            <input type="file" id="inscAltImgInput" accept="image/*" onchange="prevInscFile(event,'altimg')">
             <div id="inscAltImgPrev"><div class="ui">📈</div><p>Click para subir imagen de altitud</p></div>
           </div>
         </div>
@@ -1966,6 +1966,7 @@ function onRaceTypeChange() {
 function openAddRace() {
   if (!currentUser?.isAdmin) { toast('🔒', 'Solo el administrador puede agregar carreras'); return; }
   editId = null; selDists = []; racePhotoFile = null; racePhotoURL = null; geoC = null; wData = null;
+  const rpInp = document.getElementById('rpInput'); if (rpInp) rpInp.value = '';
   document.getElementById('arTitle').textContent = 'NUEVA CARRERA';
   ['rName','rCity','rUrl','rDesc','wCity','dDuatCorr1','dDuatBici','dDuatCorr2','dTriNat','dTriBici','dTriCorr'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('rDate').value = '';
