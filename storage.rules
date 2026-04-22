@@ -1,0 +1,43 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // ── FOTOS DE CARRERAS ─────────────────────────────────────────────────
+    // Lectura pública; cualquier usuario logueado puede subir (admins gestionan las carreras)
+    match /races/{raceId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null
+                   && request.resource.size < 10 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+    }
+
+    // ── FOTOS DE PARTICIPACIONES ──────────────────────────────────────────
+    // Lectura pública; cada usuario solo sube a su propia carpeta
+    match /participations/{raceId}/{fileName} {
+      allow read: if true;
+      allow write: if request.auth != null
+                   && fileName.matches(request.auth.uid + '.*')
+                   && request.resource.size < 10 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+    }
+
+    // ── ARCHIVOS DE INSCRIPCIONES ─────────────────────────────────────────
+    // Lectura pública; cada usuario solo sube a su propia carpeta
+    match /inscripciones/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null
+                   && request.auth.uid == userId
+                   && request.resource.size < 20 * 1024 * 1024;
+    }
+
+    // ── PERFILES / LOGOS ──────────────────────────────────────────────────
+    // Cada usuario solo puede leer/escribir su propio perfil
+    match /profiles/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null
+                   && request.auth.uid == userId
+                   && request.resource.size < 5 * 1024 * 1024;
+    }
+
+  }
+}
