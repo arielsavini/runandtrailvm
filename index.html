@@ -578,6 +578,48 @@ textarea{resize:vertical;min-height:70px;}
 .tri-type-tab.active{background:rgba(56,189,248,.12);border-color:rgba(56,189,248,.5);color:#38bdf8;}
 @media(max-width:640px){.tri-wrap{padding:16px 16px 56px;}.tri-grid{grid-template-columns:1fr;}.tri-summary{grid-template-columns:1fr 1fr;}}
 
+/* ── LINKS (ALIMENTACIÓN / EJERCICIOS) ── */
+.links-wrap{padding:24px 32px 56px;}
+.links-toolbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px;}
+.btn-new-link{display:flex;align-items:center;gap:8px;padding:10px 20px;background:var(--accent);color:#0c0c0a;border:none;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif;}
+.btn-new-link.btn-ejerc{background:#a78bfa;color:#0c0c0a;}
+.btn-new-link:hover{filter:brightness(.9);transform:translateY(-1px);}
+.links-cats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
+.links-cat-btn{padding:6px 16px;border-radius:100px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:12px;font-weight:600;cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif;}
+.links-cat-btn:hover{border-color:var(--accent);color:var(--accent);}
+.links-cat-btn.active{background:rgba(232,255,71,.12);border-color:rgba(232,255,71,.5);color:var(--accent);}
+.links-cat-btn.ejerc:hover{border-color:rgba(167,139,250,.4);color:#a78bfa;}
+.links-cat-btn.active.ejerc{background:rgba(167,139,250,.12);border-color:rgba(167,139,250,.5);color:#a78bfa;}
+.links-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;}
+.link-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;transition:transform .18s,border-color .18s,box-shadow .18s;display:flex;flex-direction:column;}
+.link-card:hover{transform:translateY(-3px);border-color:rgba(232,255,71,.3);box-shadow:0 10px 36px rgba(0,0,0,.4);}
+.link-card.ejerc:hover{border-color:rgba(167,139,250,.35);}
+.link-card-head{padding:12px 16px 0;display:flex;flex-wrap:wrap;align-items:center;gap:6px;}
+.link-card-title{padding:8px 16px 0;font-weight:700;font-size:14px;line-height:1.4;}
+.link-cat-pill{padding:2px 10px;border-radius:100px;font-size:10px;font-weight:700;font-family:'Space Mono',monospace;background:rgba(232,255,71,.08);border:1px solid rgba(232,255,71,.2);color:var(--accent);}
+.link-cat-pill.ejerc{background:rgba(167,139,250,.08);border-color:rgba(167,139,250,.2);color:#a78bfa;}
+.link-date{font-size:10px;color:var(--muted);font-family:'Space Mono',monospace;margin-left:auto;}
+.link-card-url{padding:4px 16px 8px;font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.link-card-notes{padding:0 16px 10px;font-size:12px;color:var(--muted);font-style:italic;line-height:1.5;}
+.link-card-foot{padding:10px 16px 14px;display:flex;gap:7px;border-top:1px solid var(--border);margin-top:auto;}
+.link-btn-open{flex:1;background:var(--accent);color:#0c0c0a;border:none;border-radius:6px;padding:8px;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;}
+.link-btn-open.ejerc{background:#a78bfa;}
+.link-btn-open:hover{filter:brightness(.9);}
+.link-btn-del{background:rgba(255,68,68,.08);border:1px solid rgba(255,68,68,.2);color:#ff6b6b;border-radius:6px;padding:8px 12px;font-size:12px;cursor:pointer;transition:all .15s;}
+.link-btn-del:hover{background:rgba(255,68,68,.2);}
+.links-lock{text-align:center;padding:80px 24px;color:var(--muted);}
+.links-lock .li{font-size:52px;margin-bottom:16px;}
+.links-lock h3{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--text);margin-bottom:8px;}
+.links-empty{text-align:center;padding:64px 24px;color:var(--muted);}
+.links-empty .ei{font-size:52px;margin-bottom:16px;}
+.links-empty h3{font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--text);margin-bottom:8px;}
+.link-plat-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:100px;font-size:10px;font-weight:700;font-family:'Space Mono',monospace;}
+.link-plat-ig{background:rgba(225,48,108,.15);border:1px solid rgba(225,48,108,.35);color:#e1306c;}
+.link-plat-tt{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);color:var(--text);}
+.link-plat-yt{background:rgba(255,0,0,.12);border:1px solid rgba(255,0,0,.3);color:#ff4444;}
+.link-plat-web{background:rgba(110,234,160,.1);border:1px solid rgba(110,234,160,.25);color:var(--trail);}
+@media(max-width:640px){.links-wrap{padding:16px 16px 56px;}.links-grid{grid-template-columns:1fr;}}
+
 /* ── PERFIL PÚBLICO ─────────────────────────────── */
 #publicProfilePage{display:none;min-height:100vh;background:var(--bg);}
 .pp-hero{padding:40px 32px 28px;display:flex;align-items:center;gap:24px;flex-wrap:wrap;border-bottom:1px solid var(--border);}
@@ -673,6 +715,8 @@ textarea{resize:vertical;min-height:70px;}
   <button class="tab-btn" id="tab-triatlon" onclick="switchTab('triatlon')">🏊 TRIATLÓN
     <span class="tbadge" id="triBadge" style="display:none">0</span>
   </button>
+  <button class="tab-btn" id="tab-alimentacion" onclick="switchTab('alimentacion')">🥗 ALIMENTACIÓN</button>
+  <button class="tab-btn" id="tab-ejercicios" onclick="switchTab('ejercicios')">💪 EJERCICIOS</button>
 </nav>
 
 <!-- MAIN TABS (mobile dropdown) -->
@@ -696,6 +740,8 @@ textarea{resize:vertical;min-height:70px;}
       🏊 TRIATLÓN
       <span class="tbadge" id="triBadgeMob" style="display:none">0</span>
     </button>
+    <button class="tab-dropdown-item" id="dtab-alimentacion" onclick="switchTab('alimentacion');closeTabDropdown()">🥗 ALIMENTACIÓN</button>
+    <button class="tab-dropdown-item" id="dtab-ejercicios" onclick="switchTab('ejercicios');closeTabDropdown()">💪 EJERCICIOS</button>
   </div>
 </div>
 
@@ -995,6 +1041,62 @@ textarea{resize:vertical;min-height:70px;}
 </div>
 </div><!-- /panel-triatlon -->
 
+<!-- TAB: ALIMENTACIÓN -->
+<div class="tab-panel" id="panel-alimentacion">
+<div class="links-wrap">
+
+  <!-- LOCK -->
+  <div id="alimentLock" class="links-lock" style="display:none">
+    <div class="li">🥗</div>
+    <h3>INICIÁ SESIÓN</h3>
+    <p style="font-size:14px;max-width:320px;margin:0 auto 24px;line-height:1.6">Guardá tus links de Instagram y TikTok sobre alimentación y nutrición.</p>
+    <button class="btn btn-accent" onclick="openLogin()">Ingresar con Google</button>
+  </div>
+
+  <!-- CONTENT -->
+  <div id="alimentContent" style="display:none">
+    <div class="links-toolbar">
+      <div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--text)">ALIMENTACIÓN</div>
+        <div style="font-size:11px;color:var(--muted);font-family:'Space Mono',monospace;margin-top:2px">Links guardados de Instagram y TikTok</div>
+      </div>
+      <button class="btn-new-link" onclick="openAddLink('alimentacion')">＋ AGREGAR LINK</button>
+    </div>
+    <div class="links-cats" id="alimentCats"></div>
+    <div class="links-grid" id="alimentGrid"></div>
+  </div>
+
+</div>
+</div><!-- /panel-alimentacion -->
+
+<!-- TAB: EJERCICIOS -->
+<div class="tab-panel" id="panel-ejercicios">
+<div class="links-wrap">
+
+  <!-- LOCK -->
+  <div id="ejercLock" class="links-lock" style="display:none">
+    <div class="li">💪</div>
+    <h3>INICIÁ SESIÓN</h3>
+    <p style="font-size:14px;max-width:320px;margin:0 auto 24px;line-height:1.6">Guardá videos y links de ejercicios y rutinas de entrenamiento.</p>
+    <button class="btn btn-accent" onclick="openLogin()">Ingresar con Google</button>
+  </div>
+
+  <!-- CONTENT -->
+  <div id="ejercContent" style="display:none">
+    <div class="links-toolbar">
+      <div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--text)">EJERCICIOS</div>
+        <div style="font-size:11px;color:var(--muted);font-family:'Space Mono',monospace;margin-top:2px">Links guardados de Instagram y TikTok</div>
+      </div>
+      <button class="btn-new-link btn-ejerc" onclick="openAddLink('ejercicios')">＋ AGREGAR LINK</button>
+    </div>
+    <div class="links-cats" id="ejercCats"></div>
+    <div class="links-grid" id="ejercGrid"></div>
+  </div>
+
+</div>
+</div><!-- /panel-ejercicios -->
+
 <div class="overlay" id="wkDetailOv" onclick="coo(event,'wkDetailOv')">
   <div class="modal modal-wide" onclick="event.stopPropagation()">
     <div class="mh">
@@ -1023,7 +1125,60 @@ textarea{resize:vertical;min-height:70px;}
 </div>
 <button class="admin-fab" id="adminFab" onclick="openAddRace()">＋ AGREGAR CARRERA</button>
 
-<!-- SW Update Banner -->
+<!-- MODAL: AGREGAR LINK ALIMENTACIÓN / EJERCICIOS -->
+<div class="overlay" id="addLinkOv" onclick="coo(event,'addLinkOv')">
+  <div class="modal" style="max-width:500px" onclick="event.stopPropagation()">
+    <div class="mh">
+      <div>
+        <div class="mt" id="linkModalTitle">AGREGAR LINK</div>
+        <div class="ms" id="linkModalSub">Guardá un link de Instagram o TikTok</div>
+      </div>
+      <button class="xbtn" onclick="cm('addLinkOv')">×</button>
+    </div>
+    <div class="mb">
+      <div class="fr">
+        <div class="fg2">
+          <label>Título / Descripción *</label>
+          <input id="linkTitle" type="text" placeholder="ej. Receta proteica post run">
+        </div>
+        <div class="fg2">
+          <label>Plataforma</label>
+          <select id="linkPlatform">
+            <option value="instagram">📸 Instagram</option>
+            <option value="tiktok">🎵 TikTok</option>
+            <option value="youtube">▶️ YouTube</option>
+            <option value="web">🌐 Web / Otro</option>
+          </select>
+        </div>
+      </div>
+      <div class="fr full">
+        <div class="fg2">
+          <label>URL *</label>
+          <input id="linkUrl" type="url" placeholder="https://www.instagram.com/reel/...">
+        </div>
+      </div>
+      <div class="fr full">
+        <div class="fg2">
+          <label>Categoría</label>
+          <input id="linkCategory" type="text" placeholder="ej. Proteínas, Fuerza, Recetas...">
+          <div id="linkCatSuggestions" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"></div>
+        </div>
+      </div>
+      <div class="fr full">
+        <div class="fg2">
+          <label>Notas (opcional)</label>
+          <textarea id="linkNotes" placeholder="Resumen, recordatorio u observaciones..."></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-ghost" onclick="cm('addLinkOv')">Cancelar</button>
+      <button class="btn btn-accent" id="linkSaveBtn" onclick="saveLink()">GUARDAR</button>
+    </div>
+  </div>
+</div>
+
+
 <div class="sw-update-banner" id="swUpdateBanner">
   <span>🆕 Hay una nueva versión disponible</span>
   <button class="sw-update-btn" onclick="swApplyUpdate()">Actualizar ahora</button>
@@ -2419,6 +2574,8 @@ function switchTab(tab) {
   if (tab === 'inscripciones')  renderInscripcionesTab();
   if (tab === 'mapa')           renderMapTab();
   if (tab === 'triatlon')       renderTriathlonTab();
+  if (tab === 'alimentacion')   renderLinksTab('alimentacion');
+  if (tab === 'ejercicios')     renderLinksTab('ejercicios');
 }
 function toggleTabDropdown() {
   const trigger = document.getElementById('tabDropdownTrigger');
@@ -4384,6 +4541,166 @@ async function deleteTriConfirm(id) {
 }
 
 /* ══════════════════════════════════════════
+   LINKS — ALIMENTACIÓN / EJERCICIOS
+══════════════════════════════════════════ */
+let alimentacionLinks      = [];
+let ejerciciosLinks        = [];
+let _alimentListenerActive = false;
+let _ejercListenerActive   = false;
+let activeLinkType         = null;
+let linkCatFilter          = { alimentacion: '', ejercicios: '' };
+
+const ALIMENT_CATS    = ['Proteínas','Hidratos','Grasas','Recetas','Suplementos','Hidratación','Pre entreno','Post entreno'];
+const EJERCICIOS_CATS = ['Fuerza','Movilidad','Core','Cardio','Técnica running','Elongación','Prevención','Rehabilitación'];
+
+const PLAT_MAP = {
+  instagram: { label: '📸 Instagram', cls: 'link-plat-ig' },
+  tiktok:    { label: '🎵 TikTok',    cls: 'link-plat-tt' },
+  youtube:   { label: '▶️ YouTube',   cls: 'link-plat-yt' },
+  web:       { label: '🌐 Web',       cls: 'link-plat-web' },
+};
+
+function renderLinksTab(type) {
+  const isAliment = type === 'alimentacion';
+  const lock      = document.getElementById(isAliment ? 'alimentLock'    : 'ejercLock');
+  const content   = document.getElementById(isAliment ? 'alimentContent' : 'ejercContent');
+  if (!currentUser) {
+    lock.style.display = 'block'; content.style.display = 'none'; return;
+  }
+  lock.style.display = 'none'; content.style.display = 'block';
+  const alreadyListening = isAliment ? _alimentListenerActive : _ejercListenerActive;
+  if (FB_READY && !alreadyListening) {
+    if (isAliment) _alimentListenerActive = true; else _ejercListenerActive = true;
+    const q = query(collection(db, 'users', currentUser.id, type), orderBy('createdAt', 'desc'));
+    onSnapshot(q, snap => {
+      const arr = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      if (isAliment) alimentacionLinks = arr; else ejerciciosLinks = arr;
+      renderLinksGrid(type);
+    });
+  } else {
+    renderLinksGrid(type);
+  }
+}
+
+function renderLinksGrid(type) {
+  const isAliment = type === 'alimentacion';
+  const links     = isAliment ? alimentacionLinks : ejerciciosLinks;
+  const catFilter = linkCatFilter[type];
+  const catsEl    = document.getElementById(isAliment ? 'alimentCats' : 'ejercCats');
+  const grid      = document.getElementById(isAliment ? 'alimentGrid' : 'ejercGrid');
+  const allCats   = isAliment ? ALIMENT_CATS : EJERCICIOS_CATS;
+  const usedCats  = [...new Set(links.map(l => l.category).filter(Boolean))];
+  const cats      = [...new Set([...allCats, ...usedCats])];
+
+  // Render category filter pills
+  catsEl.innerHTML = ['', ...cats].map(c =>
+    `<button class="links-cat-btn${catFilter === c ? ' active' : ''}${isAliment ? '' : ' ejerc'}"
+      onclick="setLinkCatFilter('${type}','${c}')">${c === '' ? 'Todos' : c}</button>`
+  ).join('');
+
+  const filtered = catFilter ? links.filter(l => l.category === catFilter) : links;
+
+  if (!filtered.length) {
+    grid.innerHTML = `<div class="links-empty" style="grid-column:1/-1">
+      <div class="ei">${isAliment ? '🥗' : '💪'}</div>
+      <h3>SIN LINKS AÚN</h3>
+      <p style="font-size:14px;line-height:1.7;max-width:320px;margin:0 auto">
+        ${catFilter
+          ? `No hay links en la categoría <strong>${catFilter}</strong>.`
+          : `Pegá links de Instagram o TikTok sobre ${isAliment ? 'alimentación y nutrición' : 'ejercicios y rutinas'}.`}
+      </p>
+    </div>`; return;
+  }
+  grid.innerHTML = filtered.map(l => buildLinkCard(l, type)).join('');
+}
+
+function buildLinkCard(l, type) {
+  const isAliment = type === 'alimentacion';
+  const plat      = PLAT_MAP[l.platform] || PLAT_MAP.web;
+  const dateStr   = l.createdAt?.toDate
+    ? l.createdAt.toDate().toLocaleDateString('es-AR', { day:'2-digit', month:'short', year:'numeric' })
+    : '';
+  const safeUrl   = (l.url || '').replace(/"/g, '&quot;');
+  return `<div class="link-card${isAliment ? '' : ' ejerc'}">
+    <div class="link-card-head">
+      <span class="link-plat-badge ${plat.cls}">${plat.label}</span>
+      ${l.category ? `<span class="link-cat-pill${isAliment ? '' : ' ejerc'}">${l.category}</span>` : ''}
+      ${dateStr ? `<span class="link-date">${dateStr}</span>` : ''}
+    </div>
+    <div class="link-card-title">${l.title || 'Sin título'}</div>
+    <div class="link-card-url">🔗 ${l.url || '—'}</div>
+    ${l.notes ? `<div class="link-card-notes">${l.notes}</div>` : ''}
+    <div class="link-card-foot">
+      <button class="link-btn-open${isAliment ? '' : ' ejerc'}" onclick="window.open('${safeUrl}','_blank','noopener')">🔗 Abrir</button>
+      <button class="link-btn-del" onclick="deleteLink('${type}','${l.id}')">🗑</button>
+    </div>
+  </div>`;
+}
+
+function setLinkCatFilter(type, cat) {
+  linkCatFilter[type] = cat;
+  renderLinksGrid(type);
+}
+
+function openAddLink(type) {
+  if (!currentUser) { openLogin(); return; }
+  activeLinkType = type;
+  const isAliment = type === 'alimentacion';
+  document.getElementById('linkModalTitle').textContent = isAliment ? 'AGREGAR LINK DE ALIMENTACIÓN' : 'AGREGAR LINK DE EJERCICIOS';
+  document.getElementById('linkModalSub').textContent   = isAliment
+    ? 'Guardá recetas, tips y contenido nutricional'
+    : 'Guardá rutinas, técnicas y ejercicios';
+  ['linkTitle','linkUrl','linkCategory','linkNotes'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('linkPlatform').value = 'instagram';
+  const cats = isAliment ? ALIMENT_CATS : EJERCICIOS_CATS;
+  document.getElementById('linkCatSuggestions').innerHTML = cats.map(c =>
+    `<button type="button" class="dtag" onclick="document.getElementById('linkCategory').value='${c}';document.querySelectorAll('#linkCatSuggestions .dtag').forEach(b=>b.classList.remove('sel'));this.classList.add('sel')">${c}</button>`
+  ).join('');
+  oo('addLinkOv');
+}
+
+async function saveLink() {
+  const title = document.getElementById('linkTitle').value.trim();
+  const url   = document.getElementById('linkUrl').value.trim();
+  if (!title) { toast('⚠️', 'Ingresá un título'); return; }
+  if (!url)   { toast('⚠️', 'Ingresá el URL del link'); return; }
+  try { new URL(url); } catch { toast('⚠️', 'El URL no es válido'); return; }
+
+  const btn = document.getElementById('linkSaveBtn');
+  btn.disabled = true; btn.textContent = 'Guardando...';
+  const data = {
+    title,
+    url,
+    platform:  document.getElementById('linkPlatform').value,
+    category:  document.getElementById('linkCategory').value.trim(),
+    notes:     document.getElementById('linkNotes').value.trim(),
+    createdAt: serverTimestamp(),
+  };
+  try {
+    const ref = doc(collection(db, 'users', currentUser.id, activeLinkType));
+    await setDoc(ref, data);
+    cm('addLinkOv');
+    toast('✅', 'Link guardado');
+  } catch(e) {
+    toast('❌', 'Error al guardar: ' + e.message);
+  } finally {
+    btn.disabled = false; btn.textContent = 'GUARDAR';
+  }
+}
+
+async function deleteLink(type, id) {
+  if (!confirm('¿Eliminás este link?')) return;
+  try {
+    await deleteDoc(doc(db, 'users', currentUser.id, type, id));
+    toast('🗑', 'Link eliminado');
+  } catch(e) {
+    toast('❌', 'Error: ' + e.message);
+  }
+}
+
+/* ══════════════════════════════════════════
    PERFIL PÚBLICO
 ══════════════════════════════════════════ */
 let _userProfile = null;
@@ -4671,6 +4988,7 @@ Object.assign(window, {
   renderMapTab, openDetailFromMap,
   openShareCard, selectSharePhoto, downloadShareCard, shareToWhatsApp, nativeShare,
   openAddTri, openEditTri, saveTri, deleteTriConfirm, filterTri,
+  openAddLink, saveLink, deleteLink, setLinkCatFilter,
   openProfileConfig, saveProfile, copyProfileLink, updateProfileLinkPreview, prevProfileLogo
 });
 
