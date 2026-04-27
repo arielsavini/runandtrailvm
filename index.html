@@ -4376,7 +4376,7 @@ function renderTriathlonTab() {
   lock.style.display = 'none'; content.style.display = 'block';
   if (FB_READY && !_triListenerActive) {
     _triListenerActive = true;
-    const q = query(collection(db, 'users', currentUser.uid, 'triathlons'), orderBy('date', 'desc'));
+    const q = query(collection(db, 'users', currentUser.id, 'triathlons'), orderBy('date', 'desc'));
     onSnapshot(q, snap => {
       triathlons = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       renderTriGrid();
@@ -4518,8 +4518,8 @@ async function saveTri() {
 
   try {
     const ref = editTriId
-      ? doc(db, 'users', currentUser.uid, 'triathlons', editTriId)
-      : doc(collection(db, 'users', currentUser.uid, 'triathlons'));
+      ? doc(db, 'users', currentUser.id, 'triathlons', editTriId)
+      : doc(collection(db, 'users', currentUser.id, 'triathlons'));
     await setDoc(ref, data, { merge: true });
     cm('addTriOv');
     toast('🏊', editTriId ? 'Evento actualizado' : 'Evento guardado');
@@ -4533,7 +4533,7 @@ async function saveTri() {
 async function deleteTriConfirm(id) {
   if (!confirm('¿Eliminás este evento de triatlón?')) return;
   try {
-    await deleteDoc(doc(db, 'users', currentUser.uid, 'triathlons', id));
+    await deleteDoc(doc(db, 'users', currentUser.id, 'triathlons', id));
     toast('🗑', 'Evento eliminado');
   } catch(e) {
     toast('❌', 'Error: ' + e.message);
