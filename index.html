@@ -618,6 +618,14 @@ textarea{resize:vertical;min-height:70px;}
 .link-plat-tt{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);color:var(--text);}
 .link-plat-yt{background:rgba(255,0,0,.12);border:1px solid rgba(255,0,0,.3);color:#ff4444;}
 .link-plat-web{background:rgba(110,234,160,.1);border:1px solid rgba(110,234,160,.25);color:var(--trail);}
+.link-card-thumb{width:100%;height:180px;object-fit:cover;object-position:center top;display:block;border-bottom:1px solid var(--border);background:var(--surface2);}
+.link-preview-box{margin-top:10px;border-radius:8px;overflow:hidden;border:1px solid var(--border);background:var(--surface2);position:relative;display:none;}
+.link-preview-box.show{display:block;}
+.link-preview-loader{padding:18px;text-align:center;font-size:11px;color:var(--muted);font-family:'Space Mono',monospace;display:flex;align-items:center;justify-content:center;gap:8px;}
+.link-preview-img{width:100%;max-height:200px;object-fit:cover;display:none;}
+.link-preview-dismiss{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);border:none;color:#fff;border-radius:50%;width:26px;height:26px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;transition:background .15s;}
+.link-preview-dismiss:hover{background:rgba(200,0,0,.75);}
+.link-preview-status{padding:8px 12px;font-size:10px;font-family:'Space Mono',monospace;color:var(--muted);background:rgba(0,0,0,.3);text-align:center;}
 @media(max-width:640px){.links-wrap{padding:16px 16px 56px;}.links-grid{grid-template-columns:1fr;}}
 
 /* ── PERFIL PÚBLICO ─────────────────────────────── */
@@ -1154,7 +1162,14 @@ textarea{resize:vertical;min-height:70px;}
       <div class="fr full">
         <div class="fg2">
           <label>URL *</label>
-          <input id="linkUrl" type="url" placeholder="https://www.instagram.com/reel/...">
+          <input id="linkUrl" type="url" placeholder="https://www.instagram.com/reel/..." onblur="onLinkUrlBlur()">
+          <!-- Vista previa automática -->
+          <div id="linkPreviewBox" class="link-preview-box">
+            <div id="linkPreviewLoader" class="link-preview-loader"><span class="spin"></span> Obteniendo vista previa...</div>
+            <img id="linkPreviewImg" class="link-preview-img" alt="Vista previa">
+            <div id="linkPreviewStatus" class="link-preview-status" style="display:none"></div>
+            <button class="link-preview-dismiss" onclick="dismissLinkPreview()" title="Quitar imagen">×</button>
+          </div>
         </div>
       </div>
       <div class="fr full">
@@ -4621,7 +4636,9 @@ function buildLinkCard(l, type) {
     ? l.createdAt.toDate().toLocaleDateString('es-AR', { day:'2-digit', month:'short', year:'numeric' })
     : '';
   const safeUrl   = (l.url || '').replace(/"/g, '&quot;');
+  const safeImg   = (l.imageUrl || '').replace(/"/g, '&quot;');
   return `<div class="link-card${isAliment ? '' : ' ejerc'}">
+    ${safeImg ? `<img class="link-card-thumb" src="${safeImg}" alt="" loading="lazy" onerror="this.style.display='none'">` : ''}
     <div class="link-card-head">
       <span class="link-plat-badge ${plat.cls}">${plat.label}</span>
       ${l.category ? `<span class="link-cat-pill${isAliment ? '' : ' ejerc'}">${l.category}</span>` : ''}
@@ -4642,6 +4659,8 @@ function setLinkCatFilter(type, cat) {
   renderLinksGrid(type);
 }
 
+let _linkPreviewImageUrl = null;
+
 function openAddLink(type) {
   if (!currentUser) { openLogin(); return; }
   activeLinkType = type;
@@ -4654,11 +4673,70 @@ function openAddLink(type) {
     document.getElementById(id).value = '';
   });
   document.getElementById('linkPlatform').value = 'instagram';
+  dismissLinkPreview();
   const cats = isAliment ? ALIMENT_CATS : EJERCICIOS_CATS;
   document.getElementById('linkCatSuggestions').innerHTML = cats.map(c =>
     `<button type="button" class="dtag" onclick="document.getElementById('linkCategory').value='${c}';document.querySelectorAll('#linkCatSuggestions .dtag').forEach(b=>b.classList.remove('sel'));this.classList.add('sel')">${c}</button>`
   ).join('');
   oo('addLinkOv');
+}
+
+function dismissLinkPreview() {
+  _linkPreviewImageUrl = null;
+  const box = document.getElementById('linkPreviewBox');
+  const img = document.getElementById('linkPreviewImg');
+  if (box) box.classList.remove('show');
+  if (img) { img.src = ''; img.style.display = 'none'; }
+}
+
+async function onLinkUrlBlur() {
+  const url = document.getElementById('linkUrl').value.trim();
+  if (!url) { dismissLinkPreview(); return; }
+  try { new URL(url); } catch { return; }
+
+  const box    = document.getElementById('linkPreviewBox');
+  const loader = document.getElementById('linkPreviewLoader');
+  const img    = document.getElementById('linkPreviewImg');
+  const status = document.getElementById('linkPreviewStatus');
+
+  box.classList.add('show');
+  loader.style.display = 'flex';
+  img.style.display    = 'none';
+  status.style.display = 'none';
+  _linkPreviewImageUrl = null;
+
+  try {
+    const resp = await fetch(`https://api.microlink.io?url=${encodeURIComponent(url)}`);
+    const json = await resp.json();
+    if (json.status !== 'success') { box.classList.remove('show'); return; }
+
+    // Auto-completar título si está vacío
+    const titleEl = document.getElementById('linkTitle');
+    if (!titleEl.value && json.data?.title) titleEl.value = json.data.title;
+
+    // Auto-detectar plataforma
+    const platEl = document.getElementById('linkPlatform');
+    if (/instagram\.com/i.test(url))  platEl.value = 'instagram';
+    else if (/tiktok\.com/i.test(url)) platEl.value = 'tiktok';
+    else if (/youtu/i.test(url))       platEl.value = 'youtube';
+    else                               platEl.value = 'web';
+
+    const imageUrl = json.data?.image?.url || json.data?.logo?.url || null;
+    if (!imageUrl) { box.classList.remove('show'); return; }
+
+    img.src    = imageUrl;
+    img.onload = () => {
+      loader.style.display = 'none';
+      img.style.display    = 'block';
+      const src = json.data?.image?.url ? 'imagen del posteo' : 'logo';
+      status.textContent   = `✓ Vista previa obtenida (${src})`;
+      status.style.display = 'block';
+    };
+    img.onerror = () => { box.classList.remove('show'); };
+    _linkPreviewImageUrl = imageUrl;
+  } catch {
+    box.classList.remove('show');
+  }
 }
 
 async function saveLink() {
@@ -4676,6 +4754,7 @@ async function saveLink() {
     platform:  document.getElementById('linkPlatform').value,
     category:  document.getElementById('linkCategory').value.trim(),
     notes:     document.getElementById('linkNotes').value.trim(),
+    imageUrl:  _linkPreviewImageUrl || '',
     createdAt: serverTimestamp(),
   };
   try {
@@ -4988,7 +5067,7 @@ Object.assign(window, {
   renderMapTab, openDetailFromMap,
   openShareCard, selectSharePhoto, downloadShareCard, shareToWhatsApp, nativeShare,
   openAddTri, openEditTri, saveTri, deleteTriConfirm, filterTri,
-  openAddLink, saveLink, deleteLink, setLinkCatFilter,
+  openAddLink, saveLink, deleteLink, setLinkCatFilter, onLinkUrlBlur, dismissLinkPreview,
   openProfileConfig, saveProfile, copyProfileLink, updateProfileLinkPreview, prevProfileLogo
 });
 
