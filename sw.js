@@ -4,7 +4,7 @@
  * Push Notifications: muestra notificaciones y maneja clicks
  */
 
-const CACHE_NAME    = 'run-trail-vm-v6';
+const CACHE_NAME    = 'run-trail-vm-v7';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -40,6 +40,19 @@ self.addEventListener('fetch', event => {
   // Ignorar requests no-GET y extensiones de Chrome
   if (request.method !== 'GET') return;
   if (url.protocol === 'chrome-extension:') return;
+
+  // Network-First para requests de navegación (index.html) — así siempre se sirve la versión más nueva
+  if (request.mode === 'navigate') {
+    event.respondWith(
+      fetch(request).then(response => {
+        // Guardar la versión fresca en caché
+        const toCache = response.clone();
+        caches.open(CACHE_NAME).then(cache => cache.put(request, toCache));
+        return response;
+      }).catch(() => caches.match('./index.html') || caches.match('./'))
+    );
+    return;
+  }
 
   // Network-First para Firebase, Strava, APIs externas
   const isApi = url.hostname.includes('firestore.googleapis.com') ||
