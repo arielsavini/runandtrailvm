@@ -494,6 +494,15 @@ textarea{resize:vertical;min-height:70px;}
 .monthly-chart-title::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--accent);}
 #monthlyChartCanvas{display:block;width:100%!important;height:140px!important;}
 
+/* SECTION DIVIDER — futuras / pasadas */
+.section-divider{grid-column:1/-1;display:flex;align-items:center;gap:14px;padding:16px 0 4px;}
+.section-divider-label{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted);white-space:nowrap;}
+.section-divider-line{flex:1;height:1px;background:var(--border);}
+.section-divider.past .section-divider-label{color:rgba(168,216,181,.45);}
+.section-divider.past .section-divider-line{background:rgba(168,216,181,.18);}
+.race-card.past{opacity:.6;filter:grayscale(.35);}
+.race-card.past:hover{opacity:.85;filter:grayscale(.1);}
+
 /* LOAD MORE */
 .wk-loadmore{text-align:center;padding:20px 0;display:none;}
 .wk-loadmore.visible{display:block;}
@@ -2027,10 +2036,22 @@ function renderCards() {
     rc.innerHTML = 'Sin resultados'; return;
   }
   rc.innerHTML = `Mostrando <strong>${filtered.length}</strong> de <strong>${races.length}</strong> carreras`;
-  grid.innerHTML = filtered.map(r => buildCard(r)).join('');
+  const today = new Date(); today.setHours(0,0,0,0);
+  const futuras = filtered.filter(r => new Date(r.date + 'T00:00:00') >= today);
+  const pasadas = filtered.filter(r => new Date(r.date + 'T00:00:00') < today);
+  let html = '';
+  if (futuras.length) {
+    html += `<div class="section-divider"><div class="section-divider-line"></div><div class="section-divider-label">📅 PRÓXIMAS CARRERAS</div><div class="section-divider-line"></div></div>`;
+    html += futuras.map(r => buildCard(r)).join('');
+  }
+  if (pasadas.length) {
+    html += `<div class="section-divider past"><div class="section-divider-line"></div><div class="section-divider-label">🏁 CARRERAS PASADAS</div><div class="section-divider-line"></div></div>`;
+    html += pasadas.map(r => buildCard(r, true)).join('');
+  }
+  grid.innerHTML = html;
 }
 
-function buildCard(r) {
+function buildCard(r, isPast = false) {
   const [y, mo, d] = r.date.split('-');
   const pc = currentUser ? ((r.participations || []).some(p => p.userId === currentUser.id) ? 1 : 0) : 0;
   const imgH = r.photo ? `<img src="${r.photo}" alt="${r.name}" loading="lazy">` : `<div class="c-img-ph">${TI[r.type] || '🏃'}</div>`;
@@ -2040,7 +2061,7 @@ function buildCard(r) {
   const timesBtn = currentUser
     ? `<button class="cb-pri" onclick="event.stopPropagation();openPart('${r.id}')">${userPart ? '✏ Mi información' : '⏱ Mis tiempos'}</button>`
     : `<button class="cb-pri" onclick="event.stopPropagation();openLogin()">⏱ Mis tiempos</button>`;
-  return `<div class="race-card" onclick="openDetail('${r.id}')">
+  return `<div class="race-card${isPast ? ' past' : ''}" onclick="openDetail('${r.id}')">
     <div class="c-img">
       ${imgH}<div class="c-ov"></div>
       <div class="c-badges">
