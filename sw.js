@@ -4,7 +4,7 @@
  * Push Notifications: muestra notificaciones y maneja clicks
  */
 
-const CACHE_NAME    = 'run-trail-vm-v7';
+const CACHE_NAME    = 'run-trail-vm-v8';
 const STATIC_ASSETS = [
   './',
   './index.html',
