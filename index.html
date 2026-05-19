@@ -701,6 +701,48 @@ textarea{resize:vertical;min-height:70px;}
 .pp-logo-preview{width:64px;height:64px;border-radius:8px;object-fit:contain;background:var(--surface2);border:1px solid var(--border);padding:4px;display:none;}
 .pp-logo-preview.show{display:block;}
 
+/* ── NUTRIRUN ── */
+.nr-wrap{max-width:860px;margin:0 auto;padding:32px 32px 64px;}
+.nr-heading{margin-bottom:28px;}
+.nr-heading h2{font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:4px;color:var(--text);margin:0;}
+.nr-heading p{font-size:11px;color:var(--muted);font-family:'Space Mono',monospace;margin-top:4px;letter-spacing:1.5px;}
+.nr-calc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:24px;margin-bottom:24px;}
+.nr-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+.nr-row:last-child{margin-bottom:0;}
+.nr-row .fg{display:flex;flex-direction:column;gap:5px;}
+.nr-pace-inputs{display:flex;align-items:center;gap:8px;}
+.nr-pace-inputs input{width:72px;}
+.nr-pace-sep{color:var(--muted);font-size:18px;font-weight:700;}
+.nr-pace-unit{font-size:11px;color:var(--muted);font-family:'Space Mono',monospace;white-space:nowrap;}
+/* Results */
+.nr-results{margin-top:0;}
+.nr-res-header{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:20px 24px;margin-bottom:16px;}
+.nr-res-title{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:3px;color:var(--accent);margin:0;}
+.nr-res-sub{font-size:11px;color:var(--muted);font-family:'Space Mono',monospace;margin-top:4px;}
+.nr-summary{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:20px;}
+.nr-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;text-align:center;}
+.nr-card-icon{font-size:24px;margin-bottom:6px;}
+.nr-card-val{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--accent);line-height:1;}
+.nr-card-lbl{font-size:10px;color:var(--muted);font-family:'Space Mono',monospace;text-transform:uppercase;letter-spacing:1px;margin-top:4px;}
+.nr-card-range{font-size:11px;color:var(--muted);margin-top:3px;}
+.nr-plan-title{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:3px;color:var(--muted);margin-bottom:12px;}
+.nr-plan-scroll{overflow-x:auto;}
+.nr-plan-table{width:100%;border-collapse:collapse;font-size:13px;}
+.nr-plan-table th{background:var(--surface3);color:var(--muted);font-family:'Space Mono',monospace;font-size:10px;letter-spacing:1.5px;text-align:left;padding:8px 12px;border-bottom:1px solid var(--border);}
+.nr-plan-table td{padding:10px 12px;border-bottom:1px solid rgba(26,153,69,.15);vertical-align:middle;}
+.nr-plan-table tr:last-child td{border-bottom:none;}
+.nr-row-start td,.nr-row-finish td{background:rgba(232,255,71,.04);}
+.nr-row-start td:first-child,.nr-row-finish td:first-child{color:var(--accent);font-family:'Bebas Neue',sans-serif;letter-spacing:1px;}
+.nr-row-agua td:first-child{color:var(--trail);}
+.nr-row-gel td:first-child{color:var(--accent2);}
+.nr-tip{background:rgba(232,255,71,.06);border:1px solid rgba(232,255,71,.2);border-radius:8px;padding:14px 16px;font-size:13px;color:var(--muted);line-height:1.6;margin-top:16px;}
+.nr-tip strong{color:var(--text);}
+@media(max-width:600px){
+  .nr-wrap{padding:20px 16px 48px;}
+  .nr-row{grid-template-columns:1fr;}
+  .nr-summary{grid-template-columns:1fr 1fr;}
+}
+
 </style>
 </head>
 <body>
@@ -757,6 +799,7 @@ textarea{resize:vertical;min-height:70px;}
   </button>
   <button class="tab-btn" id="tab-alimentacion" onclick="switchTab('alimentacion')">🥗 ALIMENTACIÓN</button>
   <button class="tab-btn" id="tab-ejercicios" onclick="switchTab('ejercicios')">💪 EJERCICIOS</button>
+  <button class="tab-btn" id="tab-nutrirun" onclick="switchTab('nutrirun')">🥤 NUTRIRUN</button>
 </nav>
 
 <!-- MAIN TABS (mobile dropdown) -->
@@ -782,6 +825,7 @@ textarea{resize:vertical;min-height:70px;}
     </button>
     <button class="tab-dropdown-item" id="dtab-alimentacion" onclick="switchTab('alimentacion');closeTabDropdown()">🥗 ALIMENTACIÓN</button>
     <button class="tab-dropdown-item" id="dtab-ejercicios" onclick="switchTab('ejercicios');closeTabDropdown()">💪 EJERCICIOS</button>
+    <button class="tab-dropdown-item" id="dtab-nutrirun" onclick="switchTab('nutrirun');closeTabDropdown()">🥤 NUTRIRUN</button>
   </div>
 </div>
 
@@ -1136,6 +1180,76 @@ textarea{resize:vertical;min-height:70px;}
 
 </div>
 </div><!-- /panel-ejercicios -->
+
+<!-- TAB: NUTRIRUN -->
+<div class="tab-panel" id="panel-nutrirun">
+<div class="nr-wrap">
+
+  <div class="nr-heading">
+    <h2>🥤 NUTRIRUN</h2>
+    <p>PLAN DE HIDRATACIÓN Y NUTRICIÓN PARA TU CARRERA</p>
+  </div>
+
+  <!-- Calculadora -->
+  <div class="nr-calc">
+    <div class="nr-row">
+      <div class="fg">
+        <label class="fl">Distancia</label>
+        <select id="nrDist" class="fsel" onchange="nrUpdateDistCustom()">
+          <option value="">Seleccioná...</option>
+          <option value="5">5K</option>
+          <option value="10">10K</option>
+          <option value="21.1">21K — Media Maratón</option>
+          <option value="42.195">42K — Maratón</option>
+          <option value="50">50K</option>
+          <option value="100">100K</option>
+          <option value="custom">Personalizada</option>
+        </select>
+      </div>
+      <div class="fg" id="nrDistCustomWrap" style="display:none">
+        <label class="fl">Km exactos</label>
+        <input id="nrDistCustom" type="number" class="finp" placeholder="ej. 35" min="1" max="500" step="0.1">
+      </div>
+    </div>
+
+    <div class="nr-row">
+      <div class="fg">
+        <label class="fl">Ritmo esperado (min/km)</label>
+        <div class="nr-pace-inputs">
+          <input id="nrPaceMin" type="number" class="finp" placeholder="MM" min="2" max="20">
+          <span class="nr-pace-sep">:</span>
+          <input id="nrPaceSec" type="number" class="finp" placeholder="SS" min="0" max="59">
+          <span class="nr-pace-unit">min/km</span>
+        </div>
+      </div>
+      <div class="fg">
+        <label class="fl">Temperatura estimada</label>
+        <select id="nrTemp" class="fsel">
+          <option value="12">❄️ Fresco (menos de 15°C)</option>
+          <option value="18">🌤 Templado (15 – 22°C)</option>
+          <option value="25" selected>☀️ Cálido (22 – 28°C)</option>
+          <option value="30">🔥 Caluroso (28 – 34°C)</option>
+          <option value="36">🌡 Muy caluroso (más de 34°C)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="nr-row">
+      <div class="fg">
+        <label class="fl">Tu peso en kg (opcional)</label>
+        <input id="nrWeight" type="number" class="finp" placeholder="ej. 70" min="40" max="150" step="0.5">
+      </div>
+      <div class="fg" style="display:flex;align-items:flex-end">
+        <button class="btn-fil" style="width:100%;padding:10px 20px" onclick="calcNutriRun()">⚡ CALCULAR PLAN</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Resultados -->
+  <div id="nrResults"></div>
+
+</div>
+</div><!-- /panel-nutrirun -->
 
 <div class="overlay" id="wkDetailOv" onclick="coo(event,'wkDetailOv')">
   <div class="modal modal-wide" onclick="event.stopPropagation()">
@@ -2635,6 +2749,7 @@ function switchTab(tab) {
   if (tab === 'triatlon')       renderTriathlonTab();
   if (tab === 'alimentacion')   renderLinksTab('alimentacion');
   if (tab === 'ejercicios')     renderLinksTab('ejercicios');
+  // nutrirun no necesita render especial
 }
 function toggleTabDropdown() {
   const trigger = document.getElementById('tabDropdownTrigger');
@@ -5093,6 +5208,207 @@ function renderPublicProfile(profile, participatedRaces, inscList, allRaces) {
     </div>`;
 }
 
+/* ══════════════════════════════════════════
+   NUTRIRUN — Plan de hidratación y nutrición
+══════════════════════════════════════════ */
+
+function nrUpdateDistCustom() {
+  const val = document.getElementById('nrDist').value;
+  document.getElementById('nrDistCustomWrap').style.display = val === 'custom' ? '' : 'none';
+}
+
+function calcNutriRun() {
+  const distEl  = document.getElementById('nrDist');
+  const distVal = distEl.value === 'custom'
+    ? parseFloat(document.getElementById('nrDistCustom').value)
+    : parseFloat(distEl.value);
+
+  if (!distVal || distVal <= 0) { toast('⚠️', 'Seleccioná una distancia'); return; }
+
+  const paceMin = parseInt(document.getElementById('nrPaceMin').value) || 0;
+  const paceSec = parseInt(document.getElementById('nrPaceSec').value) || 0;
+
+  if (!paceMin && !paceSec) { toast('⚠️', 'Ingresá tu ritmo esperado (min/km)'); return; }
+
+  const paceMinPerKm = paceMin + paceSec / 60;
+  if (paceMinPerKm < 2 || paceMinPerKm > 20) {
+    toast('⚠️', 'El ritmo debe estar entre 2:00 y 20:00 min/km'); return;
+  }
+
+  const tempVal = parseInt(document.getElementById('nrTemp').value);
+  const weight  = parseFloat(document.getElementById('nrWeight').value) || 70;
+
+  // ── Tiempo total de carrera ──
+  const totalMinutes = distVal * paceMinPerKm;
+  const totalHours   = totalMinutes / 60;
+
+  // ── Tasa de hidratación (ml/hora) según temperatura ──
+  // Basado en guías de medicina deportiva: 400–900 ml/h según condiciones
+  const rateMap = { 12: 350, 18: 480, 25: 600, 30: 750, 36: 920 };
+  const baseRate = rateMap[tempVal] || 600;
+
+  // Ajuste leve por peso (normalizado a 70 kg)
+  const weightFactor  = Math.max(0.8, Math.min(1.3, weight / 70));
+  const adjustedRate  = Math.round(baseRate * weightFactor);
+
+  // Totales mín/máx/promedio
+  const totalMl    = Math.round(totalHours * adjustedRate);
+  const totalMlMin = Math.round(totalHours * adjustedRate * 0.85);
+  const totalMlMax = Math.round(totalHours * adjustedRate * 1.15);
+
+  // ── Frecuencia de hidratación: cada 15 minutos (estándar deportivo) ──
+  const drinkEveryMin = 15;
+  // A qué distancia corresponde cada 15 min según el ritmo
+  const drinkEveryKm  = parseFloat((paceMinPerKm * drinkEveryMin).toFixed(2));
+  const numStops      = Math.max(1, Math.floor(totalMinutes / drinkEveryMin));
+
+  // ml por toma (redondeado a 25 ml)
+  const mlPerStopRaw = totalMl / numStops;
+  const mlPerStop    = Math.round(mlPerStopRaw / 25) * 25;
+
+  // ── Botellas ──
+  const bottles500  = Math.ceil(totalMl / 500);
+  const bottles1000 = Math.ceil(totalMl / 1000);
+
+  // ── Geles (solo si carrera > 45 min) ──
+  // Primer gel a los 30 min, luego cada 45 min
+  const gelPlan = [];
+  if (totalMinutes > 45) {
+    let gelTime = 30;
+    while (gelTime < totalMinutes - 10) {
+      const gelKm = parseFloat((gelTime / paceMinPerKm).toFixed(1));
+      gelPlan.push({ min: gelTime, km: gelKm });
+      gelTime += 45;
+    }
+  }
+
+  // ── Plan por km (puntos de hidratación) ──
+  const hydrationStops = [];
+  let nextKm = drinkEveryKm;
+  while (nextKm < distVal) {
+    const km    = parseFloat(nextKm.toFixed(2));
+    const atMin = Math.round(km * paceMinPerKm);
+    hydrationStops.push({ km, atMin });
+    nextKm = parseFloat((nextKm + drinkEveryKm).toFixed(2));
+  }
+
+  // Tiempo total formateado
+  const rh = Math.floor(totalMinutes / 60);
+  const rm = Math.round(totalMinutes % 60);
+  const raceTimeStr = rh > 0 ? `${rh}h ${rm}min` : `${rm} min`;
+
+  // ── Render ──
+  const results = document.getElementById('nrResults');
+  results.innerHTML = _buildNutriResults({
+    distVal, paceMinPerKm, totalMinutes, raceTimeStr,
+    totalMl, totalMlMin, totalMlMax,
+    drinkEveryKm, drinkEveryMin, mlPerStop, numStops,
+    bottles500, bottles1000,
+    gelPlan, hydrationStops, tempVal, weight
+  });
+  results.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function _buildNutriResults(d) {
+  const tempLabels = { 12:'❄️ Fresco', 18:'🌤 Templado', 25:'☀️ Cálido', 30:'🔥 Caluroso', 36:'🌡 Muy caluroso' };
+  const numGels    = d.gelPlan.length;
+
+  // ── Tabla del plan ──
+  // Combinar paradas de agua y geles en una línea de tiempo unificada
+  const events = d.hydrationStops.map(s => ({ type: 'agua', km: s.km, min: s.atMin, ml: d.mlPerStop, gel: false }));
+  d.gelPlan.forEach(g => {
+    const nearby = events.find(e => Math.abs(e.km - g.km) <= d.drinkEveryKm / 2);
+    if (nearby) { nearby.gel = true; }
+    else { events.push({ type: 'gel', km: g.km, min: g.min, ml: 0, gel: false }); }
+  });
+  events.sort((a, b) => a.km - b.km);
+
+  const allEvents = [
+    { type: 'start',  km: 0,          min: 0 },
+    ...events,
+    { type: 'finish', km: d.distVal,  min: Math.round(d.totalMinutes) }
+  ];
+
+  const rows = allEvents.map(ev => {
+    const h   = Math.floor(ev.min / 60);
+    const m   = String(ev.min % 60).padStart(2, '0');
+    const tStr = h > 0 ? `${h}:${m}:00` : `${ev.min}:00`;
+    const kmStr = ev.km === 0 ? 'Inicio' : ev.km >= d.distVal ? 'Meta' : `${ev.km} km`;
+    let icon, accion;
+    if (ev.type === 'start') {
+      icon = '🚀'; accion = 'Largada — hidratate bien antes de salir';
+    } else if (ev.type === 'finish') {
+      icon = '🏁'; accion = 'Llegada — rehidratación inmediata (al menos 500 ml en los primeros 30 min)';
+    } else if (ev.type === 'gel') {
+      icon = '🍬'; accion = 'Tomar 1 gel energético con agua';
+    } else {
+      icon = '💧';
+      accion = `Tomar ~${ev.ml} ml de agua${ev.gel ? ' + 1 gel energético' : ''}`;
+    }
+    return `<tr class="nr-row-${ev.type}">
+      <td><strong>${kmStr}</strong></td>
+      <td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted)">${tStr}</td>
+      <td>${icon} ${accion}</td>
+    </tr>`;
+  }).join('');
+
+  return `
+  <div class="nr-results">
+    <div class="nr-res-header">
+      <div class="nr-res-title">PLAN PARA ${d.distVal >= 42 ? d.distVal.toFixed(3) : d.distVal} KM · ${d.raceTimeStr}</div>
+      <div class="nr-res-sub">${tempLabels[d.tempVal] || '☀️'} · ${d.weight} kg · ritmo ${Math.floor(d.paceMinPerKm)}:${String(Math.round((d.paceMinPerKm % 1) * 60)).padStart(2,'0')} min/km</div>
+    </div>
+
+    <div class="nr-summary">
+      <div class="nr-card">
+        <div class="nr-card-icon">💧</div>
+        <div class="nr-card-val">${d.totalMl} ml</div>
+        <div class="nr-card-lbl">Agua total estimada</div>
+        <div class="nr-card-range">${d.totalMlMin}–${d.totalMlMax} ml</div>
+      </div>
+      <div class="nr-card">
+        <div class="nr-card-icon">⏱</div>
+        <div class="nr-card-val">c/ ${d.drinkEveryMin} min</div>
+        <div class="nr-card-lbl">Frecuencia de hidratación</div>
+        <div class="nr-card-range">≈ cada ${d.drinkEveryKm.toFixed(1)} km</div>
+      </div>
+      <div class="nr-card">
+        <div class="nr-card-icon">🥤</div>
+        <div class="nr-card-val">~${d.mlPerStop} ml</div>
+        <div class="nr-card-lbl">Por toma</div>
+        <div class="nr-card-range">${d.numStops} tomas en total</div>
+      </div>
+      <div class="nr-card">
+        <div class="nr-card-icon">🍶</div>
+        <div class="nr-card-val">${d.bottles500}× 500 ml</div>
+        <div class="nr-card-lbl">Botellas necesarias</div>
+        <div class="nr-card-range">o ${d.bottles1000}× 1 L</div>
+      </div>
+      ${numGels > 0 ? `<div class="nr-card">
+        <div class="nr-card-icon">🍬</div>
+        <div class="nr-card-val">${numGels} gel${numGels > 1 ? 'es' : ''}</div>
+        <div class="nr-card-lbl">Geles energéticos</div>
+        <div class="nr-card-range">cada ~45 min</div>
+      </div>` : ''}
+    </div>
+
+    <div class="nr-plan-title">PLAN DE CARRERA</div>
+    <div class="nr-plan-scroll">
+      <table class="nr-plan-table">
+        <thead><tr><th>PUNTO</th><th>TIEMPO</th><th>ACCIÓN</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+
+    <div class="nr-tip">
+      💡 <strong>Recordá:</strong> comenzá a hidratarte <em>antes</em> de sentir sed — la sed ya indica un 2% de deshidratación.
+      La frecuencia correcta es cada <strong>${d.drinkEveryMin} minutos</strong>, no por kilómetro (varía con el ritmo).
+      ${d.tempVal >= 30 ? ' Con calor extremo, priorizá agua sobre geles.' : ''}
+      ${d.totalMinutes > 90 ? ' En carreras largas, considerá bebidas con sodio/electrolitos para evitar la hiponatremia.' : ''}
+    </div>
+  </div>`;
+}
+
 // Exponer funciones al HTML (necesario con type="module")
 Object.assign(window, {
   openLogin, logout, loginWithGoogle,
@@ -5112,7 +5428,8 @@ Object.assign(window, {
   openShareCard, selectSharePhoto, downloadShareCard, shareToWhatsApp, nativeShare,
   openAddTri, openEditTri, saveTri, deleteTriConfirm, filterTri,
   openAddLink, saveLink, deleteLink, setLinkCatFilter, onLinkUrlBlur, dismissLinkPreview,
-  openProfileConfig, saveProfile, copyProfileLink, updateProfileLinkPreview, prevProfileLogo
+  openProfileConfig, saveProfile, copyProfileLink, updateProfileLinkPreview, prevProfileLogo,
+  calcNutriRun, nrUpdateDistCustom
 });
 
 init();
