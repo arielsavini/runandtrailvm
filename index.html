@@ -4575,8 +4575,8 @@ function shareRaceInfo(id) {
   if (r.city || r.provincia) lineas.push(`📍 ${[r.city, r.provincia].filter(Boolean).join(', ')}`);
   if (r.distances?.length)   lineas.push(`📏 ${r.distances.join(' · ')}`);
   if (r.type)                lineas.push(`🏷 ${({trail:'Trail',road:'Road',ultra:'Ultra',mixed:'Mixto',duatlon:'Duatlón',triatlon:'Triatlón'})[r.type] || r.type}`);
-  if (r.inscripcionUrl)      lineas.push(`🔗 Inscripción: ${r.inscripcionUrl}`);
-  lineas.push(`\n📲 RUN & TRAIL VM — runtrailvm.web.app`);
+  if (r.url)                 lineas.push(`🔗 ${r.url}`);
+  lineas.push(`\n📲 RUN & TRAIL VM — https://arielsavini.github.io/runandtrailvm/`);
   const texto = lineas.join('\n');
   document.getElementById('sendRaceName').textContent = r.name;
   document.getElementById('sendRacePreview').textContent = texto;
