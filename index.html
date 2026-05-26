@@ -5499,6 +5499,7 @@ Object.assign(window, {
   togglePushNotifications,
   renderMapTab, openDetailFromMap,
   openShareCard, selectSharePhoto, downloadShareCard, shareToWhatsApp, nativeShare,
+  shareRaceInfo, sendRaceWhatsApp, sendRaceCopy, sendRaceNative,
   openAddTri, openEditTri, saveTri, deleteTriConfirm, filterTri,
   openAddLink, saveLink, deleteLink, setLinkCatFilter, onLinkUrlBlur, dismissLinkPreview,
   openProfileConfig, saveProfile, copyProfileLink, updateProfileLinkPreview, prevProfileLogo,
@@ -5511,7 +5512,7 @@ checkPublicProfileRoute();
 
 <script>
 // Service Worker — modo offline
-const SW_CACHE_NAME = 'run-trail-vm-v9'; // ← mantener sincronizado con sw.js
+const SW_CACHE_NAME = 'run-trail-vm-v10'; // ← mantener sincronizado con sw.js
 
 // Limpiar automáticamente si hay caches de versiones anteriores (SWs viejos)
 if ('caches' in window && 'serviceWorker' in navigator) {
