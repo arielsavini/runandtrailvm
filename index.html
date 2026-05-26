@@ -141,6 +141,8 @@ button{cursor:pointer;font-family:inherit;}
 .cb-sec:hover{color:var(--text);border-color:var(--muted);}
 .cb-adm{background:rgba(255,68,68,.1);color:#ff6b6b;border:1px solid rgba(255,68,68,.25);border-radius:6px;padding:8px 10px;font-size:12px;transition:all .15s;}
 .cb-adm:hover{background:rgba(255,68,68,.22);}
+.cb-share{background:var(--surface2);color:var(--muted);border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-size:12px;transition:all .15s;}
+.cb-share:hover{border-color:rgba(56,189,248,.5);color:#38bdf8;}
 
 /* EMPTY */
 .empty{grid-column:1/-1;padding:64px 24px;text-align:center;color:var(--muted);}
@@ -1562,6 +1564,27 @@ textarea{resize:vertical;min-height:70px;}
   </div>
 </div>
 
+<!-- MODAL: ENVIAR CARRERA -->
+<div class="overlay" id="sendRaceOv" onclick="coo(event,'sendRaceOv')">
+  <div class="modal" style="max-width:420px" onclick="event.stopPropagation()">
+    <div class="mh">
+      <div>
+        <div class="mt">ENVIAR CARRERA</div>
+        <div class="ms" id="sendRaceName">—</div>
+      </div>
+      <button class="xbtn" onclick="cm('sendRaceOv')">×</button>
+    </div>
+    <div class="mb">
+      <div id="sendRacePreview" style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px 16px;margin-bottom:16px;font-size:13px;line-height:1.8;color:var(--muted);white-space:pre-wrap;word-break:break-word;font-family:'Space Mono',monospace;font-size:11px;"></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="share-act-btn sbtn-wa" style="flex:1;min-width:110px" onclick="sendRaceWhatsApp()">📱 WhatsApp</button>
+        <button class="share-act-btn sbtn-native" id="sendRaceNativeBtn" style="flex:1;min-width:110px;display:none" onclick="sendRaceNative()">📤 Compartir</button>
+        <button class="share-act-btn sbtn-dl" style="flex:1;min-width:110px" onclick="sendRaceCopy()">📋 Copiar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: COMPARTIR RESULTADO -->
 <div class="overlay" id="shareOv" onclick="coo(event,'shareOv')">
   <div class="modal" style="max-width:460px" onclick="event.stopPropagation()">
@@ -2214,7 +2237,7 @@ function buildCard(r, isPast = false) {
       ${r.distances?.length ? `<div class="c-dists">${r.distances.map(x => `<span class="dpill">${x}</span>`).join('')}</div>` : ''}
       ${wH}
     </div>
-    <div class="c-foot">${timesBtn}<button class="cb-sec" onclick="event.stopPropagation();openDetail('${r.id}')">Ver más</button>${adm}</div>
+    <div class="c-foot">${timesBtn}<button class="cb-sec" onclick="event.stopPropagation();openDetail('${r.id}')">Ver más</button><button class="cb-share" onclick="event.stopPropagation();shareRaceInfo('${r.id}')" title="Enviar a...">📤</button>${adm}</div>
   </div>`;
 }
 
@@ -4528,6 +4551,56 @@ async function nativeShare() {
     } else {
       await navigator.share(shareData);
     }
+  } catch(e) {
+    if (e.name !== 'AbortError') toast('⚠️', 'No se pudo compartir');
+  }
+}
+
+/* ══════════════════════════════════════════
+   ENVIAR CARRERA
+══════════════════════════════════════════ */
+let _sendRace = null;
+
+function shareRaceInfo(id) {
+  const r = races.find(x => x.id === id);
+  if (!r) return;
+  _sendRace = r;
+  const [y, mo, d] = (r.date || '----').split('-');
+  const meses = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+  const fechaStr = `${parseInt(d)} ${meses[parseInt(mo)-1]} ${y}`;
+  const lineas = [
+    `🏃 ${r.name}`,
+    `📅 ${fechaStr}`,
+  ];
+  if (r.city || r.provincia) lineas.push(`📍 ${[r.city, r.provincia].filter(Boolean).join(', ')}`);
+  if (r.distances?.length)   lineas.push(`📏 ${r.distances.join(' · ')}`);
+  if (r.type)                lineas.push(`🏷 ${({trail:'Trail',road:'Road',ultra:'Ultra',mixed:'Mixto',duatlon:'Duatlón',triatlon:'Triatlón'})[r.type] || r.type}`);
+  if (r.inscripcionUrl)      lineas.push(`🔗 Inscripción: ${r.inscripcionUrl}`);
+  lineas.push(`\n📲 RUN & TRAIL VM — runtrailvm.web.app`);
+  const texto = lineas.join('\n');
+  document.getElementById('sendRaceName').textContent = r.name;
+  document.getElementById('sendRacePreview').textContent = texto;
+  const nativeBtn = document.getElementById('sendRaceNativeBtn');
+  nativeBtn.style.display = (navigator.share) ? 'flex' : 'none';
+  oo('sendRaceOv');
+}
+
+function sendRaceWhatsApp() {
+  const texto = document.getElementById('sendRacePreview').textContent;
+  window.open(`https://wa.me/?text=${encodeURIComponent(texto)}`, '_blank');
+}
+
+function sendRaceCopy() {
+  const texto = document.getElementById('sendRacePreview').textContent;
+  navigator.clipboard.writeText(texto)
+    .then(() => toast('📋', 'Copiado al portapapeles', 'ok'))
+    .catch(() => toast('⚠️', 'No se pudo copiar'));
+}
+
+async function sendRaceNative() {
+  const texto = document.getElementById('sendRacePreview').textContent;
+  try {
+    await navigator.share({ title: _sendRace?.name || 'Carrera', text: texto });
   } catch(e) {
     if (e.name !== 'AbortError') toast('⚠️', 'No se pudo compartir');
   }
